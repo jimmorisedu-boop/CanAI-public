@@ -2,7 +2,7 @@
   "format": "canai-public-source",
   "version": 1,
   "edition": "local",
-  "sourceRevision": "59c5dceb6b4c1b4884184cd6cf3785a1fc567edd",
+  "sourceRevision": "6b4d1bd1650e73370beb461052cd885850044613",
   "files": [
     {
       "path": ".gitattributes",
@@ -55,14 +55,14 @@
     {
       "path": "AGENTS.md",
       "mode": "100644",
-      "bytes": 4172,
-      "sha256": "7e4507aee361b8de9911717483279feb3d850c1e3f783d239548763c5594af84"
+      "bytes": 4330,
+      "sha256": "ae938f9b9c60804822ca9cd0dda6f55ee7cf4ab189abfe3f817e863fa45922e4"
     },
     {
       "path": "CHANGELOG.md",
       "mode": "100644",
-      "bytes": 1219,
-      "sha256": "cf096045780925066f0d4614658d67331c48c81f288d0551ec95141dfbc1e186"
+      "bytes": 1412,
+      "sha256": "ae8c01d8eadb8209e095837d72263ae734fc9a39444d1aeacfbe6d0b293a0634"
     },
     {
       "path": "client/index.html",
@@ -7196,7 +7196,7 @@
       "path": "docs/GETTING-STARTED.md",
       "mode": "100644",
       "bytes": 4462,
-      "sha256": "8f830f40d411109c14938ff6bd4997248124601010589a6de5f0de60fb5c2d86"
+      "sha256": "a020d435f98d5cf7b48e162b3d645f15a87bc459357833008956110f2c1ac276"
     },
     {
       "path": "docs/help-maintenance.md",
@@ -7525,8 +7525,8 @@
     {
       "path": "docs/RELEASING.md",
       "mode": "100644",
-      "bytes": 9031,
-      "sha256": "25c81f8cde19c9073be0cc78572562a1565e3cc8f66dfb86866bfbc91d87ece5"
+      "bytes": 9507,
+      "sha256": "d68c12a07a71526048b817166126175a89462fd60a9d528e7265c19ea947e0a4"
     },
     {
       "path": "LICENSE",
@@ -7592,13 +7592,13 @@
       "path": "package-lock.json",
       "mode": "100644",
       "bytes": 11152,
-      "sha256": "a8152bc9eb88542a029b01daa679c9fc24ca453833c87937a4a7a24a00d82fac"
+      "sha256": "c7be876a68ceea7af7a6993e2947808d5d9770d1f83535d759023dc81eae1524"
     },
     {
       "path": "package.json",
       "mode": "100644",
       "bytes": 3230,
-      "sha256": "10ba298745da2b0b8d9a5725f7a8503429c1cb9b038d1bacd367a9f08dbe489b"
+      "sha256": "16079ae2045527ea747fa050192aac86cedc58727133b1513e6d879fbdf8bde9"
     },
     {
       "path": "packages/agent-protocol/index.ts",
@@ -7741,8 +7741,8 @@
     {
       "path": "README.md",
       "mode": "100644",
-      "bytes": 7853,
-      "sha256": "972c17e49ac64350c06edd0fa520acb1f7373fba8f3b4cf74c261899f3f0101a"
+      "bytes": 7942,
+      "sha256": "eee64631d25d59d87f3abd65f546a834387bff473104ba5e828697e284d82f0e"
     },
     {
       "path": "scripts/browser-check/bidi.mjs",

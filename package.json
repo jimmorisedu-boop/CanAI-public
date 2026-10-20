@@ -1,7 +1,7 @@
 {
   "name": "canai",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "LicenseRef-CanAI-Community-1.0",
   "description": "CanAI — local AI content studio with an infinite canvas, editor, and node workflows powered by fal.ai",
   "scripts": {

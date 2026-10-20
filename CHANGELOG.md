@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — release candidate
+
+This release candidate refreshes the local edition release guidance for the
+Windows package and aligns the Assistant documentation with its resizable panel
+UI.
+
 ## 0.1.0 — release candidate
 
 This release candidate collects the local CanAI studio, including:

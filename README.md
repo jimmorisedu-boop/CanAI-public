@@ -64,7 +64,7 @@ Attach a reference to Prompt and keep the source visible while you explore a dir
 
 ![Expanded Assistant](docs/images/assistant-expanded.jpg)
 
-Open Assistant full screen when a prompt needs more room, with the exact board item attached to the message.
+Drag Assistant's top handle to resize it when a prompt needs more room, with the exact board item attached to the message.
 
 ![Compare viewer](docs/images/compare.jpg)
 
@@ -84,13 +84,13 @@ Inspect earlier board snapshots and restore one as a new board.
 
 ## Install the Windows preview
 
-The current tagged preview is **CanAI Local Studio Preview 0.1.0** for Windows x64. Download `CanAI-0.1.0-windows-x64.zip` and its SHA-256 sidecar from [Releases](https://github.com/jimmorisedu-boop/CanAI-public/releases).
+The current tagged preview is **CanAI Local Studio Preview 0.1.1** for Windows x64. Download `CanAI-0.1.1-windows-x64.zip` and its SHA-256 sidecar from [Releases](https://github.com/jimmorisedu-boop/CanAI-public/releases).
 
 1. Extract the ZIP into a new folder; keep the old folder until the boards have been checked.
 2. Double-click **Start CanAI.bat**. The launcher opens the local app at `http://127.0.0.1:8787` or the next free port.
 3. In **Settings → fal.ai and models**, add your own fal.ai API key before real generation. Stop with **Stop CanAI.bat**.
 
-The first start may download the portable Node.js runtime and install server dependencies, so network access is needed. fal.ai charges generation to your account according to the selected model; CanAI does not include provider credits. Only the Windows package is verified for this preview. macOS and Linux source builds are useful for contributors, but there is no verified package for those systems in 0.1.0.
+The first start may download the portable Node.js runtime and install server dependencies, so network access is needed. fal.ai charges generation to your account according to the selected model; CanAI does not include provider credits. Only the Windows package is verified for this preview. macOS and Linux source builds are useful for contributors, but there is no verified package for those systems in 0.1.1.
 
 Screenshots on this page come from the current development source and may show small UI differences from the tagged preview while the next release is prepared.
 
@@ -119,7 +119,7 @@ Read [CONTRIBUTING.md](https://github.com/jimmorisedu-boop/CanAI-public/blob/mai
 ### Repository roles
 
 - Development/source: `F:\Exp\CanAI` (logical name **CanAI-dev**, private repository `jimmorisedu-boop/CanAI`).
-- Production/release: `F:\Exp\CanAI-public` (`jimmorisedu-boop/CanAI-public`). The release repository remains private pending an explicit visibility action.
+- Production/release: `F:\Exp\CanAI-public` (`jimmorisedu-boop/CanAI-public`), containing only the generated local edition. Visibility changes require the owner's explicit authorization; legacy private history must remain separate.
 - Prepare a release from a clean development checkout with `npm run release:prepare`. The generated checkout is not the authoring tree.
 
 ### Data and backup

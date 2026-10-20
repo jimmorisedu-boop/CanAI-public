@@ -10,10 +10,10 @@ This file is the public release guide. A clean public export places it at
 | Development | `F:\Exp\CanAI` | `jimmorisedu-boop/CanAI` |
 | Production and releases | `F:\Exp\CanAI-public` | `jimmorisedu-boop/CanAI-public` |
 
-The production repository is currently **private**. Its name describes a
-source export prepared for eventual public distribution; it does not grant
-permission to make the repository public. Keep its visibility private until
-the owner explicitly requests a change. Do everyday maintainer development
+The production repository contains the generated **local edition** for public
+distribution. Its name does not grant permission to change GitHub visibility;
+verify the actual visibility and change it only when the owner explicitly
+requests it. Do everyday maintainer development
 in the development checkout. These repositories do not synchronize in the
 background.
 
@@ -76,7 +76,14 @@ Windows/macOS and CI results only when the corresponding check ran; a blocked
 CI workflow is not a pass.
 Public release publication remains a separate explicit action.
 
-## Publishing to the private production repository
+If the existing `CanAI-public` checkout contains legacy private history, archive
+that checkout before preparing the next release and replace it with the approved
+single-root local snapshot. Candidate creation clones the current public refs,
+including their parents and tags, so a stale checkout would carry that history
+into the candidate. Verify the replacement has only the intended local history
+before running the release command.
+
+## Publishing to the production repository
 
 After preparation, read `artifacts/public-release/latest.json` in the
 development checkout. Its `sourceRevision` must match development HEAD and
@@ -91,7 +98,8 @@ gh repo view jimmorisedu-boop/CanAI-public --json nameWithOwner,visibility
 
 The expected production origin is
 `https://github.com/jimmorisedu-boop/CanAI-public.git`, and the expected
-visibility is `PRIVATE`. Push only the generated `main` branch:
+visibility must match the owner's approved publication plan. Keep any legacy
+archive private. Push only the generated `main` branch:
 
 ```powershell
 git -C F:\Exp\CanAI-public push origin main
@@ -106,7 +114,7 @@ released tag or package; increment the version for a subsequent release.
 Pushing code or creating a GitHub Release must not change repository
 visibility. Never use `--mirror` to publish the development checkout.
 
-The current public target is the `0.1.0` release candidate. Use a clean Git
+The current public target is the `0.1.1` release candidate. Use a clean Git
 checkout and record the exact commit for every artifact. Do not add provider
 keys, personal data, local runtime files, or a private Cloud service to an
 archive.

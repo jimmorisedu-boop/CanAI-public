@@ -12,9 +12,11 @@ The maintainer's repository roles are fixed:
 | Development: features, fixes, and release preparation | `F:\Exp\CanAI` | `jimmorisedu-boop/CanAI` |
 | Production: verified source snapshots and release packages | `F:\Exp\CanAI-public` | `jimmorisedu-boop/CanAI-public` |
 
-The production repository is currently **private**. The word `public` in its
-name describes the export's scope, not its GitHub visibility. Keep it private
-until the owner explicitly authorizes a visibility change. Do not rename or
+The production repository contains the generated **local edition**. The word
+`public` in its name does not authorize a GitHub visibility change; verify the
+actual visibility and require the owner's explicit authorization to change it.
+Legacy private history, tags, and release assets must remain in a private archive
+and must never be imported into the public repository. Do not rename or
 move either repository, merge their histories, or swap their remotes.
 Make maintainer changes in development, then run `npm run release:prepare`
 there. Only push a clean generated production snapshot whose HEAD matches

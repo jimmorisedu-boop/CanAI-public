@@ -4,7 +4,7 @@ CanAI is a local workspace for turning references into media and repeatable work
 
 ## 1. Install and open the workspace
 
-On Windows, download the current **CanAI Local Studio Preview 0.1.0** from [Releases](https://github.com/jimmorisedu-boop/CanAI-public/releases), extract it into a new folder, and run **Start CanAI.bat**. The launcher opens the local app at `http://127.0.0.1:8787` or the next free port.
+On Windows, download the current **CanAI Local Studio Preview 0.1.1** from [Releases](https://github.com/jimmorisedu-boop/CanAI-public/releases), extract it into a new folder, and run **Start CanAI.bat**. The launcher opens the local app at `http://127.0.0.1:8787` or the next free port.
 
 ![CanAI gallery](images/gallery.jpg)
 
@@ -76,4 +76,4 @@ The tablet page mirrors the local board over a trusted LAN while the computer re
 - [User Guide](../USER-GUIDE.md) — start/stop, recovery, data locations, Assistant, models, and troubleshooting.
 - [Tablet Guide](../TABLET-GUIDE.md) — LAN setup and tablet-specific controls.
 
-For development or an unverified platform, use Node.js 22.23.1 and run `npm run setup` followed by `npm run dev`. `CANAI_MOCK=1` is an explicit developer-test mode; it does not turn on automatically when a key is absent. Only the Windows package is verified for the 0.1.0 preview.
+For development or an unverified platform, use Node.js 22.23.1 and run `npm run setup` followed by `npm run dev`. `CANAI_MOCK=1` is an explicit developer-test mode; it does not turn on automatically when a key is absent. Only the Windows package is verified for the 0.1.1 preview.
