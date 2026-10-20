@@ -1,0 +1,4321 @@
+/* Планшетный интерфейс.
+ *
+ * Палитра, шрифт и радиусы — общие с приложением (tokens.css), потому что это
+ * тот же продукт, а не его младший брат. Отличается ровно то, что связано с
+ * пальцем: размеры целей, отступы под безопасные зоны и отказ от наведения как
+ * способа что-либо узнать.
+ *
+ * Правило целей: всё нажимаемое — не ниже 44px. Это не «на глаз»: примерно
+ * столько занимает подушечка пальца, и меньшая кнопка означает промахи. */
+
+@import '../styles/board-participants.css';
+
+:root {
+  /* Масштаб ИНТЕРФЕЙСА — щипок по панелям (useTabletUiScale, 0.8…1.4).
+   *
+   * ⚠️ Умножаем РАЗМЕРНЫЕ ТОКЕНЫ, а не переписываем каждое правило: панели
+   * собраны из них, поэтому ужимается вся полка целиком, а не одни кнопки
+   * внутри неё. Общие токены (--space-*, --control-h-*, кегли) переопределены
+   * тут же и только для планшетной страницы — своего бандла у неё нет ни с кем
+   * общего, и на компьютер это не уезжает.
+   *
+   * ⚠️ Доска сюда не входит: она живёт в мировых координатах, и у неё свой
+   * щипок. Смысл ровно в том, чтобы ужать панели и отдать место доске.
+   *
+   * ⚠️ Не масштабируем радиусы и толщину линий: скругление — это форма, а не
+   * размер, и канон запрещает её трогать по поверхностям. */
+  --tablet-ui-scale: 1;
+
+  --tablet-tap: calc(44px * var(--tablet-ui-scale));
+  --tablet-control-h: calc(44px * var(--tablet-ui-scale));
+  --tablet-control-h-lg: calc(52px * var(--tablet-ui-scale));
+  --tablet-type-title: calc(20px * var(--tablet-ui-scale));
+  --tablet-type-body: calc(17px * var(--tablet-ui-scale));
+  --tablet-type-control: calc(15px * var(--tablet-ui-scale));
+  --tablet-type-meta: calc(13px * var(--tablet-ui-scale));
+  --tablet-line-title: calc(26px * var(--tablet-ui-scale));
+  --tablet-line-body: calc(22px * var(--tablet-ui-scale));
+  --tablet-line-control: calc(20px * var(--tablet-ui-scale));
+  --tablet-line-meta: calc(18px * var(--tablet-ui-scale));
+  --tablet-gap: var(--space-3);
+  --tablet-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tablet-safe-top: env(safe-area-inset-top, 0px);
+
+  --space-1: calc(4px * var(--tablet-ui-scale));
+  --space-2: calc(8px * var(--tablet-ui-scale));
+  --space-3: calc(12px * var(--tablet-ui-scale));
+  --space-4: calc(16px * var(--tablet-ui-scale));
+  --space-5: calc(20px * var(--tablet-ui-scale));
+
+  --control-h-mini: calc(26px * var(--tablet-ui-scale));
+  --control-h-compact: calc(32px * var(--tablet-ui-scale));
+  --control-h-standard: calc(36px * var(--tablet-ui-scale));
+  --control-h-emphasis: calc(44px * var(--tablet-ui-scale));
+
+  --text-panel-title: calc(16px * var(--tablet-ui-scale));
+  --text-title-sm: calc(15px * var(--tablet-ui-scale));
+  --text-title: calc(18px * var(--tablet-ui-scale));
+  --text-title-lg: calc(21px * var(--tablet-ui-scale));
+  --text-display: calc(30px * var(--tablet-ui-scale));
+  --text-body: calc(14px * var(--tablet-ui-scale));
+  --text-control: calc(13px * var(--tablet-ui-scale));
+  --text-secondary: calc(12px * var(--tablet-ui-scale));
+  --text-micro: calc(11px * var(--tablet-ui-scale));
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+  -webkit-text-size-adjust: 100%;
+  /* Резину прокрутки отключаем: доска ездит сама, и системный «отскок» поверх
+     неё выглядит поломкой. */
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+/* Форма рабочих элементов — из канона (styles/controls.css), здесь её нет.
+   ЕДИНСТВЕННОЕ отличие планшета и единственное, что тут объявляется, —
+   РАЗМЕР: палец промахивается по цели ниже 44px, а на компьютере такой запас
+   не нужен. DESIGN.md это прямо разрешает: «Размер бывает исключением по
+   ПОВЕРХНОСТИ, форма — никогда». */
+.tablet-screen .ui-btn,
+.tablet-screen .ui-toggle button,
+.tablet-sheet .ui-btn,
+.tablet-login .ui-btn,
+.tablet-gallery .ui-btn {
+  min-height: var(--tablet-tap);
+  font-size: var(--tablet-type-control);
+  line-height: 1;
+}
+
+.tablet-screen button,
+.tablet-sheet button,
+.tablet-full button,
+.tablet-gallery button {
+  font-family: inherit;
+  line-height: 1;
+}
+
+.inline-notice-dismiss,
+.inline-notice-actions button {
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+}
+
+/* ⚠️ Кегль поля не опускается ниже 16px: на меньшем Safari ПРИБЛИЖАЕТ всю
+   страницу, стоит человеку поставить курсор, и раскладка уезжает. Правило
+   живёт здесь, у общего объявления полей, а не приписками у каждого: пока оно
+   было личным делом каждого поля, выбор модели диалога и выбор модели
+   генерации оказались на 15px — то есть под зумом. Масштаб панели щипком
+   по-прежнему УВЕЛИЧИВАЕТ кегль, просто не уменьшает ниже порога. */
+.tablet-screen input,
+.tablet-screen textarea,
+.tablet-screen select,
+.tablet-sheet input,
+.tablet-full input,
+.tablet-full textarea,
+.tablet-full select,
+.tablet-gallery input {
+  font-family: inherit;
+  font-size: max(16px, var(--tablet-type-control));
+  line-height: 1;
+}
+
+/* Textareas keep a readable multiline rhythm; one-line fields above use the
+   shared control baseline. More specific composer/editor rules can still
+   choose their own body line-height below. */
+.tablet-screen textarea,
+.tablet-sheet textarea,
+.tablet-full textarea {
+  line-height: var(--tablet-line-body);
+}
+
+.tablet-screen button,
+.tablet-sheet button,
+.tablet-full button,
+.tablet-gallery button {
+  transition:
+    color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    transform 220ms var(--spring-ui);
+}
+
+.tablet-screen button:not(:disabled):active,
+.tablet-sheet button:not(:disabled):active,
+.tablet-full button:not(:disabled):active,
+.tablet-gallery button:not(:disabled):active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+.ui-btn.danger {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+
+.tablet-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── панель доски ──────────────────────────────────────────────────────── */
+
+.tablet-topbar {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  align-items: center;
+  height: calc(52px + var(--tablet-safe-top));
+  padding: var(--tablet-safe-top) var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--topbar-bg);
+  backdrop-filter: blur(20px);
+}
+
+.tablet-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.tablet-title strong {
+  overflow: hidden;
+  font-size: var(--tablet-type-control);
+  line-height: var(--tablet-line-control);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tablet-title small {
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-topbar-gap,
+.tablet-full-gap {
+  flex: 1;
+}
+
+.tablet-topbar-actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.tablet-topbar-sep {
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--space-1);
+  background: var(--border);
+}
+
+.tablet-icon {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+}
+
+.tablet-icon.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tablet-icon-badged {
+  position: relative;
+}
+
+.tablet-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: flex;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface-solid);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tablet-more-dots {
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.tablet-back {
+  flex: none;
+}
+
+.tablet-topbar-button {
+  gap: 7px;
+  min-height: var(--tablet-tap);
+  padding-inline: var(--space-3);
+  white-space: nowrap;
+}
+
+.tablet-topbar-share,
+.tablet-topbar-export {
+  flex: none;
+}
+
+.tablet-topbar-button.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ── рабочая область ───────────────────────────────────────────────────── */
+
+.tablet-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tablet-board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  background-image: radial-gradient(var(--dot-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Все жесты обрабатываем сами: без этого Safari уводит палец в прокрутку
+     страницы, и доска дёргается вместо того, чтобы ехать. */
+  touch-action: none;
+  user-select: none;
+}
+
+.tablet-board-live,
+.tablet-board-readonly {
+  position: absolute;
+  inset: 0;
+}
+
+.tablet-board:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Эфемерный слой совместной работы. Он не перехватывает жесты холста; кнопка
+   в InlineNotice остаётся интерактивной и предлагает явно оставить свободные
+   объекты в выделении. */
+.canvas-collaboration-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 330;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canvas-collaboration-lock,
+.canvas-collaboration-preview {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.canvas-collaboration-lock-label,
+.canvas-collaboration-cursor-label {
+  display: inline-flex;
+  max-width: 180px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: var(--text-micro);
+  font-weight: 650;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.canvas-collaboration-lock-label {
+  position: absolute;
+  top: -22px;
+  left: -1px;
+}
+
+.canvas-collaboration-preview {
+  opacity: .7;
+  border: 1px dashed #8c78d9;
+  background: color-mix(in srgb, #8c78d9 8%, transparent);
+}
+
+.canvas-collaboration-cursor {
+  position: absolute;
+  display: flex;
+  gap: 5px;
+  align-items: flex-start;
+  pointer-events: none;
+  color: var(--cursor-color, var(--accent));
+  transform: translate(-1px, -1px);
+}
+
+.canvas-collaboration-cursor-mark {
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 11px solid currentColor;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
+}
+
+.canvas-collaboration-notice {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 2;
+  width: min(520px, calc(100% - 32px));
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+/* Список «На доске» — сосед слоя курсоров, а не его часть
+   (CollaborationRoster), поэтому и уровень у него тот же, что у слоя: лежит
+   над тем же, над чем лежал внутри него. */
+.canvas-collaboration-roster {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 330;
+  display: grid;
+  gap: 5px;
+  max-width: min(270px, calc(100% - 32px));
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-regular);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+}
+
+.canvas-collaboration-roster-title {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.canvas-collaboration-roster-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+}
+
+.canvas-collaboration-roster-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.canvas-collaboration-roster-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.canvas-collaboration-roster-you {
+  color: var(--text-3);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.tablet-board-selection-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tablet-object-navigator {
+  position: absolute;
+  top: var(--space-3);
+  left: calc(68px + var(--space-3) * 2);
+  z-index: 5;
+  max-width: min(300px, calc(100% - 112px));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(16px);
+  font-size: var(--text-secondary);
+}
+
+.tablet-object-navigator > summary {
+  min-height: var(--tablet-tap);
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.tablet-object-navigator-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+  max-height: calc(100dvh - 300px);
+  overflow: auto;
+  touch-action: pan-y;
+}
+
+.tablet-object-navigator-body select {
+  min-height: calc(var(--tablet-tap) * 2);
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  font: inherit;
+}
+
+.tablet-object-navigator-body option {
+  padding: var(--space-2);
+}
+
+.tablet-object-navigator-body p {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.tablet-board-readonly .tablet-object-navigator {
+  top: calc(var(--tablet-tap) + var(--space-3) * 2);
+  left: var(--space-3);
+}
+
+.tablet-cloud-readonly-note {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  z-index: 12;
+  min-height: var(--tablet-tap);
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--material-thick);
+  color: var(--text-2);
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+}
+
+.tablet-board-world {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.tablet-item {
+  position: absolute;
+  /* Перетаскивание правит именно этот transform напрямую, без React. */
+  transform: translate3d(0, 0, 0);
+}
+
+/* ⚠️ Скругление и обводка выделения — в ЭКРАННЫХ пикселях. Карточка живёт
+   внутри масштабируемого слоя доски, и заданные в его пикселях они при
+   приближении толстели, а при отдалении обводка выделения таяла до долей
+   пикселя (жалоба 30.09.2026 про скругления на компьютере — здесь та же
+   беда). Обратный масштаб слой отдаёт сам: --tablet-inverse-scale ставит
+   BoardCanvas. */
+.tablet-item-inner {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--radius-compact) * var(--tablet-inverse-scale, 1));
+  background: var(--surface-2);
+}
+
+/* Выделение — скруглённое кольцо с зазором: та же форма, что на компьютере
+   (selectionRing.ts, решение 30.09.2026). Зазор общий — 3 px, толщина у пальца
+   своя: 2 px против 1,5 на компьютере. */
+.tablet-item.selected .tablet-item-inner {
+  outline: calc(2px * var(--tablet-inverse-scale, 1)) solid var(--accent);
+  outline-offset: calc(3px * var(--tablet-inverse-scale, 1));
+}
+
+.tablet-item img,
+.tablet-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.tablet-media-player {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tablet-media-player > video {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.tablet-media-player > .media-playback-controls,
+.tablet-audio > .media-playback-controls,
+.tablet-clip-player > .media-playback-controls,
+.tablet-compare-media-player > .media-playback-controls {
+  flex: 0 0 auto;
+  pointer-events: auto;
+}
+
+.tablet-video-recovery {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.tablet-video-loading {
+  pointer-events: none;
+}
+
+.tablet-item.dragging {
+  z-index: 3;
+}
+
+.tablet-item.dragging .tablet-item-inner {
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  filter: saturate(1.04) brightness(1.03);
+}
+
+.tablet-snap-guides {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tablet-snap-guide {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0.5px color-mix(in srgb, var(--accent) 70%, white);
+  pointer-events: none;
+}
+
+.tablet-video-actions {
+  position: absolute;
+  /* top и left задаёт tabletVideoActionsStyle: отступ экранный, как и размер. */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform-origin: top left;
+}
+
+.tablet-video-action {
+  display: inline-flex;
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(20, 20, 24, 0.78);
+  color: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.tablet-selection-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(20, 20, 24, 0.58);
+  color: white;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
+  transform-origin: top right;
+  pointer-events: none;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.tablet-selection-check.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tablet-text {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tablet-audio,
+.tablet-link {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-3);
+}
+
+.tablet-audio audio {
+  width: 100%;
+}
+
+.tablet-mark {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform-origin: top center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-secondary);
+  font-weight: 700;
+}
+
+.tablet-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-control);
+  text-align: center;
+}
+
+.tablet-pending.failed {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.tablet-pending-note {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+/* ⚠️ Размер крестика ЭКРАННЫЙ, а не мировой: масштаб ставит сам компонент
+   инлайном (BoardItemView), а начало отсчёта — угол карточки, иначе
+   увеличенная кнопка вылезает за её край. Цель 44px — планшетное исключение
+   канона по размеру; форма остаётся общей (.ui-icon-btn). Заливка в ПОКОЕ
+   нужна тут по той же причине: у канона фон появляется под курсором, а
+   пальцем не наводят — кнопка без фона на пёстрой карточке не видна. */
+.tablet-pending-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  transform-origin: top right;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+}
+
+/* «Повторить» у карточки переноса файла (вставка с другой доски). Размер
+   ЭКРАННЫЙ, как у крестика: масштаб ставит компонент инлайном, отсчёт — от
+   нижней кромки по центру. Цель 44px — то же планшетное исключение по размеру;
+   форма общая (.ui-btn). */
+.tablet-pending-retry {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  min-height: 44px;
+  transform-origin: bottom center;
+}
+
+.tablet-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: tablet-spin 0.9s linear infinite;
+}
+
+@keyframes tablet-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── промпт снизу ──────────────────────────────────────────────────────── */
+
+
+/* ── полка слева: ассеты и архив ───────────────────────────────────────── */
+
+.tablet-rail {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  /* Полка обнимает содержимое, а не тянется во всю высоту: пустая колонка из
+     восьми рамок занимает экран, ничего о себе не сообщая. Потолок считается
+     от реальной высоты дока — её сообщает сам док (--tablet-dock-h). */
+  max-height: calc(100% - var(--tablet-dock-h, 180px) - var(--space-4));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 68px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-regular);
+  backdrop-filter: blur(18px);
+}
+
+.tablet-rail-slots {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.tablet-rail-actions {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.tablet-rail-slots::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.tablet-slot-wrap {
+  position: relative;
+  flex: none;
+}
+
+.tablet-slot {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-3);
+}
+
+.tablet-slot.empty {
+  border-style: dashed;
+}
+
+.tablet-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-slot-plus {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tablet-slot-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  padding: 4px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.tablet-slot-unpin {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-solid);
+  color: var(--text-2);
+}
+
+.tablet-slot-unpin::before,
+.tablet-ref-drop::before {
+  position: absolute;
+  inset: -10px;
+  content: '';
+}
+
+.tablet-rail-sep {
+  flex: none;
+  height: 1px;
+  margin: 0 var(--space-1);
+  background: var(--border);
+}
+
+.tablet-rail-btn {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 3px;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tablet-rail-btn em {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  padding: 1px 5px;
+  border: 2px solid var(--surface-solid);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ── масштаб ───────────────────────────────────────────────────────────── */
+
+.tablet-zoom {
+  position: absolute;
+  left: var(--space-3);
+  /* Над доком, а не рядом: у левого края внизу они накладывались друг на
+     друга — пилюля масштаба уезжала под панель создания (поймано прогоном). */
+  bottom: calc(var(--tablet-dock-h, 180px) + var(--space-3));
+  z-index: 4;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--material-regular);
+  backdrop-filter: blur(18px);
+}
+
+.tablet-zoom .ui-icon-btn {
+  width: 38px;
+  height: 38px;
+}
+
+.tablet-zoom-value {
+  min-width: 58px;
+  color: var(--text);
+  font-size: var(--text-control);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.tablet-zoom-reset {
+  min-height: 38px;
+}
+
+/* ── инспектор ─────────────────────────────────────────────────────────── */
+
+.tablet-inspector {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: var(--tablet-inspector-w);
+  max-height: calc(100% - var(--tablet-dock-h, 52px) - var(--space-5));
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(22px);
+}
+
+.tablet-inspector-head {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-inspector-thumb {
+  display: flex;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text-3);
+}
+
+.tablet-inspector-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-inspector-name {
+  min-width: 0;
+  flex: 1;
+}
+
+.tablet-inspector-name h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tablet-inspector-name p {
+  margin: 2px 0 0;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-inspector-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.tablet-inspector-label {
+  margin: var(--space-2) 0 var(--space-1);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 600;
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-inspector-scroll > .tablet-inspector-section:first-child .tablet-inspector-label {
+  margin-top: 0;
+}
+
+.tablet-inspector-section + .tablet-inspector-section {
+  margin-top: var(--space-2);
+}
+
+.tablet-inspector-grid {
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: 1fr 1fr;
+}
+
+.tablet-act {
+  display: flex;
+  gap: 7px;
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-2);
+  align-items: center;
+  justify-content: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: left;
+}
+
+.tablet-act svg {
+  color: var(--text-2);
+}
+
+.tablet-inspector-help {
+  margin: var(--space-2) 0 0;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-grid-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tablet-arrange-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tablet-arrange-label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 650;
+}
+
+.tablet-arrange-options {
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tablet-arrange-option {
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--tablet-type-meta);
+  font-weight: 650;
+}
+
+.tablet-arrange-option.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface-2));
+  color: var(--text);
+}
+
+.tablet-arrange-option:disabled,
+.tablet-arrange-apply:disabled {
+  opacity: 0.45;
+}
+
+.tablet-arrange-fields {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: 1fr 1fr;
+}
+
+.tablet-arrange-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 650;
+}
+
+.tablet-arrange-fields input {
+  width: 100%;
+  min-height: var(--tablet-tap);
+  box-sizing: border-box;
+  padding-inline: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font: 650 var(--tablet-type-body)/1 var(--font-mono);
+}
+
+.tablet-arrange-apply {
+  min-height: var(--tablet-tap);
+  justify-content: center;
+}
+
+.tablet-inspector-foot {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.tablet-inspector-foot .ui-btn {
+  justify-content: center;
+}
+
+/* ── действия у выделения ─────────────────────────────────────────────── */
+
+.tablet-context-bar {
+  position: fixed;
+  z-index: 12;
+  display: flex;
+  gap: 4px;
+  min-height: 52px;
+  padding: 4px;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--material-thick);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(22px) saturate(1.15);
+  transform-origin: center;
+  animation: tablet-context-in 150ms var(--spring-ui);
+}
+
+.tablet-context-action,
+.tablet-context-more {
+  display: inline-flex;
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--tablet-type-control);
+  font-weight: 600;
+}
+
+.tablet-context-action:active,
+.tablet-context-more:active {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.tablet-context-more {
+  padding-inline: 10px;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.tablet-context-count {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--tablet-type-meta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-context-bar.sheet {
+  border-radius: 18px 18px 12px 12px;
+}
+
+.tablet-context-progress {
+  max-width: 150px;
+  padding: 0 10px;
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-menu-item.archive {
+  color: var(--danger);
+}
+
+.tablet-popover.sheet {
+  right: 10px;
+  bottom: calc(10px + var(--tablet-safe-bottom));
+  left: 10px !important;
+  top: auto !important;
+  width: auto;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  border-radius: 18px 18px 12px 12px;
+}
+
+@keyframes tablet-context-in {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── док создания ──────────────────────────────────────────────────────── */
+
+.tablet-dock {
+  /* Панель масштабируется целиком. Локальные токены остаются в масштабе 1,
+     иначе кнопки уменьшались бы дважды, а фиксированные размеры — один раз. */
+  --tablet-ui-scale: 1;
+  --tablet-tap: 36px;
+  --tablet-control-h: 36px;
+  --tablet-control-h-lg: 40px;
+  --tablet-type-title: 20px;
+  --tablet-type-body: 17px;
+  --tablet-type-control: 15px;
+  --tablet-type-meta: 13px;
+  --tablet-line-title: 26px;
+  --tablet-line-body: 22px;
+  --tablet-line-control: 20px;
+  --tablet-line-meta: 18px;
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --control-h-mini: 26px;
+  --control-h-compact: 32px;
+  --control-h-standard: 36px;
+  --control-h-emphasis: 40px;
+  --text-panel-title: 16px;
+  --text-title-sm: 15px;
+  --text-title: 18px;
+  --text-title-lg: 21px;
+  --text-display: 30px;
+  --text-body: 14px;
+  --text-control: 13px;
+  --text-secondary: 12px;
+  --text-micro: 11px;
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-3);
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(860px, calc(100% - 160px));
+  max-width: calc((100% - 24px) / var(--tablet-panel-scale, 1));
+  transform: translateX(-50%) scale(var(--tablet-panel-scale, 1));
+  transform-origin: bottom center;
+  transition: bottom 180ms var(--ease-out), width 180ms var(--ease-out);
+}
+
+.tablet-dock-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* ── планшетные агенты ────────────────────────────────────────────────── */
+
+/* AgentPanel is shared with Desktop, where its containing canvas supplies
+   the absolute positioning. Tablet supplies that geometry explicitly so the
+   task stream never becomes a second page-wide column or causes horizontal
+   overflow during rotation. */
+.tablet-body > .agent-panel,
+.tablet-body > .agent-panel-collapsed {
+  position: absolute;
+  z-index: 342;
+  right: var(--space-3);
+  left: auto;
+}
+.tablet-body > .agent-panel {
+  --tablet-tap: 44px;
+  top: var(--space-3);
+  /* Let the panel end after its content instead of stretching through the
+     empty gap above the dock.  The max-height keeps a long task stream
+     bounded and leaves the measured dock's safe area available for canvas. */
+  bottom: auto;
+  height: fit-content;
+  width: min(380px, calc(100% - 24px));
+  min-width: min(286px, calc(100% - 24px));
+  max-height: min(760px, calc(100% - var(--tablet-dock-h, 180px) - (var(--space-3) * 2)));
+}
+.tablet-body > .agent-panel button,
+.tablet-body > .agent-panel select,
+.tablet-body > .agent-panel input,
+.tablet-body > .agent-panel textarea {
+  min-height: var(--tablet-tap);
+}
+.tablet-body > .agent-panel .agent-task-row {
+  min-height: var(--tablet-tap);
+}
+.tablet-body > .agent-panel .agent-panel-close {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+}
+.tablet-body > .agent-panel-collapsed {
+  top: var(--space-3);
+  pointer-events: none;
+}
+.tablet-body > .agent-panel-collapsed .agent-panel-trigger {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+}
+.tablet-agents-pane {
+  --tablet-tap: 44px;
+  --control-h-compact: 44px;
+  --control-h-standard: 44px;
+  --control-h-emphasis: 44px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.tablet-agents-pane .agent-panel-section,
+.tablet-agents-pane .agent-panel-label,
+.tablet-agents-pane .agent-panel-launch-foot {
+  min-width: 0;
+}
+.tablet-agents-pane button,
+.tablet-agents-pane select,
+.tablet-agents-pane input,
+.tablet-agents-pane textarea {
+  min-height: var(--tablet-tap);
+}
+.tablet-agents-pane textarea { min-height: calc(var(--tablet-tap) * 2); }
+.tablet-agents-pane .agent-panel-launch-foot {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (orientation: portrait) {
+  .tablet-body > .agent-panel {
+    right: var(--space-2);
+    left: var(--space-2);
+    width: auto;
+    min-width: 0;
+  }
+  .tablet-body > .agent-panel-collapsed { right: var(--space-2); }
+}
+
+.tablet-dock-toggle {
+  align-self: center;
+  min-width: 112px;
+  justify-content: center;
+  border-color: var(--border-strong);
+  background: var(--material-thick);
+  backdrop-filter: blur(18px);
+}
+
+.tablet-dock.collapsed {
+  width: auto;
+}
+
+.tablet-dock.collapsed .tablet-dock-content {
+  display: none;
+}
+
+.tablet-prompt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(22px);
+  box-shadow: var(--shadow-lg);
+  transform-origin: bottom center;
+  transition: padding 160ms var(--ease-out), gap 160ms var(--ease-out);
+}
+
+/* В покое это именно строка: референсы, поле и запуск. Остальные настройки
+   раскрываются вверх при фокусе и не отнимают холст постоянно. */
+.tablet-prompt.compact {
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.tablet-prompt.compact .tablet-prompt-head,
+.tablet-prompt.compact .tablet-prompt-options,
+.tablet-prompt.compact .tablet-settings-pop,
+.tablet-prompt.compact [id="tablet-panel-assistant"] {
+  display: none;
+}
+
+.tablet-prompt.compact .tablet-input {
+  min-height: var(--tablet-tap);
+  max-height: 88px;
+  padding-block: 10px;
+}
+
+.tablet-prompt.expanded:not(.keyboard-open) {
+  animation: tablet-prompt-expand 170ms var(--spring-ui);
+}
+
+@keyframes tablet-prompt-expand {
+  from { opacity: 0.92; transform: translateY(6px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tablet-dock.keyboard-open {
+  width: min(900px, calc(100% - 32px));
+}
+
+.tablet-prompt.keyboard-open {
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.tablet-prompt.keyboard-open .tablet-prompt-head,
+.tablet-prompt.keyboard-open .tablet-prompt-options,
+.tablet-prompt.keyboard-open .tablet-settings-pop,
+.tablet-prompt.keyboard-open [id="tablet-panel-assistant"],
+.tablet-prompt.keyboard-open .tablet-error {
+  display: none;
+}
+
+.tablet-prompt.keyboard-open .tablet-input {
+  font-size: 16px;
+}
+
+.tablet-prompt.editor-large .tablet-prompt-head,
+.tablet-prompt.editor-large .tablet-prompt-options,
+.tablet-prompt.editor-large .tablet-settings-pop,
+.tablet-prompt.editor-large [id="tablet-panel-assistant"] {
+  display: none;
+}
+
+.tablet-prompt-head {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 236px;
+  min-height: var(--tablet-control-h);
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-tab {
+  position: relative;
+  display: inline-flex;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 var(--space-2);
+  justify-content: center;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: none;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--tablet-type-control);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tablet-tab.on {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.tablet-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.tablet-model-btn {
+  min-height: var(--tablet-control-h);
+  padding-inline: var(--space-3);
+}
+
+.tablet-composer {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.tablet-input-shell {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.tablet-input {
+  flex: 1;
+  width: 100%;
+  min-height: 64px;
+  max-height: 30vh;
+  padding: var(--space-3) 56px var(--space-3) var(--space-3);
+  border-radius: var(--radius-control);
+  /* 16px — порог, ниже которого Safari приближает страницу при фокусе. */
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+  overflow-y: auto;
+  resize: none;
+  transition: height 160ms var(--ease-out);
+}
+
+.tablet-input-expand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+  padding: 0;
+  border-radius: var(--radius-compact);
+  background: color-mix(in srgb, var(--surface-3) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.tablet-input-expand.on {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
+  color: var(--accent);
+}
+
+.tablet-create {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 6px;
+  min-width: 150px;
+  min-height: var(--tablet-control-h-lg);
+  padding-inline: var(--space-4);
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* ⚠️ Цена внутри кнопки — часть КНОПКИ, а не отдельная плашка. Форму ей
+   задаёт канон (`.paid-action .price-badge.is-action` в price-params.css):
+   без рамки и фона, отделена тонкой чертой. Планшет забыл взять этот класс, и
+   цена внутри вермилионовой кнопки рисовалась самостоятельной серой пилюлей,
+   да ещё и уезжала к правому краю (`margin-left: auto` у базового
+   `.price-badge`) — отсюда «кнопка выглядит странно» (14.09.2026). Здесь
+   остаётся ЕДИНСТВЕННОЕ отличие поверхности — размер: планшетный кегль
+   тянется за масштабом панели, а `--text-micro` нет. */
+.tablet-screen .paid-action .price-badge.is-action {
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-action-label {
+  font-size: var(--tablet-type-control);
+  line-height: 1;
+}
+
+.tablet-prompt-options {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.tablet-prompt-primary-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tablet-kinds,
+.tablet-count {
+  flex: none;
+}
+
+.tablet-kinds button {
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  padding: 0;
+}
+
+.tablet-video-seek {
+  width: 80px;
+  min-width: 80px;
+  height: var(--tablet-tap);
+  accent-color: var(--accent);
+  touch-action: none;
+}
+
+.tablet-kinds button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tablet-count {
+  gap: var(--space-1);
+  border: 0;
+  background: transparent;
+}
+
+.tablet-count button {
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+}
+
+.tablet-prompt-macro-row {
+  min-width: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.tablet-prompt-macro-row .tablet-macros {
+  width: 100%;
+}
+
+.tablet-settings-pop {
+  position: absolute;
+  right: var(--space-3);
+  bottom: calc(100% + var(--space-2));
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(560px, calc(100vw - 32px));
+  max-height: 54vh;
+  overflow-y: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(22px);
+  transform-origin: bottom right;
+  animation: tablet-popover-in 120ms var(--ease-out);
+}
+
+.tablet-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-secondary);
+}
+
+.tablet-field select,
+.tablet-sketch-model {
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-3);
+  font-size: 16px;
+}
+
+/* ── чипы референсов ───────────────────────────────────────────────────── */
+
+.tablet-refs {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tablet-ref {
+  position: relative;
+  display: flex;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+}
+
+.tablet-ref img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-ref-text {
+  padding: 4px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.tablet-ref-num {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(10, 12, 16, 0.8);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-ref-drop {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(10, 12, 16, 0.8);
+  color: #fff;
+}
+
+.tablet-ref-clear {
+  flex: none;
+  min-height: 38px;
+}
+
+/* ── помощник ──────────────────────────────────────────────────────────── */
+
+#tablet-panel-assistant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-row {
+  display: flex;
+  height: auto;
+  min-height: 66px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--tablet-type-meta);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-label {
+  display: block;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: var(--tablet-type-meta);
+  font-weight: 600;
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-input,
+.tablet-settings-pop .param-controls.compact.comfortable .param-seed {
+  width: 100%;
+  min-width: 0;
+  height: var(--tablet-tap);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-input {
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-row.widget-boolean {
+  min-height: var(--tablet-tap);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: end;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-checkbox {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border: 0;
+  border-radius: 13px;
+  appearance: none;
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  cursor: pointer;
+  transition: background 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-checkbox::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+  content: '';
+  transition: transform 140ms var(--ease-out);
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-checkbox:checked {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.tablet-settings-pop .param-controls.compact.comfortable .param-checkbox:checked::after {
+  transform: translateX(18px);
+}
+
+.tablet-assistant-presets,
+.tablet-macros {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.tablet-inline-label {
+  flex: none;
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 600;
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-inline-empty {
+  display: flex;
+  min-height: var(--tablet-tap);
+  align-items: center;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-assistant-presets-row,
+.tablet-macros-row {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tablet-assistant-presets-row::-webkit-scrollbar,
+.tablet-macros-row::-webkit-scrollbar {
+  display: none;
+}
+
+.tablet-assistant-presets-row .ui-btn {
+  flex: none;
+  min-height: var(--tablet-tap);
+  font-size: var(--tablet-type-control);
+  white-space: nowrap;
+}
+
+.tablet-assistant-presets-row .ui-btn.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* Помощники и диалоги — одна строка: кто отвечает и в каком разговоре.
+   Отдельным рядом они съедали бы высоту ленты, которой на планшете и так
+   мало. Ряд переносится, когда панель сжата щипком или это Split View. */
+.tablet-assistant-bar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.tablet-assistant-bar .tablet-assistant-presets {
+  flex: 1 1 200px;
+}
+
+.tablet-assistant-chats {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+  min-width: 0;
+}
+
+.tablet-assistant-chat-open {
+  min-width: 0;
+  max-width: 42vw;
+}
+
+.tablet-assistant-chat-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-assistant-chat-new {
+  flex: none;
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  padding: 0;
+}
+
+.tablet-chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tablet-chat-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Строка списка — обычная кнопка канона, а не тихая: у тихой нет ни рамки, ни
+   отступов, и невыбранные разговоры читались как подписи, а не как строки. */
+.tablet-chat-row .ui-btn.tablet-chat-pick {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  justify-content: center;
+  /* Две строки — название и когда/о чём. Канонная высота кнопки их обрезает. */
+  height: auto;
+  min-height: var(--tablet-tap);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  line-height: var(--tablet-line-control);
+}
+
+.tablet-chat-row.on .tablet-chat-pick {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.tablet-chat-pick strong,
+.tablet-chat-note {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-chat-note {
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-chat-drop {
+  flex: none;
+  min-width: var(--tablet-tap);
+}
+
+.tablet-assistant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: min(38vh, 320px);
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.tablet-assistant.empty {
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  color: var(--text-3);
+  text-align: center;
+}
+
+.tablet-assistant.empty p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--text-secondary);
+}
+
+.tablet-msg {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tablet-msg-who {
+  display: flex;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tablet-msg.ai .tablet-msg-who {
+  border: 1px solid var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.tablet-msg-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.tablet-msg-body p {
+  margin: 0 0 var(--space-1);
+  color: var(--text-2);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+.tablet-msg.me .tablet-msg-body p {
+  color: var(--text);
+}
+
+.tablet-msg-status {
+  color: var(--text-3) !important;
+  font-size: var(--text-secondary) !important;
+}
+
+.tablet-msg-error {
+  color: var(--danger) !important;
+}
+
+.tablet-prompt-card {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tablet-prompt-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--text-secondary);
+}
+
+.tablet-prompt-card p {
+  margin: 0;
+  color: var(--text) !important;
+  font-size: var(--text-secondary) !important;
+}
+
+.tablet-prompt-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.tablet-prompt-card-actions .ui-btn {
+  min-height: var(--tablet-tap);
+}
+
+/* ── всплывающие панели и меню объекта ─────────────────────────────────── */
+
+.tablet-popover,
+.tablet-item-menu {
+  position: fixed;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 232px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(22px);
+  box-shadow: var(--shadow-lg);
+  transform-origin: top right;
+  animation: tablet-popover-in 120ms var(--ease-out);
+}
+
+@keyframes tablet-popover-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tablet-menu-item {
+  display: flex;
+  gap: var(--space-3);
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-3);
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+}
+
+.tablet-menu-item:disabled {
+  color: var(--text-3);
+}
+
+.tablet-menu-item.danger {
+  color: var(--danger);
+}
+
+.tablet-menu-item span {
+  flex: 1;
+}
+
+.tablet-menu-item em {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-style: normal;
+}
+
+.tablet-menu-sep {
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+  background: var(--border);
+}
+
+.tablet-item-menu-title {
+  margin: 0 0 var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── окна ──────────────────────────────────────────────────────────────── */
+
+.tablet-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: var(--scrim);
+  backdrop-filter: blur(2px);
+}
+
+.tablet-modal {
+  display: flex;
+  width: min(520px, 100%);
+  max-height: 86vh;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-lg);
+}
+
+.tablet-modal.wide {
+  width: min(760px, 100%);
+}
+
+.tablet-modal-head {
+  display: flex;
+  flex: none;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.tablet-modal-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: var(--tablet-type-title);
+  line-height: var(--tablet-line-title);
+  letter-spacing: -0.02em;
+}
+
+.tablet-modal-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.tablet-modal-foot {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.tablet-modal-loading {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--scrim);
+  color: var(--text-2);
+}
+
+.tablet-input-line {
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-3);
+  font-size: 16px;
+}
+
+.tablet-text-area {
+  min-height: 180px;
+  padding: var(--space-3);
+  font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+}
+
+.tablet-text-sizes {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+}
+
+.tablet-text-sizes .ui-toggle {
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.tablet-text-sizes .ui-toggle button {
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+}
+
+.tablet-title {
+  min-height: var(--tablet-tap);
+}
+
+.tablet-account-button {
+  max-width: 180px;
+}
+
+.tablet-account-button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-account-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.tablet-account-details > span {
+  color: var(--text-2);
+}
+
+.tablet-project-trash {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.tablet-project-trash .tablet-trash-list {
+  padding: 0;
+  list-style: none;
+}
+
+.tablet-cut-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-height: 120px;
+  overflow: auto;
+  padding: var(--space-2) var(--space-3);
+}
+
+.tablet-crop-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+}
+
+.tablet-crop-fields label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+}
+
+.tablet-crop-fields input {
+  width: 88px;
+  min-height: var(--tablet-tap);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+/* ── полноэкранные режимы ──────────────────────────────────────────────── */
+
+.tablet-full {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Тёмный режим для видео, кадра и сравнения: там смотрят материал, а не
+   интерфейс. Пара «тёмный материал / светлый текст» объявлена ЦЕЛИКОМ —
+   иначе общая форма кнопок возьмёт светлый фон под светлый текст (эта ошибка
+   уже делала кнопку выхода нечитаемой в просмотрщике сравнения). */
+.tablet-full.dark {
+  --surface-solid: #16181d;
+  --surface-2: #101216;
+  --surface-3: #23262d;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --text: #f5f6f8;
+  --text-2: #b0b5bf;
+  --text-3: #868c96;
+  background: #08090b;
+}
+
+.tablet-full-head {
+  display: flex;
+  flex: none;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: calc(60px + var(--tablet-safe-top));
+  padding: var(--tablet-safe-top) var(--space-4) 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.tablet-full-title {
+  min-width: 0;
+}
+
+.tablet-full-title h2 {
+  margin: 0;
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.tablet-full-title p {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-full-center {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--space-2);
+  align-items: center;
+  /* `safe center` вместо `center`: при обычном центрировании содержимое шире
+     контейнера вылезает В ОБЕ стороны и накрывает соседей, а прокрутка при
+     этом не помогает — начало уезжает за левый край. */
+  justify-content: safe center;
+  overflow-x: auto;
+}
+
+.tablet-full-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tablet-full-foot {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 66px;
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--tablet-safe-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  overflow-x: auto;
+}
+
+.tablet-full .ui-btn,
+.tablet-full .ui-toggle button,
+.tablet-modal .ui-btn {
+  min-height: var(--tablet-tap);
+}
+
+/* Иконочные кнопки канона — 26px: это размер под курсор. На планшете по ним
+   попадают пальцем, поэтому размер (и только размер) увеличен на всех
+   планшетных поверхностях. */
+.tablet-full .ui-icon-btn,
+.tablet-modal .ui-icon-btn,
+.tablet-inspector .ui-icon-btn,
+.tablet-sheet .ui-icon-btn {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+}
+
+.tablet-mono {
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tablet-hint {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.tablet-price {
+  margin-left: 6px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+/* ── обрезка ───────────────────────────────────────────────────────────── */
+
+.tablet-crop-stage,
+.tablet-sketch-stage,
+.tablet-clip-stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: var(--space-4);
+}
+
+.tablet-clip-player {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tablet-clip-player .tablet-clip-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tablet-crop-frame,
+.tablet-sketch-frame {
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+
+.tablet-crop-frame > img,
+.tablet-sketch-frame > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-compact);
+  object-fit: fill;
+}
+
+.tablet-crop-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-compact);
+  background: rgba(6, 7, 9, 0.62);
+}
+
+.tablet-crop-window {
+  position: absolute;
+  overflow: hidden;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+}
+
+.tablet-crop-window img {
+  position: absolute;
+  max-width: none;
+  object-fit: fill;
+}
+
+.tablet-crop-thirds {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 33.3%, rgba(255, 255, 255, 0.28) 33.3% 33.5%, transparent 33.5% 66.6%, rgba(255, 255, 255, 0.28) 66.6% 66.8%, transparent 66.8%),
+    linear-gradient(0deg, transparent 33.3%, rgba(255, 255, 255, 0.28) 33.3% 33.5%, transparent 33.5% 66.6%, rgba(255, 255, 255, 0.28) 66.6% 66.8%, transparent 66.8%);
+  pointer-events: none;
+}
+
+/* Ручки вынесены ЗА кромку кадра и крупные: палец не должен закрывать ровно
+   то место, которое кадрируешь. */
+.tablet-crop-handle {
+  position: absolute;
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  border: 3px solid #fff;
+  border-radius: 4px;
+  background: rgba(211, 63, 33, 0.9);
+  touch-action: none;
+}
+
+.tablet-crop-handle.nw { left: -22px; top: -22px; }
+.tablet-crop-handle.ne { right: -22px; top: -22px; }
+.tablet-crop-handle.sw { left: -22px; bottom: -22px; }
+.tablet-crop-handle.se { right: -22px; bottom: -22px; }
+
+.tablet-crop-edge {
+  position: absolute;
+  touch-action: none;
+}
+
+.tablet-crop-edge.n { left: 44px; right: 44px; top: -22px; height: 44px; }
+.tablet-crop-edge.s { left: 44px; right: 44px; bottom: -22px; height: 44px; }
+.tablet-crop-edge.w { top: 44px; bottom: 44px; left: -22px; width: 44px; }
+.tablet-crop-edge.e { top: 44px; bottom: 44px; right: -22px; width: 44px; }
+
+/* ── скетч ─────────────────────────────────────────────────────────────── */
+
+.tablet-sketch-ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.tablet-brushes {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-swatch {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+}
+
+.tablet-swatch.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.5) inset;
+}
+
+.tablet-brush-size {
+  display: flex;
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tablet-brush-size.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tablet-brush-size i {
+  display: block;
+  border-radius: 50%;
+  background: var(--text-2);
+}
+
+.tablet-brush-size.on i {
+  background: var(--accent-text);
+}
+
+.tablet-brush-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+
+.tablet-sketch-input {
+  flex: 1;
+  min-width: 180px;
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-3);
+  font-size: 16px;
+}
+
+/* ── правка клипа ──────────────────────────────────────────────────────── */
+
+.tablet-clip-frame {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+}
+
+.tablet-clip-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-compact);
+  background: #000;
+  object-fit: contain;
+}
+
+.tablet-clip-crop {
+  position: absolute;
+  border: 2px solid var(--accent);
+  touch-action: none;
+}
+
+.tablet-clip-crop-corner {
+  position: absolute;
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  border: 3px solid #fff;
+  background: var(--accent);
+}
+
+.tablet-clip-crop-corner.nw { left: -22px; top: -22px; }
+.tablet-clip-crop-corner.se { right: -22px; bottom: -22px; }
+
+.tablet-clip-panel {
+  flex: none;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.tablet-track {
+  position: relative;
+  height: 84px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: linear-gradient(90deg, #1a1d24, #232830);
+  touch-action: none;
+}
+
+.tablet-track-body {
+  display: flex;
+  gap: 2px;
+  height: 100%;
+  align-items: center;
+  padding: 0 var(--space-2);
+  opacity: 0.55;
+}
+
+.tablet-track-body i {
+  flex: 1;
+  min-width: 0;
+  border-radius: 1px;
+  background: var(--text-2);
+}
+
+.tablet-track-dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(6, 7, 9, 0.66);
+  pointer-events: none;
+}
+
+.tablet-track-dim.left { left: 0; }
+
+/* Удалённый кусок — штриховка и черта поперёк: он остаётся на дорожке, но
+   видно, что в результат не пойдёт. Рисунок общий с компьютером (.tl-gone). */
+.tablet-track-gone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(6, 7, 9, 0.6) 0 6px,
+    rgba(6, 7, 9, 0.82) 6px 12px
+  );
+  pointer-events: none;
+}
+
+.tablet-track-gone::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  border-top: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+/* Стык, а не черта: вбок двигаешь границу, вниз — сводишь куски обратно. */
+.tablet-track-seam {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: var(--tablet-tap);
+  margin-left: -22px;
+  background:
+    linear-gradient(90deg, transparent 46%, var(--accent) 46% 54%, transparent 54%);
+  touch-action: none;
+}
+
+.tablet-track-seam.auto {
+  background:
+    linear-gradient(90deg, transparent 46%, var(--accent-text) 46% 54%, transparent 54%);
+  opacity: 0.75;
+}
+
+.tablet-track-cut {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: var(--tablet-tap);
+  margin-left: -22px;
+  border-radius: var(--radius-compact);
+  background:
+    linear-gradient(90deg, transparent 40%, #fff 40% 60%, transparent 60%);
+  touch-action: none;
+}
+
+.tablet-track-head {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: var(--tablet-tap);
+  margin-left: -22px;
+  background:
+    linear-gradient(90deg, transparent 45%, var(--accent) 45% 55%, transparent 55%);
+  touch-action: none;
+}
+
+.tablet-track-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.tablet-auto-shots {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tablet-auto-shots input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
+.tablet-threshold,
+.tablet-threshold-row input {
+  width: 160px;
+  accent-color: var(--accent);
+}
+
+.tablet-threshold-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* ── сравнение ─────────────────────────────────────────────────────────── */
+
+.tablet-compare {
+  display: flex;
+  flex: 1;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-3);
+}
+
+.tablet-compare-stack {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  touch-action: none;
+}
+
+.tablet-compare-stack img,
+.tablet-compare-stack video,
+.tablet-compare-media img,
+.tablet-compare-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tablet-compare-stack > img,
+.tablet-compare-stack > video,
+.tablet-compare-stack > .tablet-compare-media-player {
+  position: absolute;
+  inset: 0;
+}
+
+.tablet-compare-top > .tablet-compare-media-player {
+  position: absolute;
+  inset: 0;
+}
+
+.tablet-compare-top {
+  position: absolute;
+  inset: 0;
+}
+
+.tablet-compare-top.diff {
+  mix-blend-mode: difference;
+}
+
+.tablet-compare-wipe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.tablet-compare-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.tablet-compare-label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  font-size: var(--text-secondary);
+}
+
+.tablet-compare-label b {
+  white-space: nowrap;
+}
+
+.tablet-compare-media {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+}
+
+.tablet-compare-media-player {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tablet-compare-media-player > video {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.tablet-compare-nav {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-compare-chip {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+/* ── архив ─────────────────────────────────────────────────────────────── */
+
+.tablet-archive-controls {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-search {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text-3);
+}
+
+.tablet-search input {
+  width: 200px;
+  min-height: var(--tablet-tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 16px;
+}
+
+.tablet-archive-grid {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.tablet-archive-grid.empty {
+  align-content: center;
+}
+
+.tablet-archive-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-2);
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tablet-archive-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.tablet-archive-thumb {
+  display: flex;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.tablet-archive-card.picked .tablet-archive-thumb {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.tablet-archive-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-archive-name {
+  overflow: hidden;
+  font-size: var(--text-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tablet-archive-meta {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-archive-pick {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  background: rgba(10, 12, 16, 0.5);
+}
+
+.tablet-archive-pick.on {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.tablet-archive-pick.on::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 7px;
+  height: 12px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ── настройки ─────────────────────────────────────────────────────────── */
+
+.tablet-settings {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.tablet-settings-side {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+  width: 250px;
+  overflow-y: auto;
+  padding: var(--space-3);
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.tablet-settings-item {
+  display: flex;
+  gap: var(--space-3);
+  min-height: var(--tablet-tap);
+  padding: 0 var(--space-3);
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--tablet-type-control);
+  font-weight: 600;
+  line-height: 1;
+  text-align: left;
+}
+
+.tablet-settings-item.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tablet-settings-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.tablet-settings-main > * {
+  width: min(100%, 820px);
+  margin-inline: auto;
+}
+
+.tablet-settings-row {
+  display: grid;
+  gap: var(--space-4);
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-settings-row h3 {
+  margin: 0;
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+}
+
+.tablet-settings-row p {
+  margin: 3px 0 0;
+  max-width: 52ch;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+/* ── корзина досок ─────────────────────────────────────────────────────── */
+
+.tablet-trash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tablet-trash-head {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.tablet-trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tablet-trash-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-trash-thumb {
+  display: flex;
+  flex: none;
+  width: 56px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-compact);
+  background: var(--surface-3);
+}
+
+.tablet-trash-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-trash-blank {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 8px, transparent 8px 16px);
+}
+
+.tablet-trash-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.tablet-trash-name strong {
+  display: block;
+  overflow: hidden;
+  font-size: var(--text-body);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── публикация ────────────────────────────────────────────────────────── */
+
+.tablet-share {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tablet-share-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tablet-share-row h3 {
+  margin: 0;
+  font-size: var(--text-title-sm);
+}
+
+.tablet-share-row p {
+  margin: 3px 0 0;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  word-break: break-all;
+}
+
+.tablet-share-stale {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--warn-border);
+  border-radius: var(--radius-control);
+  background: var(--warn-soft);
+  color: var(--warn-text);
+  font-size: var(--text-secondary);
+}
+
+.tablet-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tablet-share-empty {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+/* ── ландшафт: заставка и подсказка про домашний экран ─────────────────── */
+
+.tablet-orientation-content {
+  height: 100%;
+}
+
+.tablet-orientation {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 100);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: var(--bg);
+  text-align: center;
+}
+
+.tablet-orientation h1 {
+  margin: 0;
+  font-size: var(--text-title-lg);
+  letter-spacing: -0.02em;
+}
+
+.tablet-orientation p {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--text-2);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+.tablet-orientation-icon {
+  color: var(--accent);
+  animation: tablet-rotate 3.4s ease-in-out infinite;
+}
+
+@keyframes tablet-rotate {
+  0%, 45% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(-90deg); }
+}
+
+.tablet-home-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tablet-safe-bottom) + var(--space-3));
+  z-index: var(--z-topbar);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  max-width: min(640px, calc(100% - 32px));
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-50%);
+}
+
+.tablet-home-hint strong {
+  font-size: var(--text-body);
+}
+
+.tablet-home-hint p {
+  margin: 3px 0 0;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tablet-screen *,
+  .tablet-sheet *,
+  .tablet-login * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tablet-topbar,
+  .tablet-rail,
+  .tablet-inspector,
+  .tablet-prompt,
+  .tablet-context-bar,
+  .tablet-video-action,
+  .tablet-popover,
+  .tablet-item-menu,
+  .tablet-login-card,
+  .tablet-dock-toggle {
+    background: var(--surface-solid);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .tablet-topbar,
+  .tablet-rail,
+  .tablet-inspector,
+  .tablet-prompt,
+  .tablet-context-bar,
+  .tablet-video-action,
+  .tablet-popover,
+  .tablet-item-menu,
+  .tablet-act,
+  .tablet-slot,
+  .tablet-login-card {
+    border-color: var(--text-2);
+  }
+
+  .tablet-screen :focus-visible,
+  .tablet-sheet :focus-visible,
+  .tablet-login :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+@media (hover: hover) {
+  .tablet-screen button:hover:not(:disabled),
+  .tablet-sheet button:hover:not(:disabled),
+  .tablet-login button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+  }
+
+  .tablet-act:hover,
+  .tablet-slot:hover,
+  .tablet-rail-btn:hover,
+  .tablet-card:hover .tablet-card-thumb,
+  .tablet-menu-item:hover,
+  .tablet-settings-item:hover:not(.on),
+  .tablet-archive-card:hover {
+    border-color: var(--border-strong);
+    background-color: var(--surface-3);
+  }
+
+  .tablet-card:hover .tablet-card-name,
+  .tablet-title:hover strong {
+    color: var(--accent-text);
+  }
+}
+
+/* ── справка iPad ─────────────────────────────────────────────────────── */
+
+.tablet-help {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: min(980px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 32px 0 calc(48px + var(--tablet-safe-bottom));
+}
+
+.tablet-help-intro {
+  margin: 0 0 var(--space-4);
+  color: var(--text-2);
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+}
+
+.tablet-help-list {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+
+.tablet-help-row {
+  display: grid;
+  grid-template-columns: var(--tablet-tap) minmax(0, 1fr);
+  gap: var(--space-3);
+  min-height: 76px;
+  padding: var(--space-3) var(--space-4);
+  align-items: center;
+}
+
+.tablet-help-row + .tablet-help-row {
+  border-top: 1px solid var(--border);
+}
+
+.tablet-help-icon {
+  display: inline-flex;
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+
+.tablet-help-row h3,
+.tablet-help-row p {
+  margin: 0;
+}
+
+.tablet-help-row h3 {
+  font-size: var(--tablet-type-body);
+  line-height: var(--tablet-line-body);
+}
+
+.tablet-help-row p {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+/* Shared guides inside the tablet shell. HelpPanel keeps the same content and
+   search vocabulary as desktop, while this layout makes topic cards and
+   controls comfortable for touch and leaves one reader scroll region. */
+.tablet-help-tabs {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+}
+.tablet-help-tabs button {
+  display: inline-flex;
+  min-height: var(--tablet-tap);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-3);
+  padding-block: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  background: var(--surface-2);
+  font: inherit;
+  font-size: var(--tablet-type-control);
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tablet-help-tabs button.active { border-color: var(--accent-soft-border); color: var(--accent-text); background: var(--accent-soft); }
+.tablet-help-tabs button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.tablet-help-guides,
+.tablet-help-gestures { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.tablet-help-guides[hidden],
+.tablet-help-gestures[hidden] { display: none; }
+.tablet-help-gestures { overflow-y: auto; }
+.tablet-help-gestures .tablet-help-list { flex: none; }
+.tablet-help-guides .tablet-help-intro { flex: none; }
+.tablet-help-guides .help-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; flex: 1; }
+.tablet-help-guides .help-toolbar { padding: 0 0 var(--space-3); }
+.tablet-help-guides .help-search input { height: var(--tablet-tap); font-size: var(--tablet-type-control); }
+.tablet-help-guides .help-categories { padding-bottom: var(--space-1); }
+.tablet-help-guides .help-categories button,
+.tablet-help-guides .help-related-links button { min-height: var(--tablet-tap); font-size: var(--tablet-type-control); }
+.tablet-help-guides .help-layout { grid-template-columns: minmax(220px, 30%) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); min-height: 0; padding: 0; gap: var(--space-3); }
+.tablet-help-guides .help-topic-list { display: grid; grid-template-columns: minmax(0, 1fr); max-height: none; overflow: auto; padding: 0 0 var(--space-1); }
+.tablet-help-guides .help-topic-card { height: auto; min-height: var(--tablet-tap); grid-template-columns: 56px minmax(0, 1fr); font-size: var(--tablet-type-control); line-height: var(--tablet-line-body); }
+.tablet-help-guides .help-topic-card small { font-size: var(--tablet-type-meta); }
+.tablet-help-guides .help-topic-detail { min-height: 0; padding: 0 0 var(--space-3); }
+.tablet-help-guides .help-topic-heading { display: flex; }
+.tablet-help-guides .help-step p,
+.tablet-help-guides .help-summary { font-size: var(--tablet-type-control); line-height: var(--tablet-line-body); }
+.tablet-help-guides .help-step-image { width: min(100%, 520px); height: 190px; object-fit: contain; }
+.tablet-help-guides .help-primary-action { min-height: var(--tablet-tap); font-size: var(--tablet-type-control); }
+.tablet-help-guides .help-notes,
+.tablet-help-guides .help-shortcuts,
+.tablet-help-guides .help-related { padding-bottom: var(--space-2); }
+.tablet-help-guides button { min-height: var(--tablet-tap); }
+
+@media (max-width: 760px) {
+  .tablet-help-guides .help-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: 100px minmax(0, 1fr); }
+  .tablet-help-guides .help-topic-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: none; }
+  .tablet-help-guides .help-topic-heading { display: grid; }
+  .tablet-help-guides .help-step-image { height: 160px; }
+}
+
+/* ── лист снизу: задачи ────────────────────────────────────────────────── */
+
+.tablet-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--scrim);
+}
+
+.tablet-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: calc(var(--z-modal) + 1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + var(--tablet-safe-bottom));
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-50%);
+}
+
+.tablet-sheet-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--tablet-type-title);
+  font-weight: 700;
+  line-height: var(--tablet-line-title);
+}
+
+.tablet-sheet .ui-btn {
+  min-height: var(--tablet-tap);
+  justify-content: center;
+}
+
+.tablet-sheet-cancel {
+  margin-top: var(--space-2);
+}
+
+.tablet-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-2);
+}
+
+.tablet-task-section-head {
+  display: flex;
+  min-height: var(--tablet-tap);
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+  padding: 0 var(--space-3);
+  background: var(--surface-3);
+}
+
+.tablet-task-section-head strong {
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 650;
+}
+
+.tablet-task {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  min-height: 64px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tablet-task + .tablet-task,
+.tablet-task-section-head + .tablet-task {
+  border-top: 1px solid var(--border);
+}
+
+.tablet-task div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tablet-task span {
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+.tablet-task button {
+  flex: none;
+}
+
+.tablet-task-error {
+  color: var(--danger) !important;
+}
+
+.tablet-task-empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+/* ── состояния и сообщения ─────────────────────────────────────────────── */
+
+.tablet-state {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  color: var(--text-2);
+  text-align: center;
+}
+
+.tablet-state p {
+  margin: 0;
+  max-width: 48ch;
+  line-height: 1.5;
+}
+
+.tablet-error {
+  margin: 0;
+}
+
+.tablet-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tablet-safe-bottom) + var(--space-4));
+  z-index: var(--z-modal);
+  width: min(520px, calc(100% - 32px));
+  transform: translateX(-50%);
+}
+
+/* ── галерея досок ─────────────────────────────────────────────────────── */
+
+.tablet-toolbar {
+  min-height: calc(64px + var(--tablet-safe-top));
+}
+
+.tablet-screen-title {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--tablet-type-title);
+  font-weight: 700;
+  line-height: var(--tablet-line-title);
+  letter-spacing: -0.02em;
+}
+
+.tablet-cards {
+  display: grid;
+  flex: 1;
+  gap: var(--space-4);
+  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.tablet-card-wrap {
+  position: relative;
+}
+
+/* Кнопка «ещё» появляется у самой карточки, а не прячется в жест: на планшете
+   правой кнопки нет, а переименовать доску нужно так же часто, как открыть. */
+.tablet-card-more {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  border: 1px solid var(--border);
+  background: var(--material-thick);
+  backdrop-filter: blur(12px);
+}
+
+.tablet-card {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.tablet-card-thumb {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tablet-card-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.04) 0 8px, transparent 8px 16px);
+}
+
+.tablet-card-name {
+  font-size: var(--tablet-type-body);
+  font-weight: 650;
+  line-height: var(--tablet-line-body);
+}
+
+.tablet-card-holder {
+  color: var(--accent-text);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+/* ── вход ──────────────────────────────────────────────────────────────── */
+
+.tablet-login {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.tablet-login-card {
+  display: flex;
+  width: min(440px, 100%);
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+}
+
+.tablet-login h1 {
+  margin: 0;
+  font-size: var(--text-display);
+  letter-spacing: -0.03em;
+}
+
+.tablet-login p {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.tablet-pin {
+  width: 220px;
+  min-height: 56px;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+
+
+.tablet-email {
+  width: min(320px, 100%);
+  min-height: 56px;
+  text-align: left;
+}
+
+.tablet-cloud-login > .ui-field {
+  width: min(320px, 100%);
+  min-height: 52px;
+  text-align: left;
+}
+
+.tablet-password-toggle {
+  display: flex;
+  width: min(320px, 100%);
+  min-height: 36px;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: left;
+}
+
+.tablet-password-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.tablet-login-eyebrow {
+  color: var(--accent-text) !important;
+  font-size: var(--tablet-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.tablet-login-note {
+  color: var(--text-3) !important;
+  font-size: var(--text-secondary);
+}
+
+/* ── макросы ───────────────────────────────────────────────────────────── */
+
+.tablet-macros {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.tablet-macros-row {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tablet-macro {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.tablet-macro button {
+  min-height: var(--tablet-tap);
+  max-width: 40vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tablet-macros-all {
+  flex: none;
+}
+
+.tablet-macros-note {
+  margin: 0;
+  padding: 0 var(--space-2);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+/* ── Тесно по высоте: ландшафт и поднявшаяся клавиатура ─────────────────
+ *
+ * Замер 26.08.2026: в ландшафте 1180×820 полка съедала 221px, и доске
+ * оставалось 58% экрана; при поднятой клавиатуре (820×520) — 32%. Человек в
+ * этот момент смотрит на доску, ради которой и печатает, поэтому в тесноте
+ * полка ужимается — двумя ступенями, а не одной.
+ *
+ * Первая ступень (ландшафт): срезаем воздух и лишние подписи, но чипы
+ * референсов ОСТАВЛЯЕМ — без них не видно, из чего генерируешь. */
+@media (max-height: 860px) {
+  .tablet-prompt {
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .tablet-input {
+    min-height: 46px;
+  }
+
+  .tablet-ref {
+    width: 44px;
+    height: 44px;
+  }
+
+  .tablet-macros-note {
+    display: none;
+  }
+
+  .tablet-assistant {
+    max-height: min(30vh, 240px);
+  }
+}
+
+/* Вторая ступень (клавиатура закрыла пол-экрана): места нет вовсе — прячем
+   чипы и укладываем настройки в один прокручиваемый ряд. */
+@media (max-height: 620px) {
+  .tablet-prompt {
+    gap: var(--space-1);
+  }
+
+  .tablet-prompt-primary-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .tablet-prompt-macro-row {
+    display: none;
+  }
+
+  .tablet-macros,
+  .tablet-assistant-presets {
+    display: none;
+  }
+
+  .tablet-dock {
+    bottom: var(--space-1);
+  }
+
+  .tablet-dock-toggle {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    min-width: var(--tablet-tap);
+    padding-inline: var(--space-2);
+  }
+
+  .tablet-dock-toggle span {
+    display: none;
+  }
+
+  .tablet-rail {
+    bottom: calc(var(--tablet-dock-h, 120px) + var(--space-2));
+  }
+}
+
+/* ── Узко по ширине: разделённый экран и iPad mini ─────────────────────
+ *
+ * Замер 26.08.2026: при 507px четыре кнопки в шапке отжимали название доски
+ * до 18px — человек переставал видеть, где он находится. Название важнее
+ * подписей у кнопок: ниже 640px они ужимаются, оставляя сами кнопки. */
+@media (max-width: 1100px) {
+  .tablet-account-button > span {
+    display: none;
+  }
+
+  .tablet-account-button {
+    min-width: var(--tablet-tap);
+    padding-inline: 0;
+  }
+  .tablet-topbar-button > span:not(.tablet-badge) {
+    display: none;
+  }
+
+  .tablet-topbar-button {
+    width: var(--tablet-tap);
+    min-width: var(--tablet-tap);
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+}
+
+@media (max-width: 700px) {
+  .tablet-settings-pop .param-controls.compact.comfortable {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .tablet-dock {
+    width: calc(100% - 120px);
+  }
+
+  .tablet-settings-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .tablet-topbar {
+    gap: var(--space-1);
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .tablet-back span {
+    display: none;
+  }
+
+  .tablet-title small {
+    display: none;
+  }
+}
+
+/* ── интерфейс, убранный с глаз (тап четырьмя пальцами) ─────────────────
+   ⚠️ Прячем ВИДИМОСТЬЮ, а не размонтированием: раскладка доски считается от
+   размеров сцены, и убранная из дерева панель заставила бы холст прыгнуть, а
+   потом прыгнуть обратно. Место панелей остаётся за ними — меняется только
+   то, что на них смотрят. */
+.tablet-screen.chrome-hidden .tablet-topbar,
+.tablet-screen.chrome-hidden .tablet-rail,
+.tablet-screen.chrome-hidden .tablet-inspector,
+.tablet-screen.chrome-hidden .tablet-prompt,
+.tablet-screen.chrome-hidden .tablet-dock,
+.tablet-screen.chrome-hidden .tablet-context-bar,
+.tablet-screen.chrome-hidden .tablet-object-navigator,
+.tablet-screen.chrome-hidden .tablet-video-actions,
+.tablet-screen.chrome-hidden .tablet-pending-close,
+.tablet-screen.chrome-hidden .tablet-pending-retry,
+.tablet-screen.chrome-hidden .tablet-zoom {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out);
+}
+
+/* Подсказка, как вернуть: жест надо знать, а спрятанный экран об этом молчит. */
+.tablet-chrome-hint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  z-index: var(--z-canvas-ui);
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--material-regular);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-md);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  pointer-events: none;
+  animation: tablet-chrome-hint-hide 2.5s forwards;
+}
+
+@keyframes tablet-chrome-hint-hide { 0%, 75% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.tablet-marquee { position: absolute; pointer-events: none; border: solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.tablet-object-list { max-height: 260px; overflow: auto; }
+.tablet-object-list label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.tablet-object-list input { width: 20px; height: 20px; flex: none; }
+@media (max-width: 850px) {
+  .tablet-dock { width: calc(100% - 24px); }
+  .tablet-topbar { gap: 4px; padding-inline: 8px; }
+  .tablet-topbar-button span { display: none; }
+  .tablet-title { min-width: 0; }
+}
+
+/* ⚠️ Выбор модели диалога — такое же поле под палец, как все остальные.
+   Стояли кегль 12px и высота около 20px: единственный элемент ряда вдвое ниже
+   соседей, да ещё и под зумом Safari (кегль полей — см. общее правило выше). */
+.tablet-assistant-model {
+  min-width: 0;
+  width: 180px;
+  max-width: 34%;
+  min-height: var(--tablet-tap);
+  padding-block: 0;
+}
+
+.tablet-board-memory-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: none;
+  min-width: 0;
+  max-width: 150px;
+  padding-inline: var(--space-2);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  font-weight: 700;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-board-memory-state {
+  flex: none;
+  color: currentColor;
+  font-size: 0.9em;
+  font-weight: 800;
+}
+
+.tablet-board-memory-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-board-memory-toggle[aria-checked="true"] {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.tablet-board-memory-toggle:hover:not(:disabled),
+.tablet-board-memory-toggle:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+  outline: none;
+}
+
+.tablet-board-memory-toggle:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 850px) {
+  .tablet-board-memory-toggle {
+    max-width: 116px;
+    padding-inline: 6px;
+  }
+}
+
+.tablet-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  margin: 8px 4px 0;
+  background: #1d1f24;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  max-height: 38vh;
+  overflow: hidden;
+}

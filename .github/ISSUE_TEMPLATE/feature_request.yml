@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest an improvement to the local CanAI app or public documentation.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the user problem and the outcome you want. Do not include provider keys or private board data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is difficult or unavailable today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What behavior would solve the problem?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

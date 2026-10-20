@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a reproducible problem in the local CanAI app or release package.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include provider keys, cookies, private boards, `server/data/`, or unredacted logs.
+        Use synthetic content and redact sensitive values before posting.
+  - type: input
+    id: version
+    attributes:
+      label: CanAI version or commit
+      description: The version shown by the app or the commit used from a Git checkout.
+      placeholder: 0.1.0-rc or a commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows x64
+        - macOS Apple Silicon
+        - Linux CI or development
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the smallest sequence that reproduces the problem with synthetic data.
+      placeholder: |
+        1. Start CanAI...
+        2. Open...
+        3. Select...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: Include only relevant, scrubbed messages. Do not attach secrets or personal data.
+    validations:
+      required: false

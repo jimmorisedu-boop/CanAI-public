@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Adjust the Assistant panel</title>
+  <desc id="desc">Drag the top handle to change Assistant height. Use minus to collapse the panel; the bottom handle reopens it.</desc>
+  <rect width="640" height="360" rx="24" fill="#f6f7f8"/>
+  <text x="40" y="48" font-family="Arial,sans-serif" font-size="21" font-weight="700" fill="#17181a">Adjust Assistant</text>
+  <text x="40" y="82" font-family="Arial,sans-serif" font-size="14" fill="#6b625b">Drag the top handle to resize</text>
+  <rect x="36" y="138" width="380" height="164" rx="14" fill="#fff" stroke="#d8d0c8"/>
+  <path d="M202 145h48" stroke="#81786f" stroke-width="3" stroke-linecap="round"/>
+  <text x="56" y="174" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#17181a">Assistant</text>
+  <text x="386" y="176" font-family="Arial,sans-serif" font-size="22" fill="#6b625b">−</text>
+  <rect x="56" y="191" width="340" height="51" rx="8" fill="#f6f7f8"/>
+  <text x="72" y="220" font-family="Arial,sans-serif" font-size="14" fill="#6b625b">Your conversation stays in place</text>
+  <rect x="56" y="258" width="340" height="28" rx="7" fill="#fff" stroke="#d8d0c8"/>
+  <text x="69" y="277" font-family="Arial,sans-serif" font-size="13" fill="#81786f">Message assistant…</text>
+  <path d="M226 100v32m-7-25 7-7 7 7m-14 18 7 7 7-7" fill="none" stroke="#d33f21" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="440" y1="106" x2="440" y2="316" stroke="#d8d0c8"/>
+  <text x="532" y="128" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#17181a">Collapsed</text>
+  <text x="532" y="155" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#6b625b">Use − to collapse</text>
+  <rect x="460" y="272" width="144" height="18" rx="9" fill="#edeff2" stroke="#aaa39c"/>
+  <path d="M515 281h34" stroke="#81786f" stroke-width="3" stroke-linecap="round"/>
+  <text x="532" y="316" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#6b625b">Click to reopen</text>
+</svg>

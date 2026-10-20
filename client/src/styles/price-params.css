@@ -1,0 +1,466 @@
+/* цена запуска и компактный ряд параметров модели
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* только размещение: вид даёт общая плашка */
+.recovery-error {
+  max-width: none;
+  margin-top: 14px;
+}
+
+.undo-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: var(--z-modal);
+  transform: translateX(-50%);
+  gap: 10px;
+  padding: 10px 12px 10px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.macros-inline-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+
+/* настройки модели теперь встроены в бар компактным рядом «пилюль»
+   (.param-controls.compact) — отдельной разворачивающейся панели нет */
+
+.gen-count {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface-3);
+  min-height: var(--control-h-compact);
+  border-radius: var(--radius-compact);
+  padding: 1px 2px;
+  line-height: 1;
+}
+
+.gen-count button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: var(--text-2);
+  border-radius: var(--radius-pill);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.gen-count button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.gen-count button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.gen-count span {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: var(--text-2);
+  min-width: 16px;
+  text-align: center;
+  line-height: 1;
+}
+
+/* чипы типа генерации — как в «примерочной»: отдельные пилюли с подписью,
+   активная подсвечена вермилионовой рамкой и мягким фоном */
+
+
+.kind-toggle button:hover:not(.on):not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface-3) 75%, transparent);
+}
+
+.kind-toggle button.on {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft-border);
+  color: var(--accent-text);
+  box-shadow: none;
+}
+
+.kind-toggle button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* главное действие — жирная текстовая кнопка, как в «примерочной» */
+.generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: var(--radius-control);
+  height: var(--control-h-emphasis);
+  box-sizing: border-box;
+  padding: 0 18px;
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.05s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.generate:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* «Спросить» — бесплатное действие рядом с платным «Сгенерировать»:
+   тот же размер, но без заливки, чтобы деньги тратила только одна кнопка */
+.ask {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: var(--control-h-emphasis);
+  box-sizing: border-box;
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: var(--transition-smooth);
+  line-height: 1;
+}
+
+.ask:not(:disabled):hover {
+  background: var(--surface-3);
+  border-color: var(--accent-soft-border);
+  color: var(--accent-text);
+}
+
+.ask:not(:disabled):active { transform: translateY(1px); }
+
+.ask:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ask.stop {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.ask.paid-action {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.ask.paid-action:not(:disabled):hover {
+  border-color: transparent;
+  background: var(--accent-hover);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.generate:not(:disabled):hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.generate:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.price-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: color-mix(in srgb, var(--surface-3) 50%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 5px 10px;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--text-2);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+  cursor: help;
+}
+
+.price-badge:hover {
+  background: color-mix(in srgb, var(--surface-3) 80%, transparent);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.price-badge .badge-icon {
+  color: #ffaa00;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.price-badge:hover .badge-icon {
+  transform: scale(1.1);
+}
+
+.price-badge .badge-value {
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+/* Один язык со всплывающими уведомлениями (.global-toast): стекло, тон —
+   точкой слева, действие — пилюлей, закрытие — призрачной кнопкой. Раньше
+   плашка заливалась цветом тона во всю ширину и кричала громче сообщения. */
+.inline-notice {
+  /* Материал и плотность — в notices.css: сообщение выглядит одинаково,
+     где бы оно ни всплыло. Здесь только своё: тон и ширина. */
+  --notice-color: var(--accent);
+  max-width: min(680px, calc(100% - 32px));
+}
+
+.inline-notice[data-tone='success'] { --notice-color: var(--ok); }
+.inline-notice[data-tone='warning'] { --notice-color: var(--warn-text); }
+.inline-notice[data-tone='error'] { --notice-color: var(--danger); }
+
+
+
+.inline-notice-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--notice-color);
+  align-self: flex-start;
+  position: relative;
+  top: 5px;
+}
+
+.inline-notice-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.inline-notice-content strong {
+  display: block;
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.inline-notice-content p,
+.inline-notice-body {
+  margin: 1px 0 0;
+  color: var(--text-3);
+}
+
+.inline-notice-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-notice-actions button {
+  font: inherit;
+  font-weight: 700;
+  transition: var(--transition-smooth);
+}
+
+.inline-notice-actions button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.inline-notice-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.inline-notice-actions button.secondary {
+  color: var(--text-3);
+}
+
+.inline-notice-dismiss {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.inline-notice-dismiss:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.inline-notice-dismiss {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  place-items: center;
+}
+
+.prompt-inline-notice {
+  margin: 0 auto;
+}
+
+.nodes-inline-notice {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: var(--z-canvas-ui);
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-md);
+}
+
+.nodes-inline-notice {
+  top: 66px;
+  z-index: var(--z-topbar);
+}
+
+.connection-inline-notice {
+  top: auto;
+  bottom: 18px;
+}
+
+.node-inline-notice {
+  max-width: none;
+  padding: 8px 9px;
+  box-shadow: none;
+}
+
+.node-inline-notice .inline-notice-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.prompt-chat-inline-notice {
+  max-width: none;
+  margin: 10px 12px 0;
+}
+
+.prompt-chat-local-notice {
+  margin: 0 12px 7px;
+}
+
+/* главное действие иконкой — круглая кнопка */
+.generate.icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-emphasis);
+  height: var(--control-h-emphasis);
+  padding: 0;
+  flex: none;
+}
+
+/* Группа кнопки «Спросить» и цены */
+.paid-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control-h-emphasis);
+  gap: 8px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ⚠️ Иконка и подпись центрируются каждая по СВОЕЙ коробке, а коробка
+   подписи несимметрична: под базовой линией у Onest остаётся место под
+   хвосты букв, которых в слове почти нет. Замер на настоящем шрифте
+   (Onest 800, кегль 13, line-height 13): краска подписи идёт 9.25px над
+   базовой линией и 2.25px под ней, сама базовая — в 12px от верха коробки.
+   Значит видимое слово сидит на 2px ниже середины коробки, а по высоте
+   заглавной — на 0.9px. Иконка при этом стоит ровно по центру, и рядом с
+   ней слово читается как съехавшее вниз (жалоба 08.09.2026 «надпись и
+   иконку выровнять»).
+
+   ⚠️ Тогда подпись подняли на пиксель (`translateY(-1px)`) — по этому
+   РАСЧЁТУ, без замера пикселей. Он перестарался: пиксельный замер снимка
+   при плотности 3 (19.10.2026, жалоба «буквы в кнопках не выровнены
+   относительно иконок») показал центр заглавной на 0,8 px ВЫШЕ рисунка
+   иконки у «Generate» и «Send»; без подъёма — 0,17 px, то есть ровно.
+   Подпись и цена стоят по своим коробкам, как у остальных кнопок. Мерить
+   такое — только пикселями снимка, метрики шрифта тут уже обманули. */
+.paid-action-label {
+  line-height: 1;
+}
+
+.paid-action .price-badge.is-action {
+  margin-left: 0;
+  min-height: 0;
+  padding: 0 0 0 8px;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--text-micro);
+  font-weight: 500;
+  line-height: 1;
+  cursor: inherit;
+  opacity: 0.78;
+}
+
+.paid-action .price-badge.is-action:hover {
+  border-color: color-mix(in srgb, currentColor 32%, transparent);
+  background: transparent;
+  color: inherit;
+}
+
+.paid-action .price-badge.is-action.is-pending {
+  min-width: 32px;
+  opacity: 0.58;
+}
+
+
+/* Промпт-бар — поверхность акцента: «Создать», «Спросить» и выбор типа здесь
+   выше обычного, чтобы главный ряд читался первым. Это размер, а не форма:
+   дорожка, пилюля и заливка выбранного — общие (controls.css). Держать их
+   одного роста с кнопкой запуска обязательно, иначе ряд едет. */
+.kind-toggle {
+  /* Дорожка ровно в рост кнопки запуска: иначе главный ряд промпт-бара едет
+     на пару пикселей, и это видно. Высоту держит она, а сегменты занимают
+     её изнутри — так padding дорожки не добавляется к общему росту. */
+  height: var(--control-h-emphasis);
+  box-sizing: border-box;
+}
+
+/* Вес селектора выше канона намеренно: канон задаёт сегменту обычные 32,
+   а в промпт-баре он должен заполнять дорожку целиком, иначе выбранная
+   пилюля болтается внутри неё с зазором сверху и снизу. */
+.prompt-bar .kind-toggle button {
+  min-height: 0;
+  height: 100%;
+  min-width: var(--control-h-standard);
+}

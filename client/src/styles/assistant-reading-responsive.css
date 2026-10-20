@@ -1,0 +1,132 @@
+/* Assistant reading: narrow screens and reduced motion. */
+
+@media (max-width: 600px) {
+  .prompt-dock.has-assistant:not(.is-collapsed) {
+    bottom: 6px;
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-bar.is-assistant {
+    max-height: calc(100dvh - 12px);
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-bar > .pane-tabs,
+  .prompt-dock.has-assistant:not(.is-collapsed) .action-dock-mode-tabs {
+    max-width: calc(100% - 80px);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-actions {
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-collapse-btn,
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-clear-btn {
+    width: var(--control-h-emphasis);
+    min-width: var(--control-h-emphasis);
+    height: var(--control-h-emphasis);
+    min-height: var(--control-h-emphasis);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-actions .prompt-collapse-btn {
+    width: var(--control-h-compact);
+    min-width: var(--control-h-compact);
+    height: var(--control-h-compact);
+    min-height: var(--control-h-compact);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-messages {
+    padding-inline: var(--space-3);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-message.user {
+    max-width: 88%;
+    margin-left: auto;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head {
+    gap: var(--space-1);
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head strong {
+    flex-basis: 120px;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head select {
+    max-width: 120px;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-actions {
+    display: grid;
+    grid-template-columns: var(--control-h-emphasis) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-actions-right {
+    display: contents;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .gen-controls {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .assistant-macros {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .ask {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    max-width: 100%;
+  }
+
+
+}
+
+@media (max-width: 420px) {
+  .prompt-dock.has-assistant:not(.is-collapsed) .action-dock-mode-tabs > button > svg {
+    display: none;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'chats title new'
+      'model model model';
+    align-items: center;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head > .icon-btn:first-child {
+    grid-area: chats;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head strong {
+    grid-area: title;
+    min-width: 0;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head select {
+    grid-area: model;
+    width: 100%;
+    max-width: none;
+  }
+
+  .prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head > .icon-btn:last-child {
+    grid-area: new;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-dock.has-assistant:not(.is-collapsed) * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

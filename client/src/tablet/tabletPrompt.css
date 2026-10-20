@@ -1,0 +1,442 @@
+/*
+ * The prompt is the only part of the tablet dock that changes shape while a
+ * person is working. Keep these rules local to the component: the board and
+ * the rest of the tablet chrome must not inherit prompt sizing or scrolling.
+ */
+
+.tablet-prompt {
+  --tablet-prompt-visible-height: 820px;
+  min-width: 0;
+  max-height: min(70vh, calc(var(--tablet-prompt-visible-height) - var(--space-5)));
+  overflow: visible;
+}
+
+/* Короткий вопрос не должен занимать пустой высокий прямоугольник. */
+.tablet-prompt .tablet-input { min-height: 44px; padding-block: 8px; }
+/* Высота — по поверхности: канон `.paid-action` задаёт настольные
+   `--control-h-emphasis`, а под палец нужен планшетный рост. Форма при этом
+   остаётся общей (см. tablet.css про цену внутри кнопки). */
+.tablet-prompt .tablet-create {
+  min-width: 120px;
+  height: var(--tablet-control-h-lg);
+  align-self: flex-end;
+}
+.tablet-prompt .tablet-assistant { gap: 6px; }
+.tablet-prompt .tablet-assistant.empty { padding: 8px; }
+.tablet-generation-corner { position: absolute; z-index: 2; top: 0; right: 0; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; transform-origin: top right; cursor: pointer; }
+.tablet-generation-corner::after { content: ''; position: absolute; top: 0; right: 0; border-top: 14px solid var(--accent); border-left: 14px solid transparent; }
+
+/* У истории один владелец прокрутки. Размер ввода не зависит от длины ответа. */
+.tablet-prompt.reading-assistant .tablet-prompt-scroll {
+  height: var(--tablet-assistant-height);
+  max-height: calc(var(--tablet-prompt-visible-height) - 140px);
+  overflow: hidden;
+}
+.tablet-prompt.reading-assistant #tablet-panel-assistant {
+  display: flex;
+  flex-direction: column;
+  min-height: 64px;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.tablet-assistant-reading { position: relative; display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.tablet-prompt.reading-assistant .tablet-assistant {
+  flex: 1; min-height: 0; max-height: none; overflow-y: auto;
+  touch-action: pan-y; overscroll-behavior: contain; overflow-anchor: none;
+}
+.tablet-assistant-messages { display: flex; flex-direction: column; gap: 6px; }
+.tablet-prompt.reading-assistant .tablet-composer { flex: none; min-height: 44px; }
+.tablet-prompt.reading-assistant .tablet-refs { flex: none; max-height: 48px; overflow-y: auto; }
+.tablet-assistant-divider {
+  flex: none; width: 100%; height: 20px; min-height: 20px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; touch-action: none; cursor: ns-resize;
+}
+.tablet-assistant-divider span { width: 40px; height: 3px; border-radius: 3px; background: var(--text-3); opacity: .55; }
+.tablet-assistant-unread { position: absolute; bottom: 4px; right: 8px; background: var(--surface, #fff); box-shadow: 0 2px 8px #0002; }
+
+.tablet-prompt.collapsed {
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.tablet-prompt.expanded:not(.viewport-keyboard-open) {
+  animation: tablet-prompt-local-expand 170ms var(--spring-ui);
+}
+
+@keyframes tablet-prompt-local-expand {
+  from { opacity: .92; transform: translateY(6px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tablet-prompt-head {
+  display: flex;
+  flex-wrap: wrap;
+  flex: none;
+  min-width: 0;
+  min-height: var(--tablet-tap);
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tablet-mode-switch {
+  flex: 0 1 auto;
+  min-width: 0;
+  width: min(236px, 42vw);
+}
+
+/* The shared action dock replaces the old prompt/assistant two-tab switch.
+   Keep the same tablet-sized touch targets and head geometry, while the
+   desktop dock's right breathing room stays local to the desktop surface. */
+.tablet-prompt .action-dock-mode-tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  width: min(236px, 42vw);
+  margin-right: 0;
+}
+
+.tablet-prompt .action-dock-mode-tabs button {
+  min-height: max(44px, var(--tablet-tap));
+  padding-inline: var(--space-2);
+  font-size: var(--tablet-type-control);
+}
+
+.tablet-prompt .tablet-agents-pane {
+  max-height: min(58vh, calc(var(--tablet-prompt-visible-height) - 96px));
+}
+.tablet-prompt-keyboard-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.tablet-prompt .action-dock-batch-row {
+  flex: 1 1 100%;
+  margin-top: 0;
+}
+
+.tablet-prompt .action-dock-batch-switch button {
+  min-height: max(44px, var(--tablet-tap));
+  font-size: var(--tablet-type-meta);
+}
+
+.tablet-prompt .tablet-assistant-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+
+.tablet-prompt .tablet-assistant-select {
+  min-height: max(44px, var(--tablet-tap));
+  font-size: 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tablet-prompt-handles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 auto;
+  gap: 2px;
+}
+
+.tablet-prompt-handles button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  color: var(--text-3);
+}
+
+.tablet-prompt-height-handle { cursor: ns-resize; }
+.tablet-prompt-height-handle span {
+  width: 24px;
+  height: 4px;
+  border-radius: 4px;
+  background: currentColor;
+}
+.tablet-dock-handle { cursor: grab; }
+.tablet-dock-handle:active { cursor: grabbing; }
+
+.tablet-model-btn {
+  min-width: 44px;
+  max-width: min(300px, 32vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-prompt-disclosure,
+.tablet-prompt-keyboard {
+  flex: none;
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+  padding: 0;
+}
+
+.tablet-prompt-disclosure {
+  margin-left: auto;
+}
+
+.tablet-prompt-keyboard {
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--border));
+  color: var(--accent);
+}
+
+.tablet-prompt-scroll {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.tablet-prompt.collapsed .tablet-prompt-scroll {
+  overflow: visible;
+}
+
+.tablet-prompt.collapsed .tablet-prompt-options,
+.tablet-prompt.collapsed #tablet-panel-assistant {
+  display: none;
+}
+
+.tablet-prompt.collapsed .tablet-input {
+  min-height: var(--tablet-tap);
+  max-height: 88px;
+  padding-block: 10px;
+}
+
+.tablet-prompt.expanded .tablet-prompt-scroll {
+  max-height: min(
+    calc(var(--tablet-prompt-visible-height) - 96px),
+    58vh
+  );
+}
+
+.tablet-prompt.viewport-keyboard-open {
+  max-height: calc(var(--tablet-prompt-visible-height) - var(--space-3));
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.tablet-prompt.viewport-keyboard-open .tablet-prompt-scroll {
+  max-height: min(
+    calc(var(--tablet-prompt-visible-height) - 72px),
+    42vh
+  );
+}
+
+/* While the keyboard owns the lower half of the screen, retain the field,
+   references and explicit model button, and defer secondary controls to the
+   disclosure button after input is complete. */
+.tablet-prompt.viewport-keyboard-open .tablet-prompt-options,
+.tablet-prompt.viewport-keyboard-open #tablet-panel-assistant,
+.tablet-prompt.viewport-keyboard-open .tablet-error {
+  display: none;
+}
+
+.tablet-prompt.large-editor {
+  max-height: calc(var(--tablet-prompt-visible-height) - var(--space-3));
+}
+
+.tablet-prompt.large-editor .tablet-prompt-head,
+.tablet-prompt.large-editor .tablet-prompt-options,
+.tablet-prompt.large-editor #tablet-panel-assistant {
+  display: none;
+}
+
+.tablet-prompt.large-editor .tablet-prompt-scroll {
+  max-height: min(
+    calc(var(--tablet-prompt-visible-height) - 40px),
+    68vh
+  );
+}
+
+.tablet-prompt.large-editor.viewport-keyboard-open .tablet-prompt-scroll {
+  max-height: min(
+    calc(var(--tablet-prompt-visible-height) - 72px),
+    62vh
+  );
+}
+
+/* Manual growth uses the visible board, including panel scale, rather than a
+   fraction of vh. The header stays reachable at the top edge. */
+.tablet-prompt,
+.tablet-prompt.viewport-keyboard-open,
+.tablet-prompt.large-editor { max-height: var(--tablet-panel-max-height, calc(var(--tablet-prompt-visible-height) - 16px)); }
+.tablet-prompt.expanded .tablet-prompt-scroll,
+.tablet-prompt.reading-assistant .tablet-prompt-scroll,
+.tablet-prompt.large-editor.viewport-keyboard-open .tablet-prompt-scroll {
+  max-height: var(--tablet-area-max-height, calc(var(--tablet-prompt-visible-height) - 64px));
+}
+
+.tablet-composer {
+  flex: none;
+  min-width: 0;
+}
+
+.tablet-composer-batch {
+  flex-wrap: wrap;
+}
+
+.tablet-composer-batch > .tablet-input-shell {
+  flex-basis: 100%;
+}
+
+.tablet-composer-batch > .tablet-create {
+  margin-inline-start: auto;
+  max-width: 100%;
+  padding-inline: var(--space-2);
+}
+
+.tablet-composer-batch .action-dock-batch-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.tablet-composer-batch .action-dock-batch-switch button {
+  justify-content: center;
+  padding-inline: var(--space-1);
+}
+
+.tablet-input {
+  min-width: 0;
+  font-size: max(16px, var(--tablet-type-body));
+}
+
+.tablet-prompt-options {
+  flex: none;
+}
+
+.tablet-settings-pop {
+  right: 0;
+  z-index: 4;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(
+    54vh,
+    calc(var(--tablet-prompt-visible-height) - 72px)
+  );
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The context toolbar is a sibling of the dock at z-index 12. Lift the whole
+   dock while its model panel is open so the toolbar cannot cover a field. */
+.tablet-dock:has(.tablet-settings-pop) {
+  z-index: 13;
+}
+
+/* Если меню не помещается над доком, TabletPrompt задаёт координату в
+   viewport. Оно может перекрыть поле, но остаётся целиком доступным и с
+   видимой кнопкой закрытия; собственная прокрутка сохраняется. */
+.tablet-settings-pop.viewport-top {
+  top: var(--tablet-settings-top, 0px);
+  bottom: auto;
+  max-height: min(54vh, var(--tablet-settings-max-height, 54vh));
+  transform-origin: top right;
+}
+
+.tablet-settings-pop-head {
+  display: flex;
+  min-height: var(--tablet-tap);
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tablet-settings-pop-head strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablet-settings-pop-close {
+  flex: none;
+  width: var(--tablet-tap);
+  min-width: var(--tablet-tap);
+  min-height: var(--tablet-tap);
+  padding: 0;
+}
+
+.tablet-model-select {
+  min-height: var(--tablet-tap);
+  font-size: 16px;
+}
+
+.tablet-pricing-note {
+  margin: calc(var(--space-2) * -1) 0 0;
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+  line-height: var(--tablet-line-meta);
+}
+
+@media (max-width: 640px) {
+  .tablet-prompt-head {
+    gap: var(--space-1);
+  }
+
+  .tablet-mode-switch {
+    width: min(208px, 40vw);
+  }
+
+  .tablet-prompt .action-dock-mode-tabs {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .tablet-prompt .action-dock-mode-tabs button {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .tablet-model-btn {
+    max-width: 28vw;
+    padding-inline: var(--space-2);
+  }
+
+
+  .tablet-settings-pop {
+    right: calc(var(--space-2) * -1);
+    width: min(560px, calc(100vw - 16px));
+  }
+}
+
+@media (max-width: 420px) {
+  .tablet-mode-switch {
+    width: min(150px, 40vw);
+  }
+
+  .tablet-prompt .action-dock-mode-tabs {
+    width: 100%;
+  }
+
+  .tablet-tab {
+    gap: 3px;
+    padding-inline: 4px;
+  }
+
+  .tablet-model-btn {
+    max-width: 24vw;
+    padding-inline: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tablet-prompt.expanded:not(.viewport-keyboard-open) {
+    animation: none;
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "canai.creator",
+  "name": "CanAI Creator",
+  "description": "Prepares a prompt from selected materials, requests approval for one generation, and adds the result to the canvas only after a second confirmation.",
+  "version": "1.0.0",
+  "protocolVersion": "1.0",
+  "runtime": {
+    "kind": "node",
+    "version": "20.0",
+    "entrypoint": { "kind": "file", "path": "index.mjs" },
+    "dependencies": { "kind": "stdlib" },
+    "maxParallelTasks": 1
+  },
+  "taskTypes": [
+    {
+      "id": "creator-image",
+      "label": "Create an image",
+      "description": "Prepare a prompt, approve one generation, and accept the result on the canvas.",
+      "inputSchema": "schemas/creator-image.input.json",
+      "outputKinds": ["image"]
+    },
+    {
+      "id": "creator-video",
+      "label": "Create a video",
+      "description": "Prepare a prompt, approve one generation, and accept the result on the canvas.",
+      "inputSchema": "schemas/creator-video.input.json",
+      "outputKinds": ["video"]
+    }
+  ],
+  "permissions": ["llm.request", "generation.request", "review.request", "canvas.create_results"],
+  "connections": [
+    { "id": "local-fal", "label": "This computer", "kind": "llm", "required": true },
+    { "id": "local-fal", "label": "This computer", "kind": "generation", "required": true }
+  ],
+  "lifecycle": { "pause": "checkpoint", "resume": true, "cancel": true }
+}

@@ -1,0 +1,235 @@
+/* Hallmark · pre-emit critique: P5 H4 E4 S4 R5 V4 · scope: assistant component · theme: existing Graphite + Vermilion */
+/* Assistant reading surface.  The regular prompt remains the same dock; these
+   rules only opt in through the assistant state classes added by PromptBar. */
+
+.prompt-dock.has-assistant:not(.is-collapsed) {
+  box-sizing: border-box;
+  width: min(960px, calc(100% - 32px));
+  max-width: calc(100% - 32px);
+  min-width: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-bar.is-assistant {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  background: var(--surface-solid);
+}
+
+/* Reserve room for memory and collapse in the top row. */
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-bar > .pane-tabs,
+.prompt-dock.has-assistant:not(.is-collapsed) .action-dock-mode-tabs {
+  flex: none;
+  min-width: 0;
+  max-width: calc(100% - 80px);
+  margin-right: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .action-dock-mode-tabs {
+  width: fit-content;
+  border-color: transparent;
+  background: transparent;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .action-dock-mode-tabs > button.on {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-actions {
+  top: var(--space-3);
+  right: var(--space-3);
+  gap: var(--space-1);
+  max-width: calc(100% - var(--space-4));
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-actions > * {
+  flex: none;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-collapse-btn,
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-clear-btn {
+  width: var(--control-h-compact);
+  min-width: var(--control-h-compact);
+  height: var(--control-h-compact);
+  min-height: var(--control-h-compact);
+  border-radius: var(--radius-control);
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-batch-toggle {
+  flex: none;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-collapse-btn:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-clear-btn:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-header-batch-toggle button:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head button:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head select:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer button:focus-visible,
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  flex: 0 1 auto;
+  margin-bottom: var(--space-3);
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head strong {
+  min-width: 0;
+  flex: 1 1 160px;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-shelf-head select {
+  flex: 0 1 auto;
+}
+
+/* Keep the history readable without adding a second surface. The horizontal
+   padding creates a centred reading column while the messages remain the only
+   scrolling region. */
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-messages {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-inline: max(var(--space-4), calc((100% - 760px) / 2));
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-assistant-turn {
+  width: 100%;
+  max-width: 760px;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-empty {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(760px, 100%);
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .onboarding-reference-target {
+  flex: none;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .ref-chips {
+  margin-bottom: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-input-wrap {
+  flex: none;
+  min-width: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-input-wrap textarea {
+  box-sizing: border-box;
+  min-height: var(--control-h-emphasis);
+  max-height: clamp(96px, 18vh, 176px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  line-height: 1.5;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-input-wrap textarea:focus {
+  border-color: var(--accent-soft-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-actions {
+  flex: none;
+  flex-wrap: nowrap;
+  min-width: 0;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .gen-controls {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .prompt-actions-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  max-width: 100%;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .assistant-macros,
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .assistant-picker-shelf {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .assistant-macros {
+  flex: 0 1 auto;
+}
+
+/* The assistant action is still a semantic emphasis control, but it should not
+   become a second vermilion card beside the reading surface. */
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .ask.paid-action {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .assistant-composer .ask.paid-action:not(:disabled):hover {
+  border-color: var(--accent-soft-border);
+  background: var(--surface-2);
+  color: var(--accent-text);
+  box-shadow: none;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-batch-btn {
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.prompt-dock.has-assistant:not(.is-collapsed) .prompt-chat-batch-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: none;
+}

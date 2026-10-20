@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:canai:agent:protocol:1",
+  "title": "CanAI agent protocol 1.0 — one NDJSON message",
+  "description": "Проектируемый контракт. Проверка направления, прав, состояния и доступности файлов выполняется Host отдельно.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocolVersion", "messageId", "taskId", "executionId", "type", "payload"],
+  "properties": {
+    "protocolVersion": { "const": "1.0" },
+    "messageId": { "$ref": "#/$defs/id" },
+    "taskId": { "$ref": "#/$defs/id" },
+    "executionId": { "$ref": "#/$defs/id" },
+    "type": { "type": "string" },
+    "replyTo": { "$ref": "#/$defs/id" },
+    "payload": { "type": "object" }
+  },
+  "oneOf": [
+    { "properties": { "type": { "const": "hello" }, "payload": { "$ref": "#/$defs/hello" } } },
+    { "properties": { "type": { "const": "ack" }, "payload": { "$ref": "#/$defs/ack" } }, "required": ["replyTo"] },
+    { "properties": { "type": { "const": "task.start" }, "payload": { "$ref": "#/$defs/start" } } },
+    { "properties": { "type": { "const": "task.resume" }, "payload": { "$ref": "#/$defs/resume" } } },
+    { "properties": { "type": { "const": "task.progress" }, "payload": { "$ref": "#/$defs/progress" } } },
+    { "properties": { "type": { "const": "task.checkpoint" }, "payload": { "$ref": "#/$defs/checkpoint" } } },
+    { "properties": { "type": { "const": "tool.request" }, "payload": { "$ref": "#/$defs/toolRequest" } } },
+    { "properties": { "type": { "const": "tool.result" }, "payload": { "$ref": "#/$defs/toolResult" } }, "required": ["replyTo"] },
+    { "properties": { "type": { "const": "review.request" }, "payload": { "$ref": "#/$defs/review" } } },
+    { "properties": { "type": { "const": "review.decision" }, "payload": { "$ref": "#/$defs/decision" } } },
+    { "properties": { "type": { "enum": ["task.pause", "task.cancel"] }, "payload": { "$ref": "#/$defs/control" } } },
+    { "properties": { "type": { "const": "task.paused" }, "payload": { "$ref": "#/$defs/paused" } } },
+    { "properties": { "type": { "const": "task.finished" }, "payload": { "$ref": "#/$defs/finished" } } },
+    { "properties": { "type": { "const": "heartbeat" }, "payload": { "$ref": "#/$defs/heartbeat" } } },
+    { "properties": { "type": { "const": "protocol.error" }, "payload": { "$ref": "#/$defs/protocolError" } } }
+  ],
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 160, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:~-]*$" },
+    "text": { "type": "string", "minLength": 1, "maxLength": 16000 },
+    "label": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "path": { "type": "string", "maxLength": 240, "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$" },
+    "mediaSrc": { "type": "string", "maxLength": 600, "pattern": "^/media/[^\\s]+$" },
+    "kind": { "enum": ["image", "video", "audio", "text", "document", "plan"] },
+    "tool": { "enum": ["canvas.read_selected", "media.read", "media.render", "artifact.publish", "canvas.create_results", "canvas.update_own_results", "llm.request", "generation.request", "generation.quote", "knowledge.propose_update"] },
+    "money": { "type": "object", "additionalProperties": false, "required": ["currency", "amountMicros"], "properties": { "currency": { "const": "USD" }, "amountMicros": { "type": "integer", "minimum": 0, "maximum": 1000000000000 } } },
+    "spendBudget": { "type": "object", "additionalProperties": false, "required": ["grantId", "connectionId", "currency", "maxCostMicros", "reservedMicros", "chargedMicros", "overshootMicros", "calls", "maxCalls", "status"], "properties": { "grantId": { "$ref": "#/$defs/id" }, "connectionId": { "$ref": "#/$defs/id" }, "currency": { "const": "USD" }, "maxCostMicros": { "type": "integer", "minimum": 1, "maximum": 1000000000000 }, "reservedMicros": { "type": "integer", "minimum": 0, "maximum": 1000000000000 }, "chargedMicros": { "type": "integer", "minimum": 0, "maximum": 1000000000000 }, "overshootMicros": { "type": "integer", "minimum": 0, "maximum": 1000000000000 }, "calls": { "type": "integer", "minimum": 0 }, "maxCalls": { "type": "integer", "minimum": 1 }, "status": { "enum": ["active", "blocked", "overspent", "exhausted"] } } },
+    "error": { "type": "object", "additionalProperties": false, "required": ["code", "message", "retryable"], "properties": { "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$", "maxLength": 64 }, "message": { "$ref": "#/$defs/text" }, "retryable": { "type": "boolean" } } },
+    "projectRef": { "type": "object", "additionalProperties": false, "required": ["source", "id"], "properties": { "source": { "enum": ["local", "cloud"] }, "id": { "$ref": "#/$defs/id" } } },
+    "artifactRef": { "type": "object", "additionalProperties": false, "required": ["artifactId", "revision", "checksum"], "properties": { "artifactId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "checksum": { "$ref": "#/$defs/checksum" } } },
+    "artifactRefs": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/artifactRef" } },
+    "inputItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["itemId", "artifactId", "revision", "checksum", "kind", "caption"],
+      "properties": { "itemId": { "$ref": "#/$defs/id" }, "artifactId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "checksum": { "$ref": "#/$defs/checksum" }, "kind": { "$ref": "#/$defs/kind" }, "caption": { "$ref": "#/$defs/label" }, "text": { "$ref": "#/$defs/text" }, "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "durationMs": { "type": "integer", "minimum": 0 } }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifactId", "revision", "checksum", "kind", "caption", "mimeType", "sizeBytes", "mediaSrc", "provenance"],
+      "properties": { "artifactId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "checksum": { "$ref": "#/$defs/checksum" }, "kind": { "$ref": "#/$defs/kind" }, "caption": { "$ref": "#/$defs/label" }, "mimeType": { "$ref": "#/$defs/label" }, "sizeBytes": { "type": "integer", "minimum": 1 }, "mediaSrc": { "$ref": "#/$defs/mediaSrc" }, "previewSrc": { "$ref": "#/$defs/mediaSrc" }, "provenance": { "enum": ["generated", "reference", "derived"] }, "text": { "$ref": "#/$defs/text" }, "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "durationMs": { "type": "integer", "minimum": 0 } }
+    },
+    "generationCaptureInput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["itemId", "kind"],
+      "properties": { "itemId": { "$ref": "#/$defs/id" }, "kind": { "enum": ["image", "video", "audio"] } }
+    },
+    "generationCaptureRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["projectRef", "projectRevision", "inputs"],
+      "properties": { "projectRef": { "$ref": "#/$defs/projectRef" }, "projectRevision": { "$ref": "#/$defs/revision" }, "inputs": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/generationCaptureInput" } } }
+    },
+    "generationCaptureReceipt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["itemId", "artifact"],
+      "properties": { "itemId": { "$ref": "#/$defs/id" }, "artifact": { "$ref": "#/$defs/artifact" } }
+    },
+    "connection": { "type": "object", "additionalProperties": false, "required": ["id", "kind", "status"], "properties": { "id": { "$ref": "#/$defs/id" }, "kind": { "enum": ["llm", "generation", "external", "browser"] }, "status": { "enum": ["ready", "unavailable"] } } },
+    "generationGrantSpec": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "modelId", "catalogRevision", "params", "estimateMicros"],
+      "properties": {
+        "kind": { "enum": ["image", "video", "audio"] },
+        "modelId": { "$ref": "#/$defs/id" },
+        "catalogRevision": { "$ref": "#/$defs/revision" },
+        "params": { "type": "object", "maxProperties": 64 },
+        "estimateMicros": { "type": "integer", "minimum": 1, "maximum": 1000000000000 }
+      }
+    },
+    "grant": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "tools", "connectionId", "artifactRefs", "maxCalls", "maxCost", "status"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "tools": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["llm.request", "generation.request"] } }, "connectionId": { "$ref": "#/$defs/id" }, "artifactRefs": { "$ref": "#/$defs/artifactRefs" }, "maxCalls": { "type": "integer", "minimum": 1 }, "maxCost": { "$ref": "#/$defs/money" }, "status": { "enum": ["active", "exhausted", "revoked"] }, "generationSpec": { "$ref": "#/$defs/generationGrantSpec" }, "reviewId": { "$ref": "#/$defs/id" }, "reviewRevision": { "$ref": "#/$defs/revision" } }
+    },
+    "hello": {
+      "type": "object", "additionalProperties": false, "required": ["supportedProtocolVersions", "capabilities"],
+      "properties": { "supportedProtocolVersions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "const": "1.0" } }, "capabilities": { "type": "array", "uniqueItems": true, "items": { "enum": ["checkpoint", "resume", "cancel", "pause.checkpoint", "pause.immediate", "structuredReviews", "toolBroker"] } } }
+    },
+    "ack": {
+      "type": "object", "additionalProperties": false, "required": ["eventCursor", "acceptedMessageId"],
+      "properties": { "eventCursor": { "type": "integer", "minimum": 0 }, "acceptedMessageId": { "$ref": "#/$defs/id" }, "session": { "type": "object", "additionalProperties": false, "required": ["maxMessageBytes", "heartbeatIntervalMs"], "properties": { "maxMessageBytes": { "type": "integer", "minimum": 1024, "maximum": 262144 }, "heartbeatIntervalMs": { "type": "integer", "minimum": 1000, "maximum": 30000 } } } }
+    },
+    "start": {
+      "type": "object", "additionalProperties": false,
+      "required": ["taskType", "instruction", "input", "projectRef", "inputs", "workspaceId", "connections", "grants"],
+      "properties": {
+        "taskType": { "$ref": "#/$defs/id" }, "instruction": { "$ref": "#/$defs/text" }, "input": { "type": "object" }, "projectRef": { "$ref": "#/$defs/projectRef" }, "inputs": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/inputItem" } }, "workspaceId": { "$ref": "#/$defs/id" }, "connections": { "type": "array", "maxItems": 16, "items": { "$ref": "#/$defs/connection" } }, "grants": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/grant" } }, "spendBudget": { "$ref": "#/$defs/spendBudget" },
+        "generationPins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "modelId", "catalogRevision", "params"],
+            "properties": {
+              "kind": { "enum": ["image", "video", "audio"] },
+              "modelId": { "$ref": "#/$defs/id" },
+              "catalogRevision": { "$ref": "#/$defs/revision" },
+              "params": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "resume": {
+      "type": "object", "additionalProperties": false,
+      "required": ["start", "checkpoint", "decisions", "receipts", "eventCursor"],
+      "properties": { "start": { "$ref": "#/$defs/start" }, "checkpoint": { "$ref": "#/$defs/checkpoint" }, "decisions": { "type": "array", "items": { "$ref": "#/$defs/decision" } }, "receipts": { "type": "array", "items": { "$ref": "#/$defs/toolResult" } }, "eventCursor": { "type": "integer", "minimum": 0 } }
+    },
+    "progress": {
+      "type": "object", "additionalProperties": false, "required": ["stageId", "label", "status"],
+      "properties": { "stageId": { "$ref": "#/$defs/id" }, "label": { "$ref": "#/$defs/label" }, "status": { "enum": ["running", "awaiting_review", "awaiting_input", "awaiting_connection", "succeeded", "failed", "skipped"] }, "completed": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 1 } },
+      "dependentRequired": { "completed": ["total"], "total": ["completed"] }
+    },
+    "checkpoint": {
+      "type": "object", "additionalProperties": false, "required": ["checkpointId", "stateVersion", "state", "files"],
+      "properties": { "checkpointId": { "$ref": "#/$defs/id" }, "stateVersion": { "type": "integer", "minimum": 1 }, "state": { "type": "object" }, "files": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "checksum"], "properties": { "path": { "$ref": "#/$defs/path" }, "checksum": { "$ref": "#/$defs/checksum" } } } } }
+    },
+    "emptyArgs": { "type": "object", "additionalProperties": false },
+    "publishArgs": { "type": "object", "additionalProperties": false, "required": ["path", "kind", "caption", "mimeType", "provenance"], "properties": { "path": { "$ref": "#/$defs/path" }, "kind": { "$ref": "#/$defs/kind" }, "caption": { "$ref": "#/$defs/label" }, "mimeType": { "$ref": "#/$defs/label" }, "provenance": { "enum": ["generated", "reference", "derived"] }, "sourceRefs": { "$ref": "#/$defs/artifactRefs" } } },
+    "offset": { "type": "object", "additionalProperties": false, "required": ["x", "y"], "properties": { "x": { "type": "number", "minimum": -10000000, "maximum": 10000000 }, "y": { "type": "number", "minimum": -10000000, "maximum": 10000000 } } },
+    "createItem": { "type": "object", "additionalProperties": false, "required": ["slotId", "artifact", "caption"], "properties": { "slotId": { "$ref": "#/$defs/id" }, "artifact": { "$ref": "#/$defs/artifactRef" }, "caption": { "$ref": "#/$defs/label" }, "offset": { "$ref": "#/$defs/offset" } } },
+    "createArgs": { "type": "object", "additionalProperties": false, "required": ["workspaceId", "items"], "properties": { "workspaceId": { "$ref": "#/$defs/id" }, "items": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/createItem" } } } },
+    "patch": { "type": "object", "additionalProperties": false, "minProperties": 1, "properties": { "caption": { "$ref": "#/$defs/label" }, "artifact": { "$ref": "#/$defs/artifactRef" }, "offset": { "$ref": "#/$defs/offset" } } },
+    "updateArgs": { "type": "object", "additionalProperties": false, "required": ["workspaceId", "itemId", "expectedRevision", "patch"], "properties": { "workspaceId": { "$ref": "#/$defs/id" }, "itemId": { "$ref": "#/$defs/id" }, "expectedRevision": { "$ref": "#/$defs/revision" }, "patch": { "$ref": "#/$defs/patch" } } },
+    "llmArgs": {
+      "type": "object", "additionalProperties": false, "required": ["connectionId", "grantId", "messages", "refs"],
+      "properties": { "connectionId": { "$ref": "#/$defs/id" }, "grantId": { "$ref": "#/$defs/id" }, "messages": { "type": "array", "minItems": 1, "maxItems": 128, "items": { "type": "object", "additionalProperties": false, "required": ["role", "text"], "properties": { "role": { "enum": ["system", "user", "assistant"] }, "text": { "$ref": "#/$defs/text" } } } }, "refs": { "$ref": "#/$defs/artifactRefs" }, "modelId": { "$ref": "#/$defs/id" } }
+    },
+    "generationArgs": {
+      "type": "object", "additionalProperties": false, "required": ["connectionId", "grantId", "kind", "prompt", "refs", "params"],
+      "properties": { "connectionId": { "$ref": "#/$defs/id" }, "grantId": { "$ref": "#/$defs/id" }, "kind": { "enum": ["image", "video", "audio"] }, "prompt": { "$ref": "#/$defs/text" }, "refs": { "$ref": "#/$defs/artifactRefs" }, "params": { "type": "object" }, "modelId": { "$ref": "#/$defs/id" } }
+    },
+    "generationQuoteArgs": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "prompt", "refs", "params"],
+      "properties": { "kind": { "enum": ["image", "video", "audio"] }, "prompt": { "$ref": "#/$defs/text" }, "refs": { "$ref": "#/$defs/artifactRefs" }, "params": { "type": "object" }, "modelId": { "$ref": "#/$defs/id" } }
+    },
+    "knowledgeArgs": { "type": "object", "additionalProperties": false, "required": ["path", "expectedRevision", "content", "reason"], "properties": { "path": { "$ref": "#/$defs/path" }, "expectedRevision": { "type": "integer", "minimum": 0 }, "content": { "$ref": "#/$defs/text" }, "reason": { "$ref": "#/$defs/text" } } },
+    "toolRequest": {
+      "type": "object", "additionalProperties": false, "required": ["operationId", "tool", "arguments"],
+      "properties": { "operationId": { "$ref": "#/$defs/id" }, "tool": { "$ref": "#/$defs/tool" }, "arguments": { "type": "object" } },
+      "oneOf": [
+        { "properties": { "tool": { "const": "canvas.read_selected" }, "arguments": { "$ref": "#/$defs/emptyArgs" } } },
+        { "properties": { "tool": { "const": "media.read" }, "arguments": { "$ref": "#/$defs/artifactRef" } } },
+        { "properties": { "tool": { "const": "media.render" }, "arguments": { "$ref": "#/$defs/mediaRenderArgs" } } },
+        { "properties": { "tool": { "const": "artifact.publish" }, "arguments": { "$ref": "#/$defs/publishArgs" } } },
+        { "properties": { "tool": { "const": "canvas.create_results" }, "arguments": { "$ref": "#/$defs/createArgs" } } },
+        { "properties": { "tool": { "const": "canvas.update_own_results" }, "arguments": { "$ref": "#/$defs/updateArgs" } } },
+        { "properties": { "tool": { "const": "llm.request" }, "arguments": { "$ref": "#/$defs/llmArgs" } } },
+        { "properties": { "tool": { "const": "generation.request" }, "arguments": { "$ref": "#/$defs/generationArgs" } } },
+        { "properties": { "tool": { "const": "generation.quote" }, "arguments": { "$ref": "#/$defs/generationQuoteArgs" } } },
+        { "properties": { "tool": { "const": "knowledge.propose_update" }, "arguments": { "$ref": "#/$defs/knowledgeArgs" } } }
+      ]
+    },
+    "pendingResult": { "type": "object", "additionalProperties": false, "required": ["waitId"], "properties": { "waitId": { "$ref": "#/$defs/id" }, "jobId": { "$ref": "#/$defs/id" } } },
+    "readResult": { "type": "object", "additionalProperties": false, "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/$defs/inputItem" } } } },
+    "mediaResult": { "type": "object", "additionalProperties": false, "required": ["file"], "properties": { "file": { "type": "object", "additionalProperties": false, "required": ["path", "checksum", "sizeBytes", "mimeType", "kind"], "properties": { "path": { "$ref": "#/$defs/path" }, "checksum": { "$ref": "#/$defs/checksum" }, "sizeBytes": { "type": "integer", "minimum": 1 }, "mimeType": { "$ref": "#/$defs/label" }, "kind": { "$ref": "#/$defs/kind" } } } } },
+    "mediaRenderRef": { "type": "object", "additionalProperties": false, "required": ["artifact", "order", "startMs", "durationMs"], "properties": { "artifact": { "$ref": "#/$defs/artifactRef" }, "order": { "type": "integer", "minimum": 0, "maximum": 31 }, "startMs": { "type": "integer", "minimum": 0, "maximum": 300000 }, "durationMs": { "type": "integer", "minimum": 50, "maximum": 300000 } } },
+    "mediaRenderArgs": { "type": "object", "additionalProperties": false, "required": ["version", "mode", "audio", "clips", "fps", "maxDurationMs", "maxOutputBytes"], "properties": { "version": { "const": 1 }, "mode": { "const": "rough-cut" }, "audio": { "const": "mute" }, "clips": { "type": "array", "minItems": 1, "maxItems": 32, "items": { "$ref": "#/$defs/mediaRenderRef" } }, "fps": { "enum": [24, 25, 30] }, "frame": { "enum": ["1280x720", "720x1280", "1080x1080"] }, "maxDurationMs": { "type": "integer", "minimum": 50, "maximum": 300000 }, "maxOutputBytes": { "type": "integer", "minimum": 65536, "maximum": 536870912 } } },
+    "mediaRenderResult": { "type": "object", "additionalProperties": false, "required": ["artifact"], "properties": { "artifact": { "$ref": "#/$defs/artifact" } } },
+    "publishResult": { "type": "object", "additionalProperties": false, "required": ["artifact"], "properties": { "artifact": { "$ref": "#/$defs/artifact" } } },
+    "canvasResult": { "type": "object", "additionalProperties": false, "required": ["workspaceId", "items"], "properties": { "workspaceId": { "$ref": "#/$defs/id" }, "items": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["itemId", "revision", "artifactId"], "properties": { "slotId": { "$ref": "#/$defs/id" }, "itemId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "artifactId": { "$ref": "#/$defs/id" } } } } } },
+    "llmResult": { "type": "object", "additionalProperties": false, "required": ["text"], "properties": { "text": { "$ref": "#/$defs/text" }, "jobId": { "$ref": "#/$defs/id" }, "charged": { "$ref": "#/$defs/money" }, "usage": { "type": "object", "additionalProperties": false, "required": ["inputTokens", "outputTokens"], "properties": { "inputTokens": { "type": "integer", "minimum": 0 }, "outputTokens": { "type": "integer", "minimum": 0 } } } } },
+    "generationResult": { "type": "object", "additionalProperties": false, "required": ["jobId", "requestId", "artifacts"], "properties": { "jobId": { "$ref": "#/$defs/id" }, "requestId": { "$ref": "#/$defs/id" }, "artifacts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/artifact" } }, "charged": { "$ref": "#/$defs/money" } } },
+    "generationQuoteResult": {
+      "type": "object", "additionalProperties": false, "required": ["spec", "budget"],
+      "properties": {
+        "spec": { "$ref": "#/$defs/generationSpec" },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["remainingMicros", "callsLeft"],
+          "properties": {
+            "remainingMicros": { "type": "integer", "minimum": 0 },
+            "callsLeft": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "knowledgeResult": { "type": "object", "additionalProperties": false, "required": ["proposalId", "status"], "properties": { "proposalId": { "$ref": "#/$defs/id" }, "status": { "const": "awaiting_review" } } },
+    "toolResult": {
+      "type": "object", "additionalProperties": false, "required": ["operationId", "tool", "receiptId", "status"],
+      "properties": { "operationId": { "$ref": "#/$defs/id" }, "tool": { "$ref": "#/$defs/tool" }, "receiptId": { "$ref": "#/$defs/id" }, "status": { "enum": ["pending", "succeeded", "failed", "uncertain"] }, "result": { "type": "object" }, "error": { "$ref": "#/$defs/error" } },
+      "oneOf": [
+        { "properties": { "status": { "const": "pending" }, "result": { "$ref": "#/$defs/pendingResult" } }, "required": ["result"], "not": { "required": ["error"] } },
+        { "properties": { "status": { "enum": ["failed", "uncertain"] } }, "required": ["error"], "not": { "required": ["result"] } },
+        { "properties": { "status": { "const": "succeeded" } }, "required": ["result"], "not": { "required": ["error"] }, "oneOf": [
+          { "properties": { "tool": { "const": "canvas.read_selected" }, "result": { "$ref": "#/$defs/readResult" } } },
+          { "properties": { "tool": { "const": "media.read" }, "result": { "$ref": "#/$defs/mediaResult" } } },
+          { "properties": { "tool": { "const": "media.render" }, "result": { "$ref": "#/$defs/mediaRenderResult" } } },
+          { "properties": { "tool": { "const": "artifact.publish" }, "result": { "$ref": "#/$defs/publishResult" } } },
+          { "properties": { "tool": { "enum": ["canvas.create_results", "canvas.update_own_results"] }, "result": { "$ref": "#/$defs/canvasResult" } } },
+          { "properties": { "tool": { "const": "llm.request" }, "result": { "$ref": "#/$defs/llmResult" } } },
+          { "properties": { "tool": { "const": "generation.request" }, "result": { "$ref": "#/$defs/generationResult" } } },
+          { "properties": { "tool": { "const": "generation.quote" }, "result": { "$ref": "#/$defs/generationQuoteResult" } } },
+          { "properties": { "tool": { "const": "knowledge.propose_update" }, "result": { "$ref": "#/$defs/knowledgeResult" } } }
+        ] }
+      ]
+    },
+    "material": { "type": "object", "additionalProperties": false, "required": ["artifactId", "revision", "checksum", "caption", "role"], "properties": { "artifactId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "checksum": { "$ref": "#/$defs/checksum" }, "caption": { "$ref": "#/$defs/label" }, "role": { "enum": ["reference", "proposal", "result"] } } },
+    "extraQuestion": {
+      "type": "object", "additionalProperties": false, "required": ["id", "kind", "label"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "kind": { "enum": ["text", "choice"] }, "label": { "$ref": "#/$defs/label" }, "options": { "type": "array", "minItems": 2, "maxItems": 4, "items": { "type": "object", "additionalProperties": false, "required": ["id", "label"], "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "$ref": "#/$defs/label" } } } }, "recommendedOptionId": { "$ref": "#/$defs/id" } },
+      "allOf": [ { "if": { "properties": { "kind": { "const": "choice" } } }, "then": { "required": ["options", "recommendedOptionId"] }, "else": { "not": { "anyOf": [ { "required": ["options"] }, { "required": ["recommendedOptionId"] } ] } } } ]
+    },
+    "requestedGrant": { "type": "object", "additionalProperties": false, "required": ["connectionId", "tool", "artifactRefs", "maxCalls", "maxCost"], "properties": { "connectionId": { "$ref": "#/$defs/id" }, "tool": { "enum": ["llm.request", "generation.request"] }, "artifactRefs": { "$ref": "#/$defs/artifactRefs" }, "maxCalls": { "type": "integer", "minimum": 1 }, "maxCost": { "$ref": "#/$defs/money" } } },
+    "generationSpec": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "modelId", "catalogRevision", "promptHash", "refs", "paramsHash"],
+      "properties": {
+        "kind": { "enum": ["image", "video", "audio"] },
+        "modelId": { "$ref": "#/$defs/id" },
+        "catalogRevision": { "$ref": "#/$defs/revision" },
+        "promptHash": { "$ref": "#/$defs/checksum" },
+        "refs": { "$ref": "#/$defs/artifactRefs" },
+        "paramsHash": { "$ref": "#/$defs/checksum" },
+        "prompt": { "$ref": "#/$defs/text" },
+        "params": { "type": "object", "maxProperties": 64 },
+        "estimateMicros": { "type": "integer", "minimum": 0, "maximum": 1000000000000 }
+      }
+    },
+    "review": {
+      "type": "object", "additionalProperties": false, "required": ["reviewId", "revision", "stageId", "title", "question", "materials", "decisions"],
+      "properties": { "reviewId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "stageId": { "$ref": "#/$defs/id" }, "title": { "$ref": "#/$defs/label" }, "question": { "$ref": "#/$defs/text" }, "materials": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/material" } }, "decisions": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true, "items": { "enum": ["approved", "changes-requested", "rejected"] } }, "extraQuestions": { "type": "array", "maxItems": 2, "items": { "$ref": "#/$defs/extraQuestion" } }, "requestedGrant": { "$ref": "#/$defs/requestedGrant" }, "generationSpec": { "$ref": "#/$defs/generationSpec" } }
+    },
+    "decision": {
+      "type": "object", "additionalProperties": false, "required": ["reviewId", "revision", "decision", "comment", "answers", "actorId", "decidedAt", "grants"],
+      "properties": { "reviewId": { "$ref": "#/$defs/id" }, "revision": { "$ref": "#/$defs/revision" }, "decision": { "enum": ["approved", "changes-requested", "rejected"] }, "comment": { "type": "string", "maxLength": 16000 }, "answers": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 16000 } }, "actorId": { "$ref": "#/$defs/id" }, "decidedAt": { "type": "string", "format": "date-time" }, "grants": { "type": "array", "items": { "$ref": "#/$defs/grant" } }, "consent": { "type": "boolean" } },
+      "allOf": [ { "if": { "properties": { "decision": { "enum": ["changes-requested", "rejected"] } } }, "then": { "properties": { "comment": { "pattern": "\\S" } } } } ]
+    },
+    "control": { "type": "object", "additionalProperties": false, "required": ["requestId", "expectedRevision", "reason"], "properties": { "requestId": { "$ref": "#/$defs/id" }, "expectedRevision": { "$ref": "#/$defs/revision" }, "reason": { "$ref": "#/$defs/text" } } },
+    "paused": { "type": "object", "additionalProperties": false, "required": ["checkpointId"], "properties": { "checkpointId": { "$ref": "#/$defs/id" } } },
+    "finished": {
+      "type": "object", "additionalProperties": false, "required": ["outcome", "summary", "artifactIds"],
+      "properties": { "outcome": { "enum": ["succeeded", "failed", "cancelled"] }, "summary": { "$ref": "#/$defs/text" }, "artifactIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } }, "error": { "$ref": "#/$defs/error" } },
+      "allOf": [ { "if": { "properties": { "outcome": { "const": "failed" } } }, "then": { "required": ["error"] }, "else": { "not": { "required": ["error"] } } } ]
+    },
+    "heartbeat": { "type": "object", "additionalProperties": false, "required": ["lastCheckpointId"], "properties": { "lastCheckpointId": { "anyOf": [ { "$ref": "#/$defs/id" }, { "type": "null" } ] } } },
+    "protocolError": { "type": "object", "additionalProperties": false, "required": ["error", "fatal"], "properties": { "error": { "$ref": "#/$defs/error" }, "fatal": { "type": "boolean" } } }
+  }
+}

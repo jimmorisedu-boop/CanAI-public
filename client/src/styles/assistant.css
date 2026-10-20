@@ -1,0 +1,733 @@
+/* контейнер холста, шторка помощника и цепочки
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── канвас ─────────────────────────────────────────────── */
+
+.canvas-space {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.canvas-main {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.cloud-board-readonly {
+  position: absolute;
+  z-index: 24;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(760px, calc(100% - 32px));
+  padding: 9px 10px 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+}
+
+.cloud-board-readonly span {
+  min-width: 0;
+}
+
+.cloud-board-readonly button {
+  flex: 0 0 auto;
+  min-height: var(--control-h-compact);
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cloud-board-readonly button:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.cloud-board-readonly button:disabled {
+  opacity: .55;
+  cursor: progress;
+}
+
+/* Долгий обрыв: доска работает дальше и копит правки, поэтому это тихий
+   значок, а не запрет — точка тоном, как у остальных сообщений. */
+.cloud-board-offline-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warn-text);
+}
+
+/* ── помощник: шторка над промпт-баром ──────────────────
+   Живёт внутри .prompt-dock (column-reverse), поэтому растёт ВВЕРХ и
+   не отнимает у канваса ширину — он всегда во всё окно. */
+
+/* переключатель окон: строка генерации ↔ разговор с помощником */
+.pane-tabs {
+  margin-bottom: 10px;
+}
+
+/* индикация работы помощника: минимальная точка */
+.pane-signal {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.pane-signal i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pane-tabs button.signal-ready { border-color: var(--accent-soft-border); }
+.pane-tabs button.signal-ready .pane-signal { color: var(--accent-text); }
+.pane-tabs button.signal-failed .pane-signal { color: var(--danger); }
+.pane-tabs button.signal-working .pane-signal { color: var(--text-3); }
+.pane-tabs button.signal-working .pane-signal i { animation: assistant-pulse 1.1s ease-in-out infinite; }
+
+@keyframes assistant-pulse {
+  50% { opacity: 0.25; }
+}
+
+.pane-new-chat-btn {
+  transition: var(--transition-smooth);
+}
+.pane-new-chat-btn:hover {
+  color: var(--text-1);
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+/* окно помощника внутри промпт-бара: собственного «стекла» не нужно —
+   его даёт сам бар, здесь только лента с прокруткой */
+.assistant-shelf {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 70vh;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+/* подсказка рядом с «Спросить» */
+.assistant-hint {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+
+/* ряд цепочек помощника (LLM-макросы) */
+.assistant-macros {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assistant-macro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface-3) 45%, transparent);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.assistant-macro:hover { color: var(--text); border-color: var(--border-strong); }
+.assistant-macro.add { border-style: dashed; color: var(--text-3); }
+.assistant-macro.draft { border-style: dashed; }
+
+.assistant-macro.running {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.assistant-macro-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* сколько раз цепочка остановится и спросит */
+.assistant-macro-asks {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  padding: 1px 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--accent-soft-border);
+}
+
+.assistant-ask-every {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  cursor: pointer;
+}
+
+.assistant-ask-every input { accent-color: var(--accent); }
+
+/* цепочка остановилась и ждёт ответа пользователя */
+.cascade-pause {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 12px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent-soft-border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-control);
+  background: var(--accent-soft);
+  font-size: var(--text-secondary);
+  color: var(--text);
+}
+
+.cascade-pause strong { font-size: var(--text-control); font-weight: 800; }
+.cascade-pause span { color: var(--text-2); }
+
+.cascade-pause-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cascade-pause-actions .chip-btn.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* пометка «спросить меня» на LLM-ноде */
+.node-checkpoint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: var(--text-micro);
+  cursor: pointer;
+}
+
+.node-checkpoint input { accent-color: var(--accent); }
+
+/* «Ответить» цепочке — то же место, что «Спросить», но действие платное-нейтральное */
+.ask.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+}
+
+.ask.primary:not(:disabled):hover { background: var(--accent-hover); color: #fff; }
+
+.assistant-shelf-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 5px 8px;
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+
+.assistant-shelf-head strong {
+  flex: 1;
+  min-width: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.assistant-shelf-head .icon-btn,
+.assistant-shelf-head select {
+  min-height: 36px;
+}
+
+.assistant-shelf-head .icon-btn {
+  flex: none;
+}
+
+.assistant-shelf-head .icon-btn:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.assistant-shelf-head .icon-btn:disabled { opacity: 0.35; }
+
+.assistant-shelf-head select {
+  min-width: 0;
+  max-width: 138px;
+  padding: 0 26px 0 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background-color: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.assistant-shelf-head select:hover:not(:disabled),
+.assistant-shelf-head select:focus-visible {
+  border-color: var(--border);
+  background-color: var(--surface-3);
+  color: var(--text);
+}
+
+/* Диалог не загрузился — модель выбирать не для чего. Список обязан выглядеть
+   выключенным: с рукой-указателем и подсветкой он читался как сломанный
+   («не открывается выбор модели», 09.10.2026). */
+.assistant-shelf-head select:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* Board memory shares the window controls' icon geometry. */
+.assistant-memory-toggle[aria-checked="true"] {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.assistant-memory-toggle:hover:not(:disabled),
+.assistant-memory-toggle:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.assistant-memory-toggle:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 560px) {
+  .assistant-shelf-head {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .assistant-shelf-head strong {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .assistant-shelf-head select {
+    flex: 0 1 96px;
+    width: 96px;
+    max-width: 96px;
+    padding-inline: 6px;
+  }
+
+}
+
+.prompt-chat-drawer-layer {
+  position: absolute;
+  z-index: 20;
+  inset: 10px 0 0;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.prompt-chat-drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(290px, 86%);
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px) saturate(140%);
+  animation: prompt-chat-drawer-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes prompt-chat-drawer-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.prompt-chat-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 5px 8px 5px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.prompt-chat-drawer-head strong {
+  font-size: var(--text-control);
+  letter-spacing: -0.01em;
+}
+
+.prompt-chat-drawer .icon-btn {
+  place-items: center;
+}
+
+.prompt-chat-drawer .icon-btn:hover,
+.prompt-chat-drawer .icon-btn:focus-visible {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.prompt-chat-new {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  margin: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.prompt-chat-new:hover,
+.prompt-chat-new:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.prompt-chat-search {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-h-standard);
+  margin: 0 8px 6px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text-3);
+}
+
+.prompt-chat-search:focus-within {
+  border-color: var(--accent-soft-border);
+}
+
+.prompt-chat-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1;
+}
+
+.prompt-chat-conversation-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 6px 8px;
+}
+
+.prompt-chat-conversation {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  border-radius: var(--radius-control);
+}
+
+.prompt-chat-conversation.active {
+  background: var(--accent-soft);
+}
+
+.prompt-chat-conversation-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 7px 34px 7px 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.prompt-chat-conversation-main:hover,
+.prompt-chat-conversation-main:focus-visible {
+  background: color-mix(in srgb, var(--surface-3) 72%, transparent);
+}
+
+.prompt-chat-conversation-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 3px;
+}
+
+.prompt-chat-conversation-copy strong,
+.prompt-chat-conversation-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-chat-conversation-copy strong {
+  font-size: var(--text-secondary);
+  font-weight: 750;
+}
+
+.prompt-chat-conversation-copy small {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.prompt-chat-conversation-meta {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  gap: 5px;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.prompt-chat-indicator {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.prompt-chat-indicator.running {
+  background: var(--accent);
+  animation: assistant-pulse 1.1s ease-in-out infinite;
+}
+
+.prompt-chat-indicator.unread { background: var(--success); }
+.prompt-chat-indicator.error { background: var(--danger); }
+
+.prompt-chat-row-menu {
+  position: absolute;
+  z-index: 1;
+  right: 3px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.prompt-chat-conversation:hover .prompt-chat-row-menu,
+.prompt-chat-conversation:focus-within .prompt-chat-row-menu {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.prompt-chat-row-actions {
+  position: absolute;
+  z-index: 3;
+  top: 42px;
+  right: 4px;
+  display: grid;
+  min-width: 150px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-md);
+}
+
+.prompt-chat-row-actions button {
+  font: inherit;
+  text-align: left;
+}
+
+.prompt-chat-row-actions button:hover { background: var(--surface-3); color: var(--text); }
+.prompt-chat-row-actions button.danger { color: var(--danger); }
+
+.prompt-chat-rename {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  margin: 8px 38px 8px 7px;
+  padding: 0 8px;
+  border: 1px solid var(--accent-soft-border);
+  border-radius: var(--radius-compact);
+  outline: 0;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-secondary);
+}
+
+.prompt-chat-deleted {
+  flex: none;
+  max-height: 126px;
+  overflow: auto;
+  border-top: 1px solid var(--border);
+  padding: 7px 8px;
+}
+
+.prompt-chat-deleted summary {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  cursor: pointer;
+}
+
+.prompt-chat-deleted article {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 36px;
+}
+
+.prompt-chat-deleted article > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--text-micro);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-chat-deleted .danger { color: var(--danger); }
+
+.prompt-chat-undo {
+  position: absolute;
+  z-index: 4;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-md);
+  color: var(--text-2);
+  font-size: var(--text-micro);
+}
+
+.prompt-chat-undo button {
+  border: 0;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.prompt-chat-permanent {
+  position: absolute;
+  z-index: 5;
+  inset: auto 8px 8px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  border-radius: var(--radius-control);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-lg);
+}
+
+.prompt-chat-permanent strong { font-size: var(--text-secondary); }
+.prompt-chat-permanent p { margin: 5px 0 10px; color: var(--text-3); font-size: var(--text-micro); line-height: 1.4; }
+.prompt-chat-permanent > div { display: flex; justify-content: flex-end; gap: 6px; }
+
+.prompt-chat-permanent button {
+  font: inherit;
+}
+
+.prompt-chat-permanent button.danger {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+  color: var(--danger);
+}
+
+@media (pointer: coarse) {
+  .prompt-chat-row-menu {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 899px) {
+  .prompt-chat-drawer {
+    width: 86%;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-chat-drawer {
+    animation: prompt-chat-drawer-fade 120ms ease-out;
+    transform: none;
+  }
+  .prompt-chat-indicator.running { animation: none; }
+}
+
+@keyframes prompt-chat-drawer-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .prompt-chat-drawer {
+    background: var(--surface-solid);
+    backdrop-filter: none;
+  }
+}
+

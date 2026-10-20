@@ -1,0 +1,50 @@
+/* Общий лист стилей CanAI.
+ *
+ * Раньше это был один файл на 8050 строк. Разбит по разделам, но ПОРЯДОК
+ * импортов ниже — это и есть каскад: правила разделены ровно по границам,
+ * как они лежали, и переставлять строки нельзя. Так, видимый фокус
+ * (focus.css) намеренно идёт почти последним и перебивает точечные
+ * outline: none у отдельных виджетов.
+ *
+ * Новое правило кладётся в файл своего раздела, а не сюда.
+ */
+
+@import './styles/base.css';
+@import './styles/topbar.css';
+@import './styles/modal.css';
+@import './styles/billing.css';
+@import './styles/assistant.css';
+@import './styles/assistant-chat.css';
+@import './styles/canvas-ui.css';
+@import './styles/onboarding.css';
+@import './styles/help.css';
+@import './styles/prompt-bar.css';
+@import './styles/action-dock-batch.css';
+@import './styles/task-center.css';
+@import './styles/agents.css';
+@import './styles/agents-dock.css';
+@import './styles/macro-library.css';
+@import './styles/notices.css';
+@import './styles/price-params.css';
+@import './styles/status-chips.css';
+@import './styles/settings.css';
+@import './settings/catalogLibrary.css';
+@import './styles/nodes-space.css';
+@import './styles/node-params.css';
+@import './styles/node-details.css';
+@import './styles/gallery.css';
+@import './styles/typography-motion.css';
+@import './styles/archive.css';
+@import './styles/diagnostics.css';
+@import './styles/focus.css';
+@import './styles/compare.css';
+@import './styles/timeline.css';
+@import './styles/compact.css';
+@import './styles/share.css';
+@import './styles/media-playback.css';
+
+/* Канон рабочих элементов — последним, чтобы общий вид не перебивался
+   случайным порядком подключения частных файлов. */
+@import './styles/controls.css';
+@import './styles/assistant-reading.css';
+@import './styles/assistant-reading-responsive.css';

@@ -1,0 +1,842 @@
+/* настройки, внешний редактор, онбординг пустого холста
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── настройки и внешний редактор ───────────────────────── */
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--scrim);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(900px, calc(100% - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lg);
+  transform-origin: center;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-modal h2 {
+  margin: 0;
+}
+
+.settings-close {
+  display: grid;
+  place-items: center;
+  width: var(--control-h-standard);
+  height: var(--control-h-standard);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--text-3);
+  background: transparent;
+  cursor: pointer;
+}
+
+.settings-close:hover {
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.settings-close:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* ⚠️ Высота окна закреплена, чтобы оно не прыгало при смене раздела: иначе
+   кнопки бокового списка уезжают из-под курсора, и по ним приходится
+   догонять мышью — та же беда, что была у панели над выделением.
+   ⚠️ Именно `height`, а не `min-height`: нижний предел держит только
+   КОРОТКИЕ разделы, а высокий раздел всё равно растягивал окно. Замер на
+   восьми разделах (18.09.2026): «fal.ai и модели» — 747px против 520 у
+   остальных, и весь список разделов подпрыгивал на 114px. Правило чинили
+   когда разделов было шесть и такого высокого среди них не было, а тест
+   сверяет ЛИШЬ наличие правила — не его действие. Содержимое прокручивается
+   внутри (`overflow-y: auto` у .settings-body), поэтому ничего не теряется. */
+.settings-layout > .settings-body {
+  height: min(520px, 60vh);
+}
+
+/* Боковой список разделов — тот же приём, что на планшете: панель перестала
+   быть одной длинной лентой, в которой нужную настройку искали прокруткой. */
+.settings-nav {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+  width: 232px;
+  overflow-y: auto;
+  padding: var(--space-3);
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.settings-nav-item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: var(--control-h-standard);
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  background: none;
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  line-height: 1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-nav-item:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+/* Выбранное ЗАЛИТО акцентом, а не помечено рамкой — как все переключатели
+   канона (styles/controls.css). */
+.settings-nav-item.on {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.settings-nav-item.on:hover {
+  background: var(--accent);
+}
+
+.settings-nav-item:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.settings-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-5);
+  scrollbar-gutter: stable;
+}
+
+/* только размещение: вид даёт общая плашка */
+.settings-hint {
+  max-width: none;
+  margin-bottom: var(--space-5);
+}
+
+.settings-primary {
+  display: block;
+  min-width: 0;
+}
+
+.settings-section {
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-primary > .settings-section:first-child {
+  padding-top: 0;
+}
+
+.settings-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.settings-section-heading h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.settings-section-heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.settings-connection {
+  flex: none;
+  font-size: var(--text-secondary);
+  font-weight: 650;
+  color: var(--text-2);
+}
+
+.settings-connection[data-tone='success'] {
+  color: var(--ok);
+}
+
+.settings-connection[data-tone='warning'] {
+  color: var(--warn-text);
+}
+
+.settings-editor-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.settings-editor-summary > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-control);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-editor-actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.settings-technical {
+  margin: 0;
+}
+
+.settings-technical summary {
+  border-radius: var(--radius-compact);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: var(--text-control);
+  font-weight: 650;
+  padding: var(--space-4) var(--space-1);
+}
+
+.settings-technical summary:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.settings-technical[open] summary {
+  color: var(--text);
+}
+
+.settings-technical:not([open]) > :not(summary) {
+  display: none;
+}
+
+.settings-note a {
+  color: var(--accent-text);
+}
+
+.settings-label {
+  display: block;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-2);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.settings-modal input:not([type="checkbox"]),
+.settings-modal select {
+  width: 100%;
+  height: var(--control-h-standard);
+  /* Поля настроек шире прочих (во всю колонку), и текст в них дышит: 14px
+     против общих 10px. Это отступ, а не форма — рамка, скругление, фон и
+     фокус берутся из канона. */
+  padding: 0 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.settings-modal input:focus,
+.settings-modal select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.settings-note {
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+  line-height: 1.55;
+}
+
+.settings-textarea {
+  width: 100%;
+  min-height: 88px;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  outline: none;
+  color: var(--text);
+  background: var(--surface-2);
+  font: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.settings-textarea:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.settings-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.settings-option-list {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.settings-option-list .settings-checkbox {
+  margin: 0;
+}
+
+.settings-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  min-width: 0;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-segmented label {
+  min-width: 0;
+}
+
+.settings-modal .settings-segmented input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-segmented span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h-emphasis);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  background: var(--surface-2);
+  font-size: var(--text-control);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.settings-segmented input:checked + span {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.settings-segmented input:focus-visible + span {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.settings-segmented:disabled span {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.settings-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.settings-error {
+  color: var(--danger);
+  font-size: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--border);
+  background: var(--surface-solid);
+}
+
+/* «Сохранить» в настройках — тот же вид, что .generate */
+.settings-actions .generate {
+  height: var(--control-h-emphasis);
+  padding: 0 var(--space-5);
+  line-height: 1;
+}
+
+.settings-actions .editor-close {
+  min-height: var(--control-h-emphasis);
+}
+
+/* Форма — из канона (.ui-btn в controls.css): «Отмена», «Проверить»,
+   «Скачать» — то же обычное действие, что и везде. Своя геометрия делала их
+   единственными прямоугольниками среди пилюль. */
+
+.chip-edit {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--text-secondary);
+  padding: 0 2px;
+  opacity: 0.7;
+}
+
+.chip-edit:hover {
+  opacity: 1;
+  color: var(--accent-text);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* кнопка воспроизведения на видео-фигуре */
+.video-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(26, 26, 31, 0.5);
+  color: #fff;
+  font-size: var(--text-title-lg);
+  padding-left: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s;
+}
+
+.video-play-overlay:hover {
+  background: rgba(26, 26, 31, 0.7);
+}
+
+/* Подключение к серверу CanAI: два поля и кнопка одной строкой. Форма самих
+   элементов — из общего канона (.ui-field/.ui-btn), здесь только раскладка. */
+.settings-cloud-connect {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+
+.settings-cloud-connect .ui-field {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.settings-pairing-mode {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.settings-pairing-active {
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+.settings-pairing-qr {
+  display: grid;
+  width: 188px;
+  height: 188px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: #fff;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.settings-pairing-qr img {
+  display: block;
+  width: 188px;
+  height: 188px;
+}
+
+.settings-form-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.settings-form-divider::before,
+.settings-form-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 620px) {
+  .settings-body {
+    overflow-x: hidden;
+  }
+
+  .settings-pairing-active {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-team-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 34rem;
+  margin-top: var(--space-4);
+}
+
+.settings-team-form .settings-label {
+  margin-top: var(--space-3);
+}
+
+.settings-password-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  cursor: pointer;
+}
+
+.settings-password-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.settings-field-error {
+  margin: var(--space-2) 0 0;
+  color: var(--danger);
+  font-size: var(--text-secondary);
+}
+
+.settings-team-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.settings-account-card {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.settings-account-card strong,
+.settings-account-card p,
+.settings-account-card dl,
+.settings-account-card dd,
+.diag-build,
+.diag-build dd {
+  margin: 0;
+}
+
+.settings-account-card p,
+.settings-account-card dt,
+.diag-build dt {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.settings-account-card dl,
+.diag-build {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.settings-account-card dl > div,
+.diag-build > div {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.settings-account-card dd,
+.diag-build dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+}
+
+/* Копия сетевых досок (6.2): ход копирования и список досок в копии. */
+.settings-mirror-progress {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+}
+
+.settings-mirror-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.settings-mirror-boards {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-mirror-boards li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.settings-mirror-boards li > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.settings-mirror-boards strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-mirror-boards span {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.settings-mirror-boards .ui-btn {
+  flex: none;
+}
+
+/* Список адресов планшетной двери: их бывает несколько (Wi-Fi, VPN), и
+   человек должен видеть все — какой из них рабочий, знает только его сеть. */
+.settings-address-list {
+  list-style: none;
+  margin: var(--space-2) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.settings-address-list code {
+  font-size: var(--text-control);
+  padding: 2px 8px;
+  background: var(--surface-3);
+  border-radius: var(--radius-compact);
+}
+.settings-address-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+/* Имя подключения рядом с адресом: только по нему видно, где Wi-Fi, а где
+   виртуальный адаптер, до которого планшету не достучаться. */
+.settings-address-name {
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+}
+
+/* Подсказка про брандмауэр: она появляется только на Windows и только когда
+   доступ уже включён — то есть ровно тогда, когда человек упёрся. */
+.settings-firewall-note {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  /* Материал сообщения общий (DESIGN.md → Сообщения): тон — ТОЧКОЙ, а не
+     заливкой во всю плашку. Заливка кричит громче самого сообщения. */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.settings-firewall-note p { margin: 0; font-size: var(--text-secondary); color: var(--text-2); }
+.settings-firewall-note strong::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  background: var(--warn-text);
+  vertical-align: middle;
+}
+.settings-firewall-cmd {
+  display: block;
+  width: 100%;
+  padding: var(--space-2);
+  background: var(--surface-3);
+  border-radius: var(--radius-compact);
+  font-size: var(--text-micro);
+  word-break: break-all;
+}
+
+/*
+ * Строка «как мы дотягиваемся до сервера команды».
+ *
+ * ⚠️ Действия здесь прижаты ВЛЕВО, а не вправо, как в карточке аккаунта: это
+ * не завершение формы, а продолжение фразы над ними — «Связь: напрямую» и
+ * рядом «Проверить». Прижатые вправо кнопки читались бы как «готово».
+ */
+.settings-route {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.settings-route .settings-note {
+  margin-top: 0;
+}
+
+.settings-route .settings-team-actions {
+  justify-content: flex-start;
+  margin-top: var(--space-2);
+}
+
+.settings-route-manual {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Лента журнала. Моноширинного шрифта в проекте нет (всё на Manrope), поэтому
+   строки держит не гарнитура, а прокрутка и перенос по словам. */
+/* Номер сборки над журналом (пункт 5.1) — вид строк общий с карточкой команды. */
+.diag-build {
+  margin-top: var(--space-3);
+}
+
+.diag-tail {
+  margin-top: var(--space-3);
+  max-height: 260px;
+  overflow: auto;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.diag-line {
+  font-size: var(--font-ui-xs);
+  line-height: 1.45;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diag-line[data-level='warn'] { color: var(--warn-text); }
+.diag-line[data-level='error'] { color: var(--danger); }
+
+/* Действия журнала — свой ряд, а не подвал окна: у окна основное действие одно
+   («Сохранить»), и второй вермилион рядом спорил бы с ним за внимание. */
+.diag-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* Жалоба (пункт 5.9): поле во всю ширину раздела, высоту человек тянет сам.
+   Кнопка отправки — обычная, не акцентная: у окна основное действие одно. */
+.problem-report-text {
+  display: block;
+  width: 100%;
+  min-height: 72px;
+  margin-top: var(--space-3);
+  resize: vertical;
+}
+
+.problem-report .inline-notice {
+  margin-top: var(--space-3);
+}

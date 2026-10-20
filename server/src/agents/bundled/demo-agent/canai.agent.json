@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "canai.demo",
+  "name": "Demo Planner",
+  "description": "A deterministic offline package for checking the Host, approvals, and delivering a plan to the local canvas.",
+  "version": "1.0.0",
+  "protocolVersion": "1.0",
+  "runtime": {
+    "kind": "node",
+    "version": "20.0",
+    "entrypoint": { "kind": "file", "path": "index.mjs" },
+    "dependencies": { "kind": "stdlib" },
+    "maxParallelTasks": 1
+  },
+  "taskTypes": [
+    {
+      "id": "demo-plan",
+      "label": "Three-scene plan",
+      "description": "Creates a short text plan and requests approval before placing it.",
+      "inputSchema": "schemas/demo-plan.input.json",
+      "outputKinds": ["plan", "text"]
+    },
+    {
+      "id": "demo-storyboard",
+      "label": "Test storyboard",
+      "description": "Creates a deterministic four-frame storyboard without an LLM or network access.",
+      "inputSchema": "schemas/demo-storyboard.input.json",
+      "outputKinds": ["plan", "text"]
+    }
+  ],
+  "permissions": ["artifact.publish", "canvas.create_results", "review.request"],
+  "connections": [],
+  "lifecycle": { "pause": "checkpoint", "resume": true, "cancel": true }
+}

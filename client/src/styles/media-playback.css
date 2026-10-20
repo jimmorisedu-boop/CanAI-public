@@ -1,0 +1,107 @@
+/* Shared media transport. Native Chromium media controls expose localized
+   labels, so playback surfaces use this small English control row instead. */
+[data-canai-native-media-error] {
+  /* Keep the failed media box and ref alive while removing Chromium's
+     localized fallback panel from pixels and the accessibility tree. */
+  visibility: hidden !important;
+}
+
+.media-playback-shell {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: var(--space-1, 4px);
+}
+
+.media-playback-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  color: var(--text-2);
+  font-size: var(--text-micro, 11px);
+}
+
+.media-playback-button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.media-playback-button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.media-playback-button:disabled,
+.media-playback-controls input:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.media-playback-seek {
+  flex: 1 1 auto;
+  min-width: 54px;
+}
+
+.media-playback-volume {
+  flex: 0 1 84px;
+  min-width: 40px;
+}
+
+.media-playback-time {
+  flex: 0 0 auto;
+  min-width: 56px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.media-playback-error {
+  flex: 1 1 100%;
+  min-width: 0;
+  color: var(--danger);
+  font-size: var(--text-micro, 11px);
+  line-height: 1.25;
+}
+
+.fal-wizard-media-player,
+.agent-review-artifact-player,
+.archive-preview-player {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: var(--space-1, 4px);
+}
+
+.fal-wizard-media-player:fullscreen,
+.agent-review-artifact-player:fullscreen,
+.archive-preview-player:fullscreen {
+  display: grid;
+  place-items: center;
+  padding: var(--space-3, 12px);
+  background: var(--surface-solid);
+}
+
+@media (max-width: 560px) {
+  .media-playback-controls {
+    flex-wrap: wrap;
+  }
+
+  .media-playback-seek {
+    order: 10;
+    flex-basis: 100%;
+  }
+
+  .media-playback-error {
+    order: 11;
+  }
+}

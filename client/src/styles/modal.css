@@ -1,0 +1,99 @@
+/* Общая геометрия модальных окон CanAI.
+ *
+ * Этот файл подключается и desktop-приложением, и отдельной планшетной
+ * страницей. Здесь только базовая подложка и окно подтверждения; стили
+ * конкретных модалок остаются в своих разделах.
+ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  background: var(--scrim);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* База для модальных окон на .modal-backdrop. */
+.modal-card {
+  background: var(--material-thick);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(28px) saturate(1.35);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+}
+
+/* Единственное окно подтверждения (см. ui/confirmBus). Нативных нет. */
+.confirm-dialog {
+  width: min(360px, calc(100vw - 32px));
+  padding: 18px 20px 16px;
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+}
+
+.confirm-detail {
+  margin: 0 0 14px;
+  color: var(--text-2);
+  font-size: var(--text-control);
+  line-height: 1.55;
+}
+
+.confirm-rows {
+  margin: 0 0 16px;
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-control);
+}
+
+.confirm-rows > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.confirm-rows dt {
+  color: var(--text-3);
+}
+
+.confirm-rows dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-cancel:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.confirm-ok {
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+
+.confirm-ok:hover {
+  background: var(--surface-3);
+}
+
+.confirm-ok.danger {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent) !important;
+  color: var(--danger) !important;
+}
+
+.confirm-ok.danger:hover {
+  background: var(--danger-fill);
+  color: #fff !important;
+}

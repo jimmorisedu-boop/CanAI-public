@@ -1,0 +1,508 @@
+/* ── Канон рабочих элементов ──────────────────────────────────────────────
+   Одна роль — одна форма. До 21.08.2026 в приложении было 72 правила кнопок
+   и 69 разных сочетаний отступа, скругления и кегля: каждое окно заводило
+   своё. Здесь общий вид описан один раз, а места, объявлявшие свою
+   геометрию, переключены на него.
+
+   Роли:
+     .ui-btn          обычное действие — «Восстановить», «Отмена», «Повторить»
+     .ui-btn.primary  основное действие экрана — залито акцентом, крупнее
+     .ui-btn.quiet    тихое действие внутри строки — без рамки и фона
+
+   Геометрия берётся ТОЛЬКО из ролей tokens.css: высоты --control-h-*,
+   скругления --radius-*, кегли --text-*. Своё число здесь — это будущий
+   разнобой.
+
+   Списки селекторов рядом с ролью — это места, которые уже существовали к
+   моменту сведения. Новому месту достаточно класса .ui-btn: дописывать сюда
+   ничего не нужно. */
+
+/* ⚠️ Подпись в кнопке центрируется НЕ сама собой. Браузер ставит по центру
+   строковый бокс, а у Onest подстрочная часть кегля меньше надстрочной
+   (13 против 4 при кегле 13) — глаз же считает серединой строки середину
+   между верхом заглавной буквы и базовой линией. Замер на живых кнопках
+   приложения: подпись сидит на 0.5px ВЫШЕ этой середины, и это видно
+   (жалоба 07.09.2026 — «слово должно быть отцентровано внутри кнопки»).
+
+   Компенсация идёт верхним отступом: при align-items: center содержимое
+   смещается на ПОЛОВИНУ разницы отступов, поэтому 1px даёт нужные 0.5px. У
+   ролей с фиксированной высотой это ничего не ломает (box-sizing: border-box),
+   а где высота от содержимого — тот же пиксель отнимается снизу. */
+:root {
+  --label-optical-lift: 1px;
+}
+
+/* ── Обычное действие ──────────────────────────────────────────────────── */
+
+.ui-btn,
+.recovery-list .trash-restore,
+.recovery-list button:not(.icon-btn),
+.undo-toast button,
+.share-dialog-actions button,
+.share-missing-actions button,
+.confirm-actions button,
+.operation-state-actions button,
+.inline-notice-actions button,
+.external-edit-status-actions button,
+.export-panel-actions button,
+.gallery-search-empty button,
+.billing-refresh-btn,
+.face-pick-head button,
+.task-center-actions button,
+.task-launch-group-actions button,
+.task-launch-variant-actions button,
+.timeline-close,
+.compare-close,
+.node-add-btn,
+.canvas-onboarding button,
+.editor-close,
+.macro-library button,
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  height: var(--control-h-compact);
+  padding: var(--label-optical-lift) 14px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-solid);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ui-btn:hover:not(:disabled),
+.recovery-list .trash-restore:hover:not(:disabled),
+.recovery-list button:not(.icon-btn):hover:not(:disabled),
+.undo-toast button:hover:not(:disabled),
+.share-dialog-actions button:hover:not(:disabled),
+.share-missing-actions button:hover:not(:disabled),
+.confirm-actions button:hover:not(:disabled),
+.operation-state-actions button:hover:not(:disabled),
+.inline-notice-actions button:hover:not(:disabled),
+.external-edit-status-actions button:hover:not(:disabled),
+.export-panel-actions button:hover:not(:disabled),
+.gallery-search-empty button:hover:not(:disabled),
+.billing-refresh-btn:hover:not(:disabled),
+.face-pick-head button:hover:not(:disabled),
+.task-center-actions button:hover:not(:disabled),
+.task-launch-group-actions button:hover:not(:disabled),
+.task-launch-variant-actions button:hover:not(:disabled),
+.timeline-close:hover,
+.compare-close:hover,
+.node-add-btn:hover:not(:disabled),
+.canvas-onboarding button:hover:not(:disabled),
+.editor-close:hover:not(:disabled),
+.macro-library button:hover:not(:disabled),
+.chip-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.ui-btn:disabled,
+.recovery-list button:not(.icon-btn):disabled,
+.share-dialog-actions button:disabled,
+.confirm-actions button:disabled,
+.task-center-actions button:disabled,
+.billing-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Основное действие ─────────────────────────────────────────────────── */
+
+/* Та же пилюля, но крупнее и залита акцентом: главное действие отличается
+   размером и цветом, а не формой — так его находят, не разбираясь в
+   скруглениях. */
+.ui-btn.primary,
+.node-run-btn,
+.node-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  height: var(--control-h-standard);
+  padding: var(--label-optical-lift) 18px 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ui-btn.primary:hover:not(:disabled),
+.node-run-btn:hover:not(:disabled),
+.node-upload-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+/* ── Тихое действие внутри строки ──────────────────────────────────────── */
+
+/* «В строку», «Копировать», пункты меню. Не должно спорить с содержимым:
+   в покое ни рамки, ни фона — они появляются под курсором. Высота ниже
+   обычной, иначе плотный список раздувается. */
+.ui-btn.quiet,
+.prompt-chat-result-actions button,
+.prompt-chat-inline-actions button,
+.prompt-chat-row-actions button,
+.prompt-chat-permanent button,
+.macro-lib-menu button,
+.project-menu button,
+.project-menu a,
+.face-threshold-popover button,
+.task-center-clear,
+.node-history-btn,
+.share-pin-row .share-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-h-mini);
+  padding: var(--label-optical-lift) var(--space-2) 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ui-btn.quiet:hover:not(:disabled),
+.prompt-chat-result-actions button:hover:not(:disabled),
+.prompt-chat-inline-actions button:hover:not(:disabled),
+.prompt-chat-row-actions button:hover:not(:disabled),
+.prompt-chat-permanent button:hover:not(:disabled),
+.macro-lib-menu button:hover:not(:disabled),
+.project-menu button:hover:not(:disabled),
+.project-menu a:hover,
+.face-threshold-popover button:hover:not(:disabled),
+.task-center-clear:hover:not(:disabled),
+.node-history-btn:hover:not(:disabled),
+.share-pin-row .share-text-button:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* ── Исключение: кнопка в две строки ───────────────────────────────────── */
+
+/* Контракт `data-control-layout='stack'` объявлен в base.css: у такой кнопки
+   подпись и цена стоят друг под другом, и фиксированная высота её обрезала бы.
+   Пилюля и цвета при этом остаются те же — меняется только то, как считается
+   высота. */
+.ui-btn[data-control-layout='stack'],
+.share-dialog-actions button[data-control-layout='stack'] {
+  height: auto;
+  min-height: var(--control-h-standard);
+  padding-block: var(--space-1);
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+/* ── Кнопка-иконка ─────────────────────────────────────────────────────── */
+
+/* Крестик, шестерёнка, корзина, «показать». Одна и та же вещь: квадрат с
+   иконкой. До сведения скругление гуляло от 8 до круга, а фон то был, то нет.
+   В покое кнопка прозрачна — фон появляется под курсором; опасная краснеет,
+   как в библиотеке макросов. */
+.ui-icon-btn,
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--control-h-mini);
+  min-width: var(--control-h-mini);
+  height: var(--control-h-mini);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.ui-icon-btn:hover:not(:disabled),
+.icon-btn:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.ui-icon-btn:disabled,
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Опасное действие тихо в покое и краснеет под курсором: ряд из красных
+   кнопок превращает список в сплошную тревогу. */
+.ui-icon-btn.danger:hover:not(:disabled),
+.icon-btn.danger:hover:not(:disabled),
+.trash-forget:hover:not(:disabled),
+.macro-lib-act.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+/* ── Переключатель режимов ─────────────────────────────────────────────── */
+
+/* Один смысл: выбрать один вариант из нескольких. Вкладки «Промпт/Помощник»,
+   тип генерации, режимы сравнения. До сведения это были три разных механизма,
+   и выбранное состояние показывалось тремя способами — рамкой, мягкой
+   заливкой и цветом текста.
+   Теперь одна дорожка: группа в общей пилюле, выбранное залито акцентом. */
+.ui-toggle,
+.pane-tabs,
+.kind-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+.ui-toggle button,
+.pane-tabs button,
+.kind-toggle button,
+.compare-modes button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  height: var(--control-h-compact);
+  min-width: var(--control-h-compact);
+  padding: var(--label-optical-lift) var(--space-3) 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ui-toggle button:hover:not(.on):not(:disabled),
+.pane-tabs button:hover:not(.on):not(:disabled),
+.kind-toggle button:hover:not(.on):not(:disabled),
+.compare-modes button:hover:not(.on):not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* Выбранное — заливка акцентом. Не рамка и не мягкий фон: «что включено»
+   должно читаться мгновенно, а не угадываться по оттенку. */
+.ui-toggle button.on,
+.pane-tabs button.on,
+.kind-toggle button.on,
+.compare-modes button.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Дорожка режимов в сравнении плавает над кадром, поэтому у неё своё стекло —
+   это про место, а не про форму. Форма сегментов общая. */
+.compare-modes {
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+}
+
+/* ── Метка и чип ───────────────────────────────────────────────────────── */
+
+/* Маленькая подпись-состояние: «эта доска», «готов», имя модели на кадре.
+   До сведения таких было шесть форм — отличались отступами, кеглем и даже
+   скруглением. Осталось два вида, и всё остальное — это один из двух. */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: calc(3px + var(--label-optical-lift)) 9px calc(3px - var(--label-optical-lift));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Счётчик-метка: то же тело, но залито акцентом. Число обязано читаться
+   первым — это метка объекта или количество, а не пояснение. */
+.ui-count,
+.compare-mark,
+.compare-thumb-mark,
+.archive-tile-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: var(--label-optical-lift) 5px 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Поле ввода ────────────────────────────────────────────────────────── */
+
+/* Самое разношёрстное место аудита: 25 правил и ни одного повторения. Общий
+   вид один — высота из base.css (--control-height), рамка, скругление, фон и
+   кегль отсюда.
+   ⚠️ Поля ВНУТРИ обёртки (поиск в архиве, поиск в диалогах) сюда намеренно не
+   входят: там рамку и фон несёт сама обёртка, а поле обязано быть прозрачным.
+   Это другая роль, а не разнобой. */
+.ui-field,
+.param-input,
+.settings-modal input:not([type='checkbox']),
+.settings-modal select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  padding: 0 10px;
+  outline: none;
+}
+
+.ui-field:hover:not(:disabled),
+.param-input:hover:not(:disabled),
+.settings-modal input:not([type='checkbox']):hover,
+.settings-modal select:hover {
+  border-color: var(--border-strong);
+}
+
+/* Фокус виден рамкой акцента и мягким ореолом — одинаково у всех полей. */
+.ui-field:focus,
+.param-input:focus,
+.settings-modal input:not([type='checkbox']):focus,
+.settings-modal select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ── Заголовок окна ────────────────────────────────────────────────────── */
+
+/* Заголовки диалогов расходились сильнее всего: в настройках 18, в
+   подтверждении 16, в публикации 21, а в корзине вообще не был задан — и
+   браузер рисовал свои 24. Уровня два: обычное окно и крупный диалог
+   (публикация, приветствие), где заголовок несёт иконку и подпись. */
+.ui-dialog-title,
+.recovery-modal h2,
+.settings-modal h2,
+.archive-modal h2,
+.billing-history-modal h2,
+.confirm-dialog h2,
+.versions-modal h2 {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.ui-dialog-title.large,
+.share-dialog h2,
+.app-dialog h2 {
+  font-size: var(--text-title-lg);
+  letter-spacing: -0.025em;
+}
+
+/* Подсказка у иконки. Материал ОБЩИЙ с подсказкой экспорта: три почти
+   одинаковых значка в шапке и так плохо различаются, разводить их ещё и
+   разными видами всплывающей подписи незачем. */
+.ui-tooltip-host {
+  position: relative;
+  display: inline-flex;
+}
+
+.ui-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  display: grid;
+  width: max-content;
+  max-width: 260px;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 120ms ease 300ms,
+    transform 120ms ease 300ms,
+    visibility 0s linear 420ms;
+  pointer-events: none;
+}
+
+.ui-tooltip span {
+  color: var(--text-3);
+}
+
+/* Размещения вверх — для нижних рядов окна (правка клипа): снизу подсказке
+   некуда деться. По умолчанию подсказка по-прежнему висит ниже значка, по его
+   правому краю. Вертикаль задана здесь, горизонталь — тремя вариантами:
+   по центру, от левого края значка, от правого. Центровка идёт отдельным
+   свойством `translate`, чтобы не спорить с `transform` анимации появления. */
+.ui-tooltip.top,
+.ui-tooltip.top-start,
+.ui-tooltip.top-end {
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform: translateY(3px);
+}
+
+.ui-tooltip.top {
+  left: 50%;
+  right: auto;
+  translate: -50% 0;
+}
+
+.ui-tooltip.top-start {
+  left: 0;
+  right: auto;
+}
+
+.ui-tooltip-host:hover .ui-tooltip,
+/* Обычный focus после клика не открывает подсказку: иначе при уходе мыши на
+   соседний значок старая подсказка остаётся и обе накладываются. Для Tab
+   сохраняем доступный клавиатурный сценарий через focus-visible. */
+.ui-tooltip-host > :focus-visible + .ui-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tooltip { transition: none; }
+}

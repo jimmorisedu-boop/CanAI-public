@@ -1,0 +1,43 @@
+{
+  "name": "canai-server",
+  "private": true,
+  "license": "LicenseRef-CanAI-Community-1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build-info": "tsx src/writeBuildInfo.ts",
+    "check": "tsc --noEmit",
+    "posttest": "npm run test:canvas-action && npm run test:agent-generation-integration && npm run test:agent-generation-gc",
+    "test:canvas-action": "tsx --test src/canvasActionPreparation.test.ts src/canvasActionRoutes.test.ts",
+    "test:tablet-help": "tsx --test src/tabletHelpAssets.test.ts",
+    "test:agent-generation-integration": "tsx --test --test-timeout=30000 src/agents/generation-runner.integration.test.ts src/agents/generation-host-native.integration.test.ts src/agents/generation-input-capture.test.ts",
+    "test:agent-generation-gc": "tsx --test --test-timeout=30000 src/agents/generation-gc.integration.test.ts",
+    "verify:agent-live": "tsx src/agents/live-ui-fixture.ts",
+    "pretest": "tsx --test src/refImageFormat.test.ts src/mediaRoute.test.ts src/audioPipeline.test.ts src/snapshotShrink.test.ts src/modelParams.test.ts src/jobRefsGuard.test.ts src/clientParamContract.test.ts src/imageRefVariant.test.ts src/catalogRelease.test.ts src/catalogLibrary.test.ts src/catalogLifecycle.test.ts src/discoverFalModel.test.ts src/falModelSetup.test.ts src/officialFalPricing.test.ts src/falModelTestSamples.test.ts src/uiOpened.test.ts",
+    "test": "tsx --test src/proxyConfig.test.ts src/proxyDispatcher.test.ts src/diagnosticReport.test.ts src/localSnapshotPortable.test.ts src/macroResume.test.ts src/macroEngine.test.ts src/macroSingleResult.test.ts src/macroGraph.test.ts src/canvasDelivery.test.ts src/remoteAllowlist.test.ts src/remoteAccess.test.ts src/projectsRecovery.test.ts src/tabletHelpAssets.test.ts src/shareLanOrder.test.ts src/boardPresence.test.ts src/sessionDraft.test.ts src/mediaImportRoutes.test.ts src/mediaImportStore.test.ts src/mediaImportManager.test.ts src/mediaLinkResolver.test.ts src/extractorLogin.test.ts src/loginBrowser.test.ts src/loginBrowserInstall.test.ts src/loginBrowserProxy.test.ts src/filePicker.test.ts src/extractorCookies.test.ts src/extractorPreview.test.ts src/shareMediaPreview.test.ts src/portableMediaTools.test.ts src/safeRemote.test.ts src/mediaLinkUrl.test.ts src/mediaTypes.test.ts src/catalog.test.ts src/gpt25Pricing.test.ts src/imageParams.test.ts src/probeQueryString.test.ts src/falRouting.test.ts src/falCdn.test.ts src/generationAvailability.repro.test.ts src/generationGate.test.ts src/generationShutdownRoutes.test.ts src/runnerShutdown.test.ts src/runnerDelivery.test.ts src/macroRuns.test.ts src/jobs.test.ts src/projects.test.ts src/projectRepeatedWrite.test.ts src/projectRoutes.test.ts src/projectPreview.test.ts src/projectTrash.test.ts src/promptChats.test.ts src/boardMemory.test.ts src/promptChatStorage.test.ts src/promptChatMigration.test.ts src/promptChatCommands.test.ts src/promptChatContext.test.ts src/promptChatCompaction.test.ts src/promptChatMemoryFit.test.ts src/promptChatResponse.test.ts src/promptChatEnvelope.test.ts src/promptChatSalvage.test.ts src/promptChatDelivery.test.ts src/promptChatGc.test.ts src/mock.test.ts src/audioPeaks.test.ts src/videoProbe.test.ts src/exportNumbers.test.ts src/mediaLayout.test.ts src/promptChatInstructions.test.ts src/ytRuntime.test.ts src/mediaDownloadQuality.test.ts src/faceModels.test.ts src/components.test.ts src/gcLayout.test.ts src/shotDetect.test.ts src/videoEncoder.test.ts src/zipExtract.test.ts src/ffmpegBinary.test.ts src/ffmpegTools.test.ts src/mediaToolsRoutes.test.ts src/canvasSnapshot.test.ts src/archiveSnapshotGuard.test.ts src/graphLimits.test.ts src/apiSmoke.test.ts src/logIsolation.test.ts src/lifeSigns.test.ts src/buildInfo.test.ts src/uiAlive.test.ts src/launcher.test.ts src/launcherMacos.test.ts src/lifecycle.test.ts src/lifecycle.integration.test.ts src/macroOrder.test.ts src/editSessionStore.test.ts src/editSessions.test.ts src/editorTarget.test.ts src/editSessionsLoad.test.ts src/onboarding.test.ts src/accessAttempts.test.ts src/shareLan.test.ts src/projectImport.test.ts src/mediaOps.integration.test.ts src/probeOrientation.test.ts src/terminateProcessTree.test.ts src/assistantsExchange.test.ts src/assistants.test.ts src/assistantsStore.test.ts src/assistantsRecovery.test.ts src/assistantRoutes.test.ts src/catalogDraftTests.test.ts src/catalogLifecycleOperations.test.ts src/workflowModelMigration.test.ts src/agents/validation.test.ts src/agents/journal.test.ts src/agents/host.test.ts src/agents/host-process.test.ts src/agents/host-path.test.ts src/agents/host-protocol.test.ts src/agents/host-wire.test.ts src/agents/bundled/demo-agent.test.mjs src/agents/tools.test.ts src/agents/tool-media-read.test.ts src/agents/tool-media-render.test.ts src/agents/tool-media-render-replay.test.ts src/agents/tool-media-render.host.test.ts src/agents/routes.test.ts src/agents/package-installer.test.ts src/agents/portable-python-smoke.test.ts src/agents/python-runtime.test.ts src/agents/package-probe.test.ts src/agents/package-source.test.ts src/agents/llm-broker.test.ts src/agents/generation-broker.test.ts src/agents/generation-estimate.test.ts src/agents/tabletApproveConsent.test.ts src/tabletApproveCount.test.ts src/tabletDailyLimit.test.ts src/idempotency.test.ts"
+  },
+  "dependencies": {
+    "@fal-ai/client": "^1.2.0",
+    "@napi-rs/keyring": "^1.2.0",
+    "@primno/dpapi": "^2.0.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "sharp": "^0.35.5",
+    "tsx": "^4.19.0",
+    "undici": "^7.29.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.6.0"
+  },
+  "overrides": {
+    "qs": "6.16.0",
+    "proxy-addr": "2.0.8"
+  }
+}

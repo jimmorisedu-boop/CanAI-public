@@ -1,0 +1,172 @@
+/* Hallmark · component correction: action dock · modern-minimal · utilitarian.
+   Existing CanAI tokens; instruction → batch decision → receipt → one action.
+   Shared by desktop and tablet; no new theme, animation or payment flow. */
+.action-dock-batch-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.action-dock-batch-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-3) 68%, transparent);
+}
+
+.action-dock-batch-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .action-dock-batch-switch button:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+}
+
+.action-dock-batch-switch button.on {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+
+.action-dock-batch-switch button:active:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.action-dock-batch-switch button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.action-dock-batch-switch button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.action-dock-batch-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: var(--text-2);
+  font-size: var(--text-body);
+  white-space: nowrap;
+}
+
+.action-dock-batch-count > span:last-child { color: var(--accent-text); }
+
+@media (pointer: coarse), (max-width: 600px) {
+  .action-dock-batch-switch button { min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .action-dock-batch-switch button { padding-inline: 8px; font-size: var(--text-meta); }
+  .action-dock-batch-switch button svg { display: none; }
+}
+
+/* ── persona bar ────────────────────────────────────────────── */
+.action-dock-persona-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.action-dock-persona-picker-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.action-dock-mode-hint {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 28ch;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .action-dock-mode-hint {
+    display: none;
+  }
+}
+
+.action-dock-persona-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-radius: var(--radius-control);
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+.action-dock-persona-stop {
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  font-size: var(--text-micro);
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+@media (hover: hover) {
+  .action-dock-persona-stop:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+  }
+}
+
+.prompt-dock.is-collapsed.has-collapsed-helper {
+  width: min(380px, calc(100% - 120px));
+}
+
+.prompt-dock.is-collapsed.has-collapsed-helper > .prompt-bar {
+  display: block;
+  padding: 4px 8px;
+}
+
+.prompt-dock.is-collapsed.has-collapsed-helper > .prompt-bar > :not(.action-dock-persona-wrapper) {
+  display: none;
+}
+
+.prompt-dock.is-collapsed.has-collapsed-helper .action-dock-persona-bar {
+  margin-top: 0;
+}
+
+

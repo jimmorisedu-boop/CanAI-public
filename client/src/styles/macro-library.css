@@ -1,0 +1,361 @@
+/* библиотека макросов
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* Библиотека макросов: короткий плотный список. Поиска нет — кнопок девять,
+   искать нечего; счётчик занятости уехал в заголовок. */
+.macro-lib {
+  width: min(460px, calc(100vw - 32px));
+  max-height: min(560px, calc(100vh - 48px));
+  overflow: auto;
+  padding: var(--space-4);
+  border-radius: var(--radius-panel);
+}
+
+.macro-lib > header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.macro-lib h2 {
+  margin: 0;
+  font-size: var(--text-title-sm);
+}
+
+.macro-lib-count {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.macro-lib-add {
+  min-height: var(--control-h-standard);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--accent-soft-border);
+  border-radius: var(--radius-control);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.macro-lib-add:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.macro-lib-add:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.macro-lib-close {
+  margin-left: auto;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-standard);
+  height: var(--control-h-standard);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: none;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.macro-lib-close:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* Заголовок раздела — нейтральный. Красным он был у ЛЮБОГО раздела, и обычный
+   список «Мои» / «Общие» читался как ошибка; тревожный тон — только у
+   разделов-предупреждений («Не видно в баре», «Осталось от прежней версии»). */
+.macro-lib-section {
+  margin-top: 10px;
+  padding-bottom: 4px;
+  font-size: var(--text-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.macro-lib-section.warn {
+  color: var(--danger);
+}
+
+/* На сетевой доске в строке на одно действие больше, и оно словом
+   («Сделать общим», «Предложить тимлиду»): окну нужна ширина, иначе от имени
+   остаётся обрубок. */
+.macro-lib.wide {
+  width: min(540px, calc(100vw - 32px));
+}
+
+.macro-lib-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 2px solid transparent;
+  box-shadow: inset 0 1px 0 var(--border);
+}
+
+.macro-lib-row.dragging {
+  opacity: 0.45;
+}
+
+/* куда встанет перетаскиваемая строка */
+.macro-lib-row.over {
+  border-top-color: var(--accent);
+  box-shadow: none;
+}
+
+/* клик по всей строке открывает редактор нод: прозрачная кнопка под
+   содержимым, а номер и подпись кликам не мешают */
+.macro-lib-open {
+  position: absolute;
+  inset: 0 -6px;
+  z-index: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: none;
+  cursor: pointer;
+}
+
+.macro-lib-open:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.macro-lib-slot,
+.macro-lib-text {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.macro-lib-rename {
+  pointer-events: auto;
+}
+
+.macro-lib-fix,
+.macro-lib-menu-wrap,
+.macro-lib-act,
+.macro-lib-word {
+  position: relative;
+  z-index: 1;
+}
+
+/* Действие строки СЛОВОМ. Ему нужен только слой над подложкой строки; класс
+   значка (.macro-lib-act) брать нельзя — тот задаёт ширину 26px, и подпись
+   вылезала из кнопки на соседние значки: «Сделать общим» лежало на корзине,
+   и щелчок по «Удалить» делал макрос общим. Вид — от .ui-btn.quiet. */
+.macro-lib-word {
+  flex: none;
+  white-space: nowrap;
+}
+
+.macro-lib-slot {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-compact);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+.macro-lib-slot.none {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger);
+}
+
+.macro-lib-text {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 1px;
+}
+
+.macro-lib-text strong {
+  font-size: var(--text-control);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.macro-lib-text small {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+
+.macro-lib-text small.warn {
+  color: var(--danger);
+}
+
+.macro-lib-rename {
+  min-height: 24px;
+  padding: 1px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--text-control);
+}
+
+.macro-lib-fix {
+  flex: none;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  cursor: pointer;
+}
+
+.macro-lib-fix:hover {
+  color: var(--text);
+}
+
+.macro-lib-menu-wrap {
+  position: relative;
+  flex: none;
+}
+
+/* Призрачная кнопка-иконка в списках: материал объявлен РОВНО ЗДЕСЬ и
+   переиспользуется. У помощников стоял голый .icon-btn (он задаёт только
+   центрирование), и браузер рисовал свою рамку — ряд выбивался из списка
+   макросов, хотя по замыслу это один и тот же список (жалоба 19.08.2026). */
+.macro-lib-more,
+.macro-lib-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: none;
+  color: var(--text-3);
+  font-size: var(--text-title-sm);
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.macro-lib-more:hover:not(:disabled),
+.macro-lib-act:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* Удаление — единственное необратимое действие в ряду, и на наведении это
+   видно тоном. В покое оно такое же тихое, как соседнее: пугать рядом
+   красных кнопок незачем. */
+.macro-lib-act.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.macro-lib-menu {
+  position: fixed;
+  z-index: calc(var(--z-modal, 1000) + 1);
+  width: 160px;
+  display: grid;
+  padding: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.macro-lib-menu button {
+  text-align: left;
+}
+
+.macro-lib-menu button:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.macro-lib-menu button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.macro-lib-menu button.danger {
+  color: var(--danger);
+}
+
+.macro-lib-note {
+  margin: 12px 0 4px;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.macro-lib-footer {
+  display: flex;
+  /* Действий в подвале бывает несколько («Добавить», «Из файла», у тимлида —
+     «Общий»): им нужен зазор, а на узком окне — перенос на вторую строку. */
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* только размещение: вид даёт общая плашка */
+.macro-lib-error,
+.macro-lib-notice {
+  max-width: none;
+  margin: 12px 0 4px;
+}
+
+/* Итог «Из файла» — список того, что при загрузке пришлось заменить. Он
+   остаётся в окне, пока его не закроют: всплывашка жила две секунды, и что
+   именно заменено в макросе, человек не успевал прочесть. */
+.macro-lib-notice ul {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+
+.macro-lib-notice li + li {
+  margin-top: 2px;
+}
+
+@media (max-width: 520px) {
+  .macro-lib {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    padding: var(--space-3);
+  }
+
+  .macro-lib-add {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

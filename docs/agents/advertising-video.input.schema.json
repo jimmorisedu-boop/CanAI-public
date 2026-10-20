@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Вход задачи PromptBase: рекламный ролик",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["durationSeconds", "tone", "language"],
+  "properties": {
+    "durationSeconds": { "type": "integer", "minimum": 1, "maximum": 600, "default": 20, "title": "Длительность, секунды" },
+    "tone": { "type": "string", "enum": ["calm", "energetic", "dramatic"], "default": "calm", "title": "Настроение" },
+    "language": { "type": "string", "enum": ["ru", "en"], "default": "ru", "title": "Язык" },
+    "brief": { "type": "string", "maxLength": 8000, "title": "Дополнение к брифу" }
+  }
+}

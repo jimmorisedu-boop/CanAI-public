@@ -1,0 +1,56 @@
+CanAI Community License 1.0
+SPDX-License-Identifier: LicenseRef-CanAI-Community-1.0
+
+Copyright 2026 CanAI contributors
+
+This license applies only to code and other material authored for CanAI and
+distributed with this project ("CanAI material"). Third-party components keep
+their own licenses; this license does not replace, restrict, or relicense
+those components.
+
+1. Permission
+
+You may use, copy, modify, and redistribute CanAI material in source or binary
+form, including forks and modified versions. This permission is free of
+charge and includes personal use and internal business use. You may create,
+use, and sell content or services produced with CanAI, including work made
+for clients. Boards, prompts, workflows, media, and other user-created
+content remain separate from CanAI material; this license grants no rights to
+content owned by someone else or to rights controlled by a model or service
+provider.
+
+2. No sale of CanAI access
+
+You may not charge a fee for a copy or license of CanAI material, rent or
+lease CanAI, or include CanAI materially in a paid bundle whose purpose is to
+sell the software. You may not charge a third party for providing CanAI itself
+through hosting, managed access, a subscription, or per-use access. Free
+sharing, free hosting, and self-hosting remain allowed. These limits also
+apply to modified versions and forks.
+
+This section does not prevent you from paying model, storage, hosting, or
+other infrastructure providers for your own use of CanAI. It also does not
+prevent you from selling generated media, creative work, or services that
+deliver content rather than access to CanAI.
+
+3. Redistribution conditions
+
+When you redistribute CanAI material, preserve this license, the copyright
+notices, and the applicable third-party notices. Mark substantial changes to
+CanAI material. A modified version remains subject to the restrictions in
+Section 2.
+
+4. No warranty
+
+CanAI material is provided "AS IS", without warranty of any kind, express or
+implied, including warranties of merchantability, fitness for a particular
+purpose, and non-infringement. To the extent permitted by law, CanAI
+contributors are not liable for any claim, damages, or other liability arising
+from the material or its use.
+
+5. Separate terms
+
+Copyright holders may grant separate commercial terms for their own CanAI
+material.
+Nothing in this license changes the license or obligations of a third-party
+component.

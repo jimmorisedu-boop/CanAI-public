@@ -1,0 +1,884 @@
+/* сообщения: плашка, всплывающее, состояние-заглушка, полоса «нет связи»
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* Полоса «нет интернета»: узкая, поверх всего, ничего не блокирует. Тон —
+   предупреждение, а не ошибка: приложение продолжает работать, отвалились
+   только вызовы fal.ai. */
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: calc(var(--z-modal, 1000) + 2);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 7px 16px;
+  background: var(--material-thick);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--warn-text) 30%, var(--border));
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.offline-banner-dot {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warn-text);
+}
+
+.offline-banner strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.offline-banner span {
+  color: var(--text-2);
+}
+
+
+/* Пока полоса видна, приложение уезжает вниз ровно на её высоту: накрывать
+   шапку нельзя — под ней «назад», имя доски, настройки, задачи и баланс. */
+:root {
+  --offline-bar-h: 36px;
+}
+
+html.is-offline #root {
+  height: calc(100% - var(--offline-bar-h));
+  margin-top: var(--offline-bar-h);
+}
+
+.offline-banner {
+  min-height: var(--offline-bar-h);
+}
+
+.gallery-key-banner {
+  margin: 18px 0 0;
+  max-width: 620px;
+}
+
+.gallery-trash {
+  min-height: var(--control-h-emphasis);
+  font-family: inherit;
+  font-size: var(--text-body);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.recovery-modal {
+  width: min(620px, calc(100vw - 32px));
+  max-height: min(680px, calc(100vh - 32px));
+  overflow: hidden;
+  padding: 22px;
+}
+
+.recovery-modal > header,
+.recovery-list article,
+.recovery-list article > div:last-child,
+.undo-toast {
+  display: flex;
+  align-items: center;
+}
+
+/* Состояние-заглушка. Материал тот же, что у плашки и всплывающего: стекло,
+   тон точкой, кнопки пилюлями. Прежде здесь была заливка --danger-soft во всю
+   ширину с красной рамкой — самая громкая вещь в приложении на самом обидном
+   экране («доска не загрузилась»). Крупнее плашки эта штука лишь потому, что
+   стоит ВМЕСТО содержимого, а не рядом с ним. */
+.operation-state {
+  /* Материал — общий (см. выше). Своё здесь только то, что она стоит ВМЕСТО
+     содержимого, а не рядом с ним: шире и с полями. */
+  --notice-color: var(--danger);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 560px;
+  margin: 16px;
+  padding: 12px 14px;
+}
+
+.operation-state[data-tone='success'] { --notice-color: var(--ok); }
+.operation-state[data-tone='warning'] { --notice-color: var(--warn-text); }
+.operation-state[data-tone='info'] { --notice-color: var(--accent); }
+
+.operation-state-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--notice-color);
+}
+
+.operation-state-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.operation-state-content strong {
+  display: block;
+  font-size: var(--text-control);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.operation-state p {
+  margin: 2px 0 0;
+  color: var(--text-3);
+}
+
+.operation-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.operation-state-actions button {
+  font: inherit;
+  font-weight: 700;
+  transition: var(--transition-smooth);
+}
+
+.operation-state-actions button:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.route-error-page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+
+/* ═══════════ Оповещения: один угол, один материал ═══════════
+   Решение пользователя 19.08.2026 («сделаем дизайн для оповещений, они должны
+   быть одинаковые» + «всё в одном углу»). До этого материал объявляла каждая
+   поверхность сама, в четырёх разных файлах — и они разъехались: чип был
+   пилюлей с мягкой тенью, карточка внешней правки крупным скруглением с
+   сильной, всплывашка третьим сочетанием. Приходили они тоже из трёх углов.
+
+   Теперь всё всплывающее живёт в ОДНОЙ стопке у правого нижнего угла, а
+   материал объявлен РОВНО ЗДЕСЬ. Встроенные плашки (.inline-notice) остаются
+   в своей панели — они говорят про неё, а не про приложение, — но материал
+   берут тот же самый.
+
+   Плотностей две и правило выбора жёсткое: есть пояснение или больше одной
+   кнопки — карточка, иначе строка. Сторож — noticeMaterial.test.ts. */
+.notice-corner {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  /* выше окон: сообщение с кнопкой («Вернуть») обязано быть нажимаемым и
+     тогда, когда окно, из которого оно пришло, ещё открыто */
+  z-index: var(--z-notice);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: min(420px, calc(100vw - 36px));
+  pointer-events: none;
+}
+
+.global-notifications,
+.external-edit-status-host {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+/* Материал. Один на все виды сообщений. */
+.global-toast,
+.inline-notice,
+.external-edit-status-card,
+.operation-state {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-thick);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Свободно висящему над холстом нужно отделение сильнее, чем вложенному в
+   панель. Это про МЕСТО, а не про материал, и решается тоже здесь. */
+.global-toast,
+.external-edit-status-card {
+  box-shadow: var(--shadow-md);
+}
+
+/* Плотность «строка»: одна фраза и, может быть, одно действие. */
+.global-toast,
+.inline-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+}
+
+/* Плотность «карточка»: заголовок, пояснение, ряд кнопок. */
+.external-edit-status-card {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+}
+
+/* Тон — точкой, а не заливкой и не рамкой вокруг всего. У ошибки вдобавок
+   подтонирована рамка: она обязана быть заметнее прочих. */
+.global-toast.error,
+.inline-notice[data-tone='error'],
+.operation-state[data-tone='error'],
+.external-edit-status-card.broken {
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  color: var(--text);
+}
+
+.global-toast {
+  max-width: 100%;
+  pointer-events: auto;
+  animation: toast-in 0.18s var(--ease-out) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.global-toast > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* тон — точкой слева, а не рамкой вокруг всей плашки */
+.global-toast.error,
+.global-toast.success {
+  padding-left: 10px;
+}
+
+.global-toast.error::before,
+.global-toast.success::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.global-toast.error::before { background: var(--danger); }
+.global-toast.success::before { background: var(--ok); }
+.global-toast.error { color: var(--text); }
+
+.global-toast-action {
+  flex: none;
+  min-height: 24px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.global-toast-action:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.global-toast-close {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.global-toast-close:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-toast { animation: none; }
+}
+
+.settings-editor-row {
+  display: flex;
+  gap: 7px;
+}
+
+.settings-editor-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  color: var(--text);
+}
+
+.settings-checkbox input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.settings-checkbox span {
+  display: block;
+}
+
+.settings-checkbox b {
+  display: block;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.settings-checkbox small {
+  display: block;
+  font-size: var(--text-secondary);
+  font-weight: 400;
+  color: var(--text-3);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ⚠️ Панель загрузок стоит СЛЕВА от полки ассетов, а не поверх неё. Раньше
+   обе занимали правый верхний угол холста (у панели right: 18px, у полки
+   right: 16px), и карточка загрузки закрывала слоты — жалоба 01.10.2026
+   «перекрывает окно загрузки и ассеты». Ширину полки панель меряет сама
+   (ImportQueuePanel): на низком окне слоты складываются в две колонки, и
+   угадывать это порогом по высоте окна нельзя — он врёт молча. Значение
+   ниже — запасное, на одну колонку. */
+.import-queue {
+  --asset-shelf-width: 56px;
+  position: absolute;
+  right: calc(16px + var(--asset-shelf-width) + 12px);
+  top: 16px;
+  z-index: var(--z-canvas-ui);
+  display: grid;
+  gap: 7px;
+  width: min(300px, calc(100% - 16px - var(--asset-shelf-width) - 28px));
+}
+
+.import-queue article {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.import-queue article > div {
+  min-width: 0;
+}
+
+.import-queue strong,
+.import-queue small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-queue small {
+  color: var(--text-3);
+}
+
+.import-queue progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.export-control {
+  position: relative;
+}
+
+.export-hotkey-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  display: grid;
+  width: 270px;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 120ms ease 300ms,
+    transform 120ms ease 300ms,
+    visibility 0s linear 420ms;
+  pointer-events: none;
+}
+
+.export-control:hover .export-hotkey-tooltip,
+.export-control:focus-within .export-hotkey-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 300ms;
+}
+
+.export-hotkey-tooltip span {
+  color: var(--text-3);
+}
+
+.export-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 3;
+  width: 330px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+}
+
+.export-panel header strong {
+  font-size: var(--text-control);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.export-panel header small {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1;
+}
+
+.export-panel header,
+.export-panel-actions,
+.export-group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.export-panel p {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.export-group-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+/* Строка группы экспорта — не кнопка, а строка списка: своя высота у неё
+   законная. Кнопки панели форму берут из канона (controls.css). */
+.export-group-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-h-standard);
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  box-sizing: border-box;
+}
+
+.export-group-row > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.export-group-row > small {
+  flex: none;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1;
+}
+
+/* Форма — из канона (controls.css). Здесь остаётся только то, чем эта кнопка
+   действительно отличается: она главная в панели экспорта. */
+.export-panel-actions button {
+  font-weight: 600;
+}
+
+.export-panel-actions {
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.macro-library {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: min(680px, calc(100vw - 32px));
+  max-height: 430px;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.macro-library > header,
+.macro-library article,
+.macro-library article > div:last-child {
+  display: flex;
+  align-items: center;
+}
+
+.macro-library > header,
+.macro-library article {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.macro-library article {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.macro-library article > div:first-child {
+  display: grid;
+}
+
+.macro-library small {
+  color: var(--text-3);
+}
+
+.macro-library article > div:last-child {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+
+.macro-library button.danger {
+  color: var(--danger);
+}
+
+.generation-estimate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 4px 10px 8px;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.generation-estimate b {
+  color: var(--text-2);
+}
+
+.settings-checkbox small {
+  margin-top: 4px;
+  color: var(--text-3);
+}
+
+.recovery-modal > header,
+.recovery-list article {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.recovery-modal h2,
+.recovery-modal p {
+  margin: 0;
+}
+
+.recovery-modal header p,
+.recovery-list small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-3);
+}
+
+.version-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-compact);
+  border: 1px solid var(--border);
+}
+
+.versions-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, calc(100vw - 32px));
+  padding: 0;
+}
+
+.versions-modal > header {
+  flex: none;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+
+.versions-modal-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 22px 18px;
+}
+
+.version-thumb-slot {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-compact);
+  background: var(--surface-3);
+}
+
+.version-info {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.version-date {
+  color: var(--text);
+}
+
+.version-time {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+}
+
+.recovery-list {
+  display: grid;
+  margin-top: 4px;
+}
+
+.recovery-list article {
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.recovery-list article:last-child {
+  border-bottom: 0;
+}
+
+.version-row:hover,
+.version-row:focus-within {
+  background: var(--surface-2);
+}
+
+.recovery-list article > div:last-child {
+  gap: 6px;
+}
+
+.recovery-list button,
+.undo-toast button {
+}
+
+.version-action {
+  min-height: 40px;
+}
+
+.recovery-list button.danger {
+  color: var(--danger);
+}
+
+
+
+
+/* ── Корзина ──────────────────────────────────────────────────────────────
+   Список, который читают глазами, а не тревожатся. Прежде каждая из шести
+   десятков строк несла ДВЕ кнопки одинакового веса, и одна из них была залита
+   вермилионом: экран превращался в сплошное предупреждение, хотя основное
+   действие здесь — «Восстановить». Правило гайда: акцент только на основное
+   действие; необратимое живёт тихо и показывает тон на наведении — ровно как
+   в библиотеке макросов. */
+
+.recovery-modal > header {
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.trash-head-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.recovery-modal h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* Число досок — справка при заголовке, а не второй заголовок. */
+.trash-count {
+  font-size: var(--text-secondary);
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+.trash-empty-all {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.trash-empty-all:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+.trash-empty-all:disabled { opacity: 0.5; cursor: default; }
+
+/* Строка: превью, имя с меткой, действия. Одна высота у всех — список не
+   прыгает от того, есть у доски картинка или нет. */
+.recovery-list article {
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 0;
+}
+
+.recovery-list article > div:first-of-type {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.recovery-list strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trash-thumb {
+  width: 52px;
+  height: 36px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: var(--radius-compact);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+/* Доска без картинок (и та, чьи файлы уже стёрла уборка) держит то же место
+   тихой штриховкой: пустота в списке хуже, чем честная заглушка. */
+.trash-thumb.empty {
+  background:
+    repeating-linear-gradient(45deg, var(--surface-2) 0 6px, transparent 6px 12px),
+    var(--surface);
+}
+
+.trash-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+/* Фон и рамку гасим явно: общее правило .recovery-list button заливает кнопки
+   светлой поверхностью, и на тёмной теме иконка удаления превращалась в белый
+   квадрат посреди окна (замер 21.08.2026). Иконочное действие в ряду должно
+   быть прозрачным — как в библиотеке макросов. */
+.recovery-list .trash-forget {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-3);
+}
+
+/* Тон опасности — только на наведении: в покое кнопка такая же тихая, как
+   соседняя. Подтверждение всё равно спрашивается отдельным окном. */
+.recovery-list .trash-forget:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+/* Заголовок раздела в корзине. Появляется только когда разделов ДВА: у
+   команды доска убрана со списка, у локальной — удалена, и путать эти две
+   вещи нельзя — «удалить навсегда» есть только у второй. */
+.trash-section {
+  margin: 14px 0 8px;
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.trash-section:first-of-type { margin-top: 4px; }
+
+/* Заглушка вместо превью у командной доски: содержимого её снимка у нас нет. */
+.recovery-list .trash-preview {
+  display: grid;
+  place-items: center;
+  font-size: var(--text-micro);
+}

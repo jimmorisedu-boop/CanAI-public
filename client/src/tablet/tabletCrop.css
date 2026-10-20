@@ -1,0 +1,102 @@
+/* Кроп живёт в отдельном CSS-файле: его безопасные поля и раскрывающиеся
+   точные размеры не должны менять геометрию остальных полноэкранных режимов. */
+
+.tablet-full .tablet-crop-stage {
+  padding: 32px;
+}
+
+.tablet-crop-frame {
+  flex: none;
+}
+
+/* Превью обрезается отдельно: ручки должны оставаться видимыми и получать
+   касания с обеих сторон границы кадра. */
+.tablet-crop-window { overflow: visible; }
+.tablet-crop-preview-clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.tablet-crop-window .tablet-crop-handle { width: 44px; height: 44px; z-index: 2; border: 0; background: transparent; }
+.tablet-crop-handle::after { content: ''; position: absolute; inset: 15px; border: 2px solid white; border-radius: 50%; background: var(--accent); box-shadow: 0 1px 5px #0008; }
+.tablet-crop-edge { z-index: 1; }
+.tablet-crop-edge::after { content: ''; position: absolute; background: white; border-radius: 3px; }
+.tablet-crop-edge.n::after, .tablet-crop-edge.s::after { width: 24px; height: 3px; top: 20px; left: calc(50% - 12px); }
+.tablet-crop-edge.w::after, .tablet-crop-edge.e::after { width: 3px; height: 24px; left: 20px; top: calc(50% - 12px); }
+
+.tablet-crop-controls {
+  display: flex;
+  flex: none;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: max-content;
+}
+
+.tablet-crop-view-controls {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+  min-width: max-content;
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--border);
+}
+
+.tablet-crop-view-controls .tablet-zoom-value {
+  min-width: 52px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--tablet-type-meta);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.tablet-crop-precise {
+  flex: none;
+  min-width: 0;
+}
+
+.tablet-crop-precise summary {
+  display: inline-flex;
+  min-height: var(--tablet-tap);
+  align-items: center;
+  padding: var(--label-optical-lift) var(--space-3) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.tablet-crop-precise summary::-webkit-details-marker {
+  display: none;
+}
+
+.tablet-crop-precise summary::after {
+  margin-left: var(--space-2);
+  content: '⌄';
+  color: var(--text-3);
+}
+
+.tablet-crop-precise[open] summary {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.tablet-crop-precise[open] summary::after {
+  content: '⌃';
+}
+
+.tablet-crop-precise .tablet-crop-fields {
+  margin-top: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+@media (max-width: 760px) {
+  .tablet-full .tablet-crop-stage {
+    padding: 28px;
+  }
+
+  .tablet-crop-controls {
+    gap: var(--space-2);
+  }
+}

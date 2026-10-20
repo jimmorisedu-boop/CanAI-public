@@ -1,0 +1,379 @@
+/* свёрнутая нода, порты, рёбра, шапка редактора макроса
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* свёрнутая нода — оставляем место под порты */
+.gen-node.collapsed {
+  min-height: 96px;
+}
+
+.node-result-media {
+  margin-top: 8px;
+  width: 100%;
+  border-radius: var(--radius-compact);
+  display: block;
+}
+
+.node-result-audio {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 8px;
+}
+
+.node-result-text {
+  margin-top: 8px;
+  max-height: 140px;
+  overflow: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 7px 9px;
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.node-to-canvas {
+  margin-top: 8px;
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+  border-radius: var(--radius-control);
+  padding: 6px 9px;
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.node-to-canvas:hover {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent-soft-border);
+}
+
+.nodes-minimap {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-panel) !important;
+}
+
+/* при протяжке связи подсвечиваем совместимые входы (React Flow метит .valid) */
+.gen-node .react-flow__handle.valid {
+  box-shadow: 0 0 0 4px rgba(47, 163, 107, 0.35);
+  transform: scale(1.25);
+}
+.gen-node .react-flow__handle.connectingfrom {
+  transform: scale(1.25);
+}
+
+/* рёбра кликабельны (клик = удалить) — курсор и подсветка при наведении */
+.react-flow__edge {
+  cursor: pointer;
+}
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3.5;
+}
+
+/* редактор макроса: бейдж слота и имя */
+.nodes-back {
+  font-weight: 700;
+}
+
+.nodes-slot-badge {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-radius: var(--radius-control);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.macro-name-input {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  padding: 0 14px;
+  line-height: 1;
+  outline: none;
+  width: 160px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.macro-name-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* подсказка внутри служебных нод Вход/Выход */
+.gen-node-note {
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-compact);
+  padding: 8px 10px;
+}
+
+/* «Ждём ответ» — нода паузы и интерактивного ввода с пользователя */
+.gen-node.wait .gen-node-header {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+  border-bottom-color: var(--accent-soft-border);
+}
+
+/* Нода своего медиафайла */
+.node-media-body {
+  width: 100%;
+}
+.node-upload-loading {
+  font-size: var(--text-secondary);
+  color: var(--text-2);
+  text-align: center;
+  padding: 20px 0;
+}
+.node-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-control);
+  padding: 18px 8px;
+  background: var(--surface-2);
+  gap: 8px;
+  text-align: center;
+  transition: var(--transition-smooth);
+}
+.node-upload-zone:hover {
+  border-color: var(--accent);
+  background: var(--surface-3);
+}
+.node-upload-btn {
+  transition: var(--transition-smooth);
+}
+.node-upload-btn:hover {
+  filter: brightness(1.15);
+}
+.node-upload-hint {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+.node-assets-pick-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+}
+.node-assets-pick-label {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  font-weight: 500;
+}
+.node-assets-pick-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.node-asset-chip {
+  padding: 3px 7px;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  border-radius: var(--radius-compact);
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.node-asset-chip.has-asset {
+  color: var(--accent-text);
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+}
+.node-asset-chip.has-asset:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.node-asset-chip.empty {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.node-input-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.node-input-source-select {
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  height: var(--control-h-standard);
+  color: var(--text);
+  font-size: var(--text-micro);
+  line-height: 1;
+  border-radius: var(--radius-control);
+  padding: 0 6px;
+  outline: none;
+  cursor: pointer;
+}
+.node-asset-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  padding: 2px 6px;
+  border-radius: var(--radius-compact);
+  box-shadow: var(--shadow-sm);
+}
+.node-media-preview-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.node-media-preview-wrap .node-result-media {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+}
+.node-media-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  z-index: 5;
+}
+.node-media-clear:hover {
+  background: var(--danger-fill);
+}
+
+/* ── редактор: элементы верхней панели ───────────────────── */
+
+.brand-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  height: var(--control-h-compact);
+  padding: 0 6px 0 2px;
+  line-height: 1;
+  border-radius: var(--radius-compact);
+  transition: background 0.15s;
+}
+
+.brand-back:hover {
+  background: var(--surface-3);
+}
+
+.brand-back-arrow {
+  font-size: var(--text-title-lg);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text-2);
+  margin-top: -2px;
+}
+
+.top-bar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.top-project-name {
+  font-family: var(--font-sans);
+  font-size: var(--text-control);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: var(--control-h-compact);
+  padding: 0 8px;
+  line-height: 1;
+  border-radius: var(--radius-control);
+  transition: var(--transition-smooth);
+  display: inline-flex;
+  align-items: center;
+}
+
+.top-project-name.editable {
+  cursor: pointer;
+}
+
+.top-project-name.editable:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.top-project-name-dot {
+  color: var(--text-3);
+  font-size: var(--text-control);
+  font-weight: 600;
+  user-select: none;
+}
+
+.top-project-name-input {
+  font-family: var(--font-sans);
+  font-size: var(--text-control);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-compact);
+  height: var(--control-h-compact);
+  padding: 0 6px;
+  line-height: 1;
+  width: 180px;
+  outline: none;
+  box-sizing: border-box;
+  transition: var(--transition-smooth);
+}
+
+.top-project-name-input:focus {
+  border-color: var(--accent-soft-border);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.brand-badge {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--text-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+}
+

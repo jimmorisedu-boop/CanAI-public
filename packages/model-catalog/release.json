@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-10-20.4",
+  "files": {
+    "catalog.ts": "56a19f319f407b835fd005a880c92def3d0ce635751fdeb671ce3f64f23f7775",
+    "imageCapacity.ts": "83e5132b8875642b563052544707c14050747be46eda58c1fb645b09e39a67da",
+    "imageParams.ts": "4aa72a3d03ee2107d065dbd0f44ac6cc7330e2a53309f309f8cd8c1c77476f59",
+    "gptImagePricing.ts": "841db929cc3ec4137f8c8967e9bd81253cc90fdea7772d792093ad196fff289b",
+    "mediaCost.ts": "ebf1b607e2e4a1087a15de91dbb2f87a3ed996200426c149e7e1bc70a8833c98",
+    "canonBridge.ts": "50ac70efd5f5812e48d58738570db74d6d524ca4d01c03954b1dd668a8d53725",
+    "macroModels.ts": "c6647978b320de49036b0bd1af5878f53f6a3702fa3d095ec080f76a05081979",
+    "parameterRules.ts": "ef70a4595fbd38875d0b928696de270f500d3fcf961c4a3914853d3153158259",
+    "version.ts": "b5131777b5e3eb4b8cd8676afc942cdfcaffefc39a5561a43896b05cc8f45756",
+    "package.json": "d6af32afda692b774442966788d80211f4fce112ac624e4b23fa86394f2ce496"
+  }
+}

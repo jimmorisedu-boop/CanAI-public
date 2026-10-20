@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Use board Versions</title>
+  <desc id="desc">A board near the bottom of the window opens its Actions menu upward, keeping Versions and every other action visible.</desc>
+  <rect width="640" height="360" rx="24" fill="#f6f7f8"/>
+  <rect x="20" y="20" width="600" height="320" rx="12" fill="#edeff2" stroke="#d8d0c8"/>
+  <circle cx="46" cy="44" r="7" fill="#d33f21"/>
+  <text x="64" y="50" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#17181a">CanAI</text>
+  <rect x="40" y="178" width="244" height="146" rx="10" fill="#fff" stroke="#d8d0c8"/>
+  <rect x="52" y="190" width="220" height="64" rx="6" fill="#dce3e8"/>
+  <text x="54" y="287" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#17181a">Board</text>
+  <rect x="244" y="268" width="28" height="28" rx="6" fill="#edeff2"/>
+  <text x="258" y="288" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" fill="#17181a">⋮</text>
+  <rect x="116" y="80" width="156" height="180" rx="8" fill="#fff" stroke="#d33f21" stroke-width="2"/>
+  <g font-family="Arial,sans-serif" font-size="13" fill="#17181a">
+    <text x="128" y="106">Open in new tab</text>
+    <text x="128" y="136">Rename</text>
+    <text x="128" y="166">Pin</text>
+    <rect x="122" y="179" width="144" height="28" rx="5" fill="#fff4ee"/>
+    <text x="128" y="198" font-weight="700" fill="#d33f21">Versions</text>
+    <text x="128" y="237">Move to Trash</text>
+  </g>
+  <path d="M292 194 H384 M376 186 L384 194 L376 202" fill="none" stroke="#d33f21" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="400" y="100" width="196" height="142" rx="8" fill="#fff4ee" stroke="#d33f21"/>
+  <text x="418" y="133" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#17181a">Snapshots</text>
+  <text x="418" y="174" font-family="Arial,sans-serif" font-size="14" fill="#6b625b">saved safely</text>
+  <text x="322" y="290" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#17181a">All actions stay visible</text>
+  <text x="322" y="313" font-family="Arial,sans-serif" font-size="13" fill="#6b625b">The menu opens upward at the edge.</text>
+</svg>

@@ -1,0 +1,1641 @@
+{
+  "categories": [
+    {
+      "id": "basics",
+      "title": "Basics"
+    },
+    {
+      "id": "canvas",
+      "title": "Canvas"
+    },
+    {
+      "id": "assistant",
+      "title": "Assistant"
+    },
+    {
+      "id": "library",
+      "title": "Library"
+    },
+    {
+      "id": "generate",
+      "title": "Generate"
+    },
+    {
+      "id": "tasks",
+      "title": "Tasks"
+    },
+    {
+      "id": "workflow",
+      "title": "Workflow and macros"
+    },
+    {
+      "id": "edit",
+      "title": "Edit"
+    },
+    {
+      "id": "share",
+      "title": "Share and export"
+    },
+    {
+      "id": "settings",
+      "title": "Settings and access"
+    },
+    {
+      "id": "recovery",
+      "title": "Recovery"
+    }
+  ],
+  "topics": [
+    {
+      "id": "quick-start",
+      "category": "basics",
+      "title": "Start a local board",
+      "summary": "Open the local studio, connect a provider, and make one small result.",
+      "keywords": [
+        "start a local board"
+      ],
+      "steps": [
+        {
+          "title": "Open CanAI",
+          "body": "Choose New board → Local to keep a board on this computer. Search, filters, and Sort share one desktop toolbar row.",
+          "image": "/help/quick-start-1.svg",
+          "alt": "Start a local board: Open CanAI"
+        },
+        {
+          "title": "Connect a provider",
+          "body": "In Settings, connect your provider before generating.",
+          "image": "/help/quick-start-2.svg",
+          "alt": "Start a local board: Connect a provider"
+        },
+        {
+          "title": "Generate",
+          "body": "Enter a prompt, check the quote, and choose Generate.",
+          "image": "/help/quick-start-3.svg",
+          "alt": "Start a local board: Generate"
+        }
+      ],
+      "notes": [
+        "Generation needs a provider connection. You can still explore boards and edit local content without one.",
+        "Notices and error tooltips use English. Your own content can use any language.",
+        "Missing media shows an English notice. Restore the file, then retry loading."
+      ],
+      "related": [
+        "first-result",
+        "settings-provider"
+      ],
+      "target": "first-generation"
+    },
+    {
+      "id": "first-result",
+      "category": "basics",
+      "title": "Make your first result",
+      "summary": "Use a short prompt and keep the first run easy to inspect.",
+      "keywords": [
+        "make your first result"
+      ],
+      "steps": [
+        {
+          "title": "Write one idea",
+          "body": "Describe the subject, style, and format in the prompt bar.",
+          "image": "/help/first-result-1.svg",
+          "alt": "Make your first result: Write one idea"
+        },
+        {
+          "title": "Review the model",
+          "body": "Auto selects a compatible model; open the model menu to choose another one.",
+          "image": "/help/first-result-2.svg",
+          "alt": "Make your first result: Review the model"
+        },
+        {
+          "title": "Run and inspect",
+          "body": "Select Generate and wait for the result card to land on the Canvas.",
+          "image": "/help/first-result-3.svg",
+          "alt": "Make your first result: Run and inspect"
+        }
+      ],
+      "notes": [
+        "Video jobs can take minutes. The browser stays usable while Tasks tracks progress."
+      ],
+      "related": [
+        "quick-start",
+        "models",
+        "pending-jobs"
+      ],
+      "target": "first-generation"
+    },
+    {
+      "id": "import",
+      "category": "canvas",
+      "title": "Import files and screenshots",
+      "summary": "Drop media onto the Canvas or paste a screenshot; originals stay local.",
+      "keywords": [
+        "import files and screenshots"
+      ],
+      "steps": [
+        {
+          "title": "Drop or paste",
+          "body": "Drop image or video files up to 2 GiB each on the Canvas, or paste a screenshot from the system clipboard. Larger files are rejected before upload begins.",
+          "image": "/help/import-1.svg",
+          "alt": "Import files and screenshots: Drop or paste"
+        },
+        {
+          "title": "Align or arrange a selection",
+          "body": "Select several cards and open Arrange. Align their edges or centres, or choose Row, Column, or Grid. Columns and Gap update the preview immediately. Click outside the panel or press Escape to keep the result as one Undo step.",
+          "image": "/help/import-2.svg",
+          "alt": "Arrange a selection: controls beside the cards, live preview, and one Undo step when the panel closes"
+        },
+        {
+          "title": "Download a link",
+          "body": "Paste one HTTPS URL to make a link card, then choose Download to save a local copy.",
+          "image": "/help/import-3.svg",
+          "alt": "Import files and screenshots: Download a link"
+        }
+      ],
+      "notes": [
+        "Imported media stays in the local media library. Text pasted into a prompt remains text.",
+        "All adjustments made while Arrange is open become one Undo step when it closes. Sizes and rotations are preserved. On tablet, select several cards and choose Arrange in the selection actions."
+      ],
+      "related": [
+        "references",
+        "assets",
+        "navigation-shortcuts"
+      ]
+    },
+    {
+      "id": "references",
+      "category": "canvas",
+      "title": "Use Canvas references",
+      "summary": "Prompt selection can become automatic references; Assistant attachments are added deliberately.",
+      "keywords": [
+        "use canvas references"
+      ],
+      "steps": [
+        {
+          "title": "Select items",
+          "body": "Select image, video, or text cards on the Canvas. The prompt bar shows the references it can send.",
+          "image": "/help/references-1.svg",
+          "alt": "Use Canvas references: Select items"
+        },
+        {
+          "title": "Check the prompt",
+          "body": "Auto references follow the current selection. Text cards are added as context, not uploaded media.",
+          "image": "/help/references-2.svg",
+          "alt": "Use Canvas references: Check the prompt"
+        },
+        {
+          "title": "Generate",
+          "body": "Choose Generate to send the prompt and its selected references together.",
+          "image": "/help/references-3.svg",
+          "alt": "Use Canvas references: Generate"
+        }
+      ],
+      "notes": [
+        "Selecting a Canvas item alone does not attach it to Assistant chat. For Assistant, drag a card into the chat or add it from Assets. Attachments added while a question is sending stay in the composer for your next question.",
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+      ],
+      "related": [
+        "assistant-photos",
+        "reference-kinds",
+        "generation-modes"
+      ],
+      "target": "reference-generation"
+    },
+    {
+      "id": "reference-kinds",
+      "category": "canvas",
+      "title": "Understand reference types",
+      "summary": "Models receive images, videos, GIF first frames, and text in different ways.",
+      "keywords": [
+        "understand reference types"
+      ],
+      "steps": [
+        {
+          "title": "Use an image",
+          "body": "Image references are sent when the selected model supports them.",
+          "image": "/help/reference-kinds-1.svg",
+          "alt": "Understand reference types: Use an image"
+        },
+        {
+          "title": "Use video or GIF",
+          "body": "Video references require a video-capable model; a GIF uses its first frame as an image reference.",
+          "image": "/help/reference-kinds-2.svg",
+          "alt": "Understand reference types: Use video or GIF"
+        },
+        {
+          "title": "Use text context",
+          "body": "Text cards are appended as context for image/video prompts and wrapped as context for text generation.",
+          "image": "/help/reference-kinds-3.svg",
+          "alt": "Understand reference types: Use text context"
+        }
+      ],
+      "notes": [
+        "The model menu shows the compatible modality. CanAI does not silently drop an unsupported reference."
+      ],
+      "related": [
+        "references",
+        "models"
+      ]
+    },
+    {
+      "id": "assistant-photos",
+      "category": "assistant",
+      "title": "Add photos to Assistant",
+      "summary": "Import a photo to the Canvas, then drag it into Assistant or choose it from Assets.",
+      "keywords": [
+        "add photos to assistant"
+      ],
+      "steps": [
+        {
+          "title": "Import onto Canvas",
+          "body": "Drop or paste the photo on the Canvas and wait until its card appears.",
+          "image": "/help/assistant-photos-1.svg",
+          "alt": "Add photos to Assistant: Import onto Canvas"
+        },
+        {
+          "title": "Drag into Assistant",
+          "body": "Drag the saved Canvas photo card into the Assistant dock.",
+          "image": "/help/assistant-photos-2.svg",
+          "alt": "Add photos to Assistant: Drag into Assistant"
+        },
+        {
+          "title": "Or click an Assets thumbnail",
+          "body": "With Assistant open, click the pinned thumbnail in Assets to add it to the composer.",
+          "image": "/help/assistant-photos-3.svg",
+          "alt": "Add photos to Assistant: Click an Assets thumbnail"
+        },
+        {
+          "title": "Check the attachment",
+          "body": "Confirm the photo chip is visible before sending the Assistant message.",
+          "image": "/help/assistant-photos-4.svg",
+          "alt": "Add photos to Assistant: Check the attachment"
+        }
+      ],
+      "notes": [
+        "The original Canvas card stays in place when you attach a photo.",
+        "Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail."
+      ],
+      "related": [
+        "assets",
+        "assistant-refs",
+        "references"
+      ]
+    },
+    {
+      "id": "assistant-profiles",
+      "category": "assistant",
+      "title": "Manage Assistant profiles",
+      "summary": "Choose a profile, edit its instructions and model, and share it through the assistant library.",
+      "keywords": [
+        "manage assistant profiles",
+        "assistant library",
+        "assistant settings"
+      ],
+      "steps": [
+        {
+          "title": "Choose a profile",
+          "body": "Click Universal or a named assistant to enable it. Click the enabled profile again to return to Universal.",
+          "image": "/help/assistant-profiles-1.svg",
+          "alt": "Manage Assistant profiles: Choose a profile"
+        },
+        {
+          "title": "Edit or add",
+          "body": "Open Manage assistants (⋯) to add, rename, duplicate, or delete a profile. Edit its instructions and model, then Save.",
+          "image": "/help/assistant-profiles-2.svg",
+          "alt": "Manage Assistant profiles: Edit or add"
+        },
+        {
+          "title": "Import or save a file",
+          "body": "Use From file to import an assistant package, or Save to a file to reuse its instructions and text documents elsewhere.",
+          "image": "/help/assistant-profiles-3.svg",
+          "alt": "Manage Assistant profiles: Import or save a file"
+        }
+      ],
+      "notes": [
+        "A profile combines instructions, one text model, and optional text documents. It does not replace the local provider connection."
+      ],
+      "related": [
+        "assistant-chats",
+        "assistant-refs",
+        "models"
+      ]
+    },
+    {
+      "id": "assistant-basics",
+      "category": "assistant",
+      "title": "Use Assistant actions",
+      "summary": "Turn a suggestion into a prompt, run all suggestions, or place text on the Canvas.",
+      "keywords": [
+        "use assistant actions"
+      ],
+      "steps": [
+        {
+          "title": "Use prompt",
+          "body": "Choose Use prompt to copy a suggestion into the composer for review.",
+          "image": "/help/assistant-basics-1.svg",
+          "alt": "Use Assistant actions: Use prompt"
+        },
+        {
+          "title": "Generate all",
+          "body": "Choose Generate all to run the eligible suggestions together after their quote and confirmations.",
+          "image": "/help/assistant-basics-2.svg",
+          "alt": "Use Assistant actions: Generate all"
+        },
+        {
+          "title": "Add to canvas",
+          "body": "Choose Add to canvas to place the assistant response as a text card.",
+          "image": "/help/assistant-basics-3.svg",
+          "alt": "Use Assistant actions: Add to canvas"
+        },
+        {
+          "title": "Adjust the panel",
+          "body": "Drag the top handle to resize Assistant. Use − to collapse it; click the bottom handle to open it again. Your draft and conversation stay in place.",
+          "image": "/help/assistant-panel-size.svg",
+          "alt": "Assistant height resize handle and collapsed panel handle"
+        }
+      ],
+      "related": [
+        "assistant-run",
+        "assistant-chats",
+        "generation-modes"
+      ],
+      "notes": [
+        "Assistant errors and status labels use English. Chat messages and your own instructions keep their original language."
+      ]
+    },
+    {
+      "id": "assistant-memory",
+      "category": "assistant",
+      "title": "Choose board memory",
+      "summary": "Board memory keeps prompt, model, and text context; it does not see every photo automatically.",
+      "keywords": [
+        "choose board memory"
+      ],
+      "steps": [
+        {
+          "title": "Open memory",
+          "body": "Use the Board memory control in Assistant to review what context is available.",
+          "image": "/help/assistant-memory-1.svg",
+          "alt": "Choose board memory: Open memory"
+        },
+        {
+          "title": "Toggle context",
+          "body": "Turn memory on or off for the chat. Attachments and chat history remain separate controls.",
+          "image": "/help/assistant-memory-2.svg",
+          "alt": "Choose board memory: Toggle context"
+        },
+        {
+          "title": "Attach only when needed",
+          "body": "Add a photo to the chat only when you want Assistant to receive that image.",
+          "image": "/help/assistant-memory-3.svg",
+          "alt": "Choose board memory: Attach only when needed"
+        }
+      ],
+      "notes": [
+        "Board memory is text and generation context. It is not automatic visual access to all images on the board."
+      ],
+      "related": [
+        "assistant-photos",
+        "references"
+      ]
+    },
+    {
+      "id": "assistant-chats",
+      "category": "assistant",
+      "title": "Manage Assistant chats",
+      "summary": "Create, rename, archive, and restore chats; choose a model from Assistant's Chat model menu.",
+      "keywords": [
+        "manage assistant chats"
+      ],
+      "steps": [
+        {
+          "title": "Open the chat list",
+          "body": "Use the Assistant chat list to switch between saved conversations. A sent question stays in its original chat while references are prepared.",
+          "image": "/help/assistant-chats-1.svg",
+          "alt": "Manage Assistant chats: Open the chat list"
+        },
+        {
+          "title": "Create or manage",
+          "body": "Choose New chat, then use the chat row menu to Rename or Delete it.",
+          "image": "/help/assistant-chats-2.svg",
+          "alt": "Manage Assistant chats: Create or manage"
+        },
+        {
+          "title": "Restore and choose a model",
+          "body": "Choose a model from Assistant's Chat model menu. Move a chat to Trash; restore it or delete it permanently from Trash.",
+          "image": "/help/assistant-chats-3.svg",
+          "alt": "Manage Assistant chats: Restore and choose a model"
+        }
+      ],
+      "related": [
+        "assistant-basics",
+        "archive-trash",
+        "models"
+      ]
+    },
+    {
+      "id": "assistant-refs",
+      "category": "assistant",
+      "title": "Edit Prompt and Assistant references",
+      "summary": "Add, remove, and replace references in Prompt; Assistant attachments are removed and added again.",
+      "keywords": [
+        "edit multiple assistant references"
+      ],
+      "steps": [
+        {
+          "title": "Add references",
+          "body": "Attach several Canvas items or Assets; the Prompt bar labels them @1, @2, and so on.",
+          "image": "/help/assistant-refs-1.svg",
+          "alt": "Edit multiple Assistant references: Add references"
+        },
+        {
+          "title": "Replace in Prompt",
+          "body": "In Prompt, double-click a reference thumbnail and choose its replacement. In Assistant, remove the attachment and add the new item.",
+          "image": "/help/assistant-refs-2.svg",
+          "alt": "Edit Assistant references: Replace in Prompt"
+        },
+        {
+          "title": "Remove one",
+          "body": "Right-click a thumbnail to remove it from the current references; the Canvas item stays available.",
+          "image": "/help/assistant-refs-3.svg",
+          "alt": "Edit multiple Assistant references: Remove one"
+        }
+      ],
+      "related": [
+        "assistant-photos",
+        "assets",
+        "reference-kinds"
+      ]
+    },
+    {
+      "id": "assistant-run",
+      "category": "assistant",
+      "title": "Run an Assistant request",
+      "summary": "Assistant explains a request, quotes it, and follows your confirmation settings.",
+      "keywords": [
+        "run an assistant request"
+      ],
+      "steps": [
+        {
+          "title": "Ask clearly",
+          "body": "Describe whether you want a prompt, a text card, or new media on the Canvas.",
+          "image": "/help/assistant-run-1.svg",
+          "alt": "Run an Assistant request: Ask clearly"
+        },
+        {
+          "title": "Review the quote",
+          "body": "Send shows the estimated cost and required confirmations follow your settings.",
+          "image": "/help/assistant-run-2.svg",
+          "alt": "Run an Assistant request: Review the quote"
+        },
+        {
+          "title": "Confirm the action",
+          "body": "An explicit request to create or edit media can start generation; a prompt-only request does not.",
+          "image": "/help/assistant-run-3.svg",
+          "alt": "Run an Assistant request: Confirm the action"
+        }
+      ],
+      "notes": [
+        "Provider connections and paid calls are explicit. A model reply alone never grants a generation request."
+      ],
+      "related": [
+        "assistant-basics",
+        "variants-cost",
+        "settings-provider"
+      ],
+      "target": "first-generation"
+    },
+    {
+      "id": "assets",
+      "category": "library",
+      "title": "Use the Assets shelf",
+      "summary": "Keep reusable media on the current board without removing it from the Canvas.",
+      "keywords": [
+        "use the assets shelf"
+      ],
+      "steps": [
+        {
+          "title": "Pin a card",
+          "body": "Drag a Canvas card or a file into an empty Assets slot. The original Canvas item stays where it is.",
+          "image": "/help/assets-1.svg",
+          "alt": "Use the Assets shelf: Pin a card"
+        },
+        {
+          "title": "Use an asset",
+          "body": "Click an asset to add it to the current composer or attach it in Assistant.",
+          "image": "/help/assets-2.svg",
+          "alt": "Use the Assets shelf: Use an asset"
+        },
+        {
+          "title": "Unpin it",
+          "body": "Right-click an asset to unpin it. The Canvas item and local file remain available.",
+          "image": "/help/assets-3.svg",
+          "alt": "Use the Assets shelf: Unpin it"
+        }
+      ],
+      "notes": [
+        "The shelf is per board. Assets do not become a second copy of your media file."
+      ],
+      "related": [
+        "assistant-photos",
+        "library",
+        "archive-trash"
+      ],
+      "target": "save-for-later"
+    },
+    {
+      "id": "library",
+      "category": "library",
+      "title": "Keep a board tidy",
+      "summary": "Assets, archive, and deletion solve different jobs.",
+      "keywords": [
+        "keep a board tidy"
+      ],
+      "steps": [
+        {
+          "title": "Save for reuse",
+          "body": "Pin a useful card in Assets when you want it available in future prompts on this board.",
+          "image": "/help/library-1.svg",
+          "alt": "Keep a board tidy: Save for reuse"
+        },
+        {
+          "title": "Archive a board",
+          "body": "Archive a board to hide it from the active list while keeping its data.",
+          "image": "/help/library-2.svg",
+          "alt": "Keep a board tidy: Archive a board"
+        },
+        {
+          "title": "Delete a board",
+          "body": "Delete sends a board to Trash. Permanent deletion removes its stored data after confirmation.",
+          "image": "/help/library-3.svg",
+          "alt": "Keep a board tidy: Delete a board"
+        }
+      ],
+      "notes": [
+        "Assets belong inside a board. Archive and Trash act on whole boards, not individual references.",
+        "Connection and sign-in notices use English. Board names keep their original language.",
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+      ],
+      "related": [
+        "assets",
+        "archive-trash",
+        "versions"
+      ]
+    },
+    {
+      "id": "archive-trash",
+      "category": "library",
+      "title": "Restore or delete from Trash",
+      "summary": "Trash gives you a recovery step before permanent deletion.",
+      "keywords": [
+        "restore or delete from trash"
+      ],
+      "steps": [
+        {
+          "title": "Open Trash",
+          "body": "Choose Trash in the board list to see deleted boards.",
+          "image": "/help/archive-trash-1.svg",
+          "alt": "Restore or delete from Trash: Open Trash"
+        },
+        {
+          "title": "Restore",
+          "body": "Choose Restore to return a board to the active list with its local files.",
+          "image": "/help/archive-trash-2.svg",
+          "alt": "Restore or delete from Trash: Restore"
+        },
+        {
+          "title": "Delete permanently",
+          "body": "Choose Delete permanently only when you are sure the board and its data are no longer needed.",
+          "image": "/help/archive-trash-3.svg",
+          "alt": "Restore or delete from Trash: Delete permanently"
+        }
+      ],
+      "related": [
+        "library",
+        "versions"
+      ],
+      "target": "recovery"
+    },
+    {
+      "id": "versions",
+      "category": "library",
+      "title": "Use board Versions",
+      "summary": "Undo is quick; Versions gives you older saved board snapshots.",
+      "keywords": [
+        "use board versions"
+      ],
+      "steps": [
+        {
+          "title": "Open Versions",
+          "body": "Open the board's Actions menu (⋮) and choose Versions to inspect saved snapshots. Near the bottom of the window, the menu opens upward; in a short window, scroll inside the menu to reach every action.",
+          "image": "/help/versions-menu-1.svg",
+          "alt": "Use board Versions: Open Versions"
+        },
+        {
+          "title": "Restore a snapshot",
+          "body": "Choose a snapshot and confirm Restore. CanAI creates a new board from it.",
+          "image": "/help/versions-2.svg",
+          "alt": "Use board Versions: Restore a snapshot"
+        },
+        {
+          "title": "Continue safely",
+          "body": "Keep the current board open while you compare the restored copy.",
+          "image": "/help/versions-3.svg",
+          "alt": "Use board Versions: Continue safely"
+        }
+      ],
+      "notes": [
+        "Restoring a version never overwrites the current board. Use Undo for a single recent edit."
+      ],
+      "shortcuts": [
+        {
+          "keys": "Ctrl+Z",
+          "action": "Undo the latest Canvas edit"
+        }
+      ],
+      "related": [
+        "library",
+        "project-files"
+      ],
+      "target": "recovery"
+    },
+    {
+      "id": "project-files",
+      "category": "library",
+      "title": "Import a .canai board",
+      "summary": "Bring a saved board into the local app through a file you choose.",
+      "keywords": [
+        "import .canai",
+        "open board file",
+        "local board"
+      ],
+      "steps": [
+        {
+          "title": "Open Import",
+          "body": "On the Boards screen, choose Import.",
+          "image": "/help/project-files-1.svg",
+          "alt": "Import a .canai board: Open Import"
+        },
+        {
+          "title": "Choose a file",
+          "body": "Select a .canai file from a real local path.",
+          "image": "/help/project-files-2.svg",
+          "alt": "Import a .canai board: Choose a file"
+        },
+        {
+          "title": "Check the board",
+          "body": "Open the imported board and confirm its cards and media.",
+          "image": "/help/project-files-3.svg",
+          "alt": "Import a .canai board: Check the board"
+        }
+      ],
+      "notes": [
+        "The desktop Boards screen currently imports .canai files. Use Download or a ZIP from the Canvas when you want exported content; both use a real local destination."
+      ],
+      "related": [
+        "versions",
+        "export",
+        "settings-local"
+      ]
+    },
+    {
+      "id": "generation-modes",
+      "category": "generate",
+      "title": "Choose Together or Each",
+      "summary": "Image references can be combined in one run or used one at a time.",
+      "keywords": [
+        "choose together or each"
+      ],
+      "steps": [
+        {
+          "title": "Select image references",
+          "body": "Attach two or more image references in the prompt bar.",
+          "image": "/help/generation-modes-1.svg",
+          "alt": "Choose Together or Each: Select image references"
+        },
+        {
+          "title": "Choose a mode",
+          "body": "Together sends all images to one request. Each makes one request per image.",
+          "image": "/help/generation-modes-2.svg",
+          "alt": "Choose Together or Each: Choose a mode"
+        },
+        {
+          "title": "Run compatible media",
+          "body": "The Together/Each choice applies to image generation only; video and text use their own reference rules.",
+          "image": "/help/generation-modes-3.svg",
+          "alt": "Choose Together or Each: Run compatible media"
+        }
+      ],
+      "notes": [
+        "Each can create multiple paid calls. Review the quote before confirming."
+      ],
+      "related": [
+        "references",
+        "variants-cost",
+        "models"
+      ],
+      "target": "reference-generation"
+    },
+    {
+      "id": "models",
+      "category": "generate",
+      "title": "Pick Auto or a model",
+      "summary": "Auto chooses a compatible catalog model; manual selection stays exactly as chosen.",
+      "keywords": [
+        "pick auto or a model"
+      ],
+      "steps": [
+        {
+          "title": "Open the model menu",
+          "body": "Choose Auto to let CanAI resolve a model from the media type, references, and limits.",
+          "image": "/help/models-1.svg",
+          "alt": "Pick Auto or a model: Open the model menu"
+        },
+        {
+          "title": "Choose manually",
+          "body": "Select a catalog model when you need its specific controls or style.",
+          "image": "/help/models-2.svg",
+          "alt": "Pick Auto or a model: Choose manually"
+        },
+        {
+          "title": "Check support",
+          "body": "Confirm the model supports your image, video, audio, or text request before running it.",
+          "image": "/help/models-3.svg",
+          "alt": "Pick Auto or a model: Check support"
+        }
+      ],
+      "notes": [
+        "Unsupported references are reported instead of silently removed. GIF references use their first frame when a model accepts images."
+      ],
+      "related": [
+        "reference-kinds",
+        "variants-cost",
+        "settings-provider"
+      ]
+    },
+    {
+      "id": "variants-cost",
+      "category": "generate",
+      "title": "Review variants and cost",
+      "summary": "Parallel variants are separate jobs, so the quote matters.",
+      "keywords": [
+        "review variants and cost"
+      ],
+      "steps": [
+        {
+          "title": "Set variants",
+          "body": "Choose a count from 1 to 4 in the prompt bar when the model allows variants.",
+          "image": "/help/variants-cost-1.svg",
+          "alt": "Review variants and cost: Set variants"
+        },
+        {
+          "title": "Review the estimate",
+          "body": "The price badge shows the estimated total for the selected model and variants. Macro estimates also use selected text length and original image dimensions.",
+          "image": "/help/variants-cost-2.svg",
+          "alt": "Review variants and cost: Review the estimate"
+        },
+        {
+          "title": "Connect deliberately",
+          "body": "A provider connection is required before you confirm a paid generation.",
+          "image": "/help/variants-cost-3.svg",
+          "alt": "Review variants and cost: Connect deliberately"
+        }
+      ],
+      "notes": [
+        "A new attempt after a failed paid request can make another provider call. Check Tasks before retrying."
+      ],
+      "related": [
+        "models",
+        "pending-jobs",
+        "settings-provider"
+      ],
+      "target": "first-generation"
+    },
+    {
+      "id": "restore-generation",
+      "category": "generate",
+      "title": "Restore a generation setup",
+      "summary": "Double-click a generated image or video to reuse its prompt and references.",
+      "keywords": [
+        "restore a generation setup"
+      ],
+      "steps": [
+        {
+          "title": "Open the result",
+          "body": "Double-click a generated image or video card on the Canvas.",
+          "image": "/help/restore-generation-1.svg",
+          "alt": "Restore a generation setup: Open the result"
+        },
+        {
+          "title": "Review the setup",
+          "body": "CanAI restores the saved prompt, model, and references into the composer.",
+          "image": "/help/restore-generation-2.svg",
+          "alt": "Restore a generation setup: Review the setup"
+        },
+        {
+          "title": "Adjust before running",
+          "body": "Edit the prompt or model, review the quote, and choose Generate for a new job.",
+          "image": "/help/restore-generation-3.svg",
+          "alt": "Restore a generation setup: Adjust before running"
+        }
+      ],
+      "related": [
+        "models",
+        "pending-jobs"
+      ],
+      "target": "reference-generation"
+    },
+    {
+      "id": "pending-jobs",
+      "category": "tasks",
+      "title": "Track pending jobs",
+      "summary": "Pending cards and Tasks keep image, video, audio, and text jobs visible.",
+      "keywords": [
+        "track pending jobs"
+      ],
+      "steps": [
+        {
+          "title": "Watch the card",
+          "body": "A pending card shows the model and elapsed time while the job runs.",
+          "image": "/help/pending-jobs-1.svg",
+          "alt": "Track pending jobs: Watch the card"
+        },
+        {
+          "title": "Cancel safely",
+          "body": "Choose the card’s close button to cancel a queued or running job.",
+          "image": "/help/pending-jobs-2.svg",
+          "alt": "Track pending jobs: Cancel safely"
+        },
+        {
+          "title": "Open Tasks",
+          "body": "Reopen a board to restore its completed image, video, audio, and text jobs in Tasks, including archived results. Restoring the list does not start another generation.",
+          "image": "/help/pending-jobs-3.svg",
+          "alt": "Track pending jobs: Open Tasks"
+        }
+      ],
+      "related": [
+        "tasks-retry",
+        "variants-cost",
+        "restore-generation"
+      ],
+      "target": "recovery"
+    },
+    {
+      "id": "tasks-retry",
+      "category": "tasks",
+      "title": "Retry a failed job",
+      "summary": "Retry is explicit so a new provider call is never hidden.",
+      "keywords": [
+        "retry a failed job"
+      ],
+      "steps": [
+        {
+          "title": "Read the error",
+          "body": "Open the task details and check whether the provider request was already sent. If an error points to the diagnostic log, check the original server response there.",
+          "image": "/help/tasks-retry-1.svg",
+          "alt": "Retry a failed job: Read the error"
+        },
+        {
+          "title": "Retry or edit",
+          "body": "Choose Retry to make a new call, or restore the setup and edit the prompt first.",
+          "image": "/help/tasks-retry-2.svg",
+          "alt": "Retry a failed job: Retry or edit"
+        },
+        {
+          "title": "Confirm the new quote",
+          "body": "Review the fresh estimate before confirming another paid generation.",
+          "image": "/help/tasks-retry-3.svg",
+          "alt": "Retry a failed job: Confirm the new quote"
+        }
+      ],
+      "notes": [
+        "A saved provider result can finish after a restart without a duplicate submission. A manual Retry is a new attempt.",
+        "Task cards, tooltips, and progress messages use English, including errors saved by an older server. Diagnostics retain the original response."
+      ],
+      "related": [
+        "pending-jobs",
+        "restore-generation",
+        "variants-cost"
+      ],
+      "target": "recovery"
+    },
+    {
+      "id": "workflow-editor",
+      "category": "workflow",
+      "title": "Build a Workflow",
+      "summary": "Connect typed nodes in the Workflow editor; runs start from the Canvas macro controls.",
+      "keywords": [
+        "build a workflow"
+      ],
+      "steps": [
+        {
+          "title": "Add a node",
+          "body": "Drag a node from the palette into the Workflow editor, or use the keyboard menu.",
+          "image": "/help/workflow-editor-1.svg",
+          "alt": "Build a Workflow: Add a node"
+        },
+        {
+          "title": "Connect ports",
+          "body": "Connect compatible typed ports. One input keeps one active connection.",
+          "image": "/help/workflow-editor-2.svg",
+          "alt": "Build a Workflow: Connect ports"
+        },
+        {
+          "title": "Run from Canvas",
+          "body": "Save the workflow, then launch its macro slot from the Canvas. The editor itself has no Run button.",
+          "image": "/help/workflow-editor-3.svg",
+          "alt": "Build a Workflow: Run from Canvas"
+        }
+      ],
+      "notes": [
+        "Nodes preserve their IDs, schemas, and typed values when a workflow is saved.",
+        "Connection errors use English. Your node labels, prompts, and Macro names keep their original language.",
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+      ],
+      "related": [
+        "macros",
+        "macro-library"
+      ]
+    },
+    {
+      "id": "macros",
+      "category": "workflow",
+      "title": "Run and stop macros",
+      "summary": "Each macro click starts its own run; stop controls apply to that run only.",
+      "keywords": [
+        "run and stop macros"
+      ],
+      "steps": [
+        {
+          "title": "Start a run",
+          "body": "Click a macro slot on the Canvas to launch a run. Click again to start another parallel run.",
+          "image": "/help/macros-1.svg",
+          "alt": "Run and stop macros: Start a run"
+        },
+        {
+          "title": "Stop one run",
+          "body": "Open Tasks, find the run, and choose Stop for that run; other runs continue.",
+          "image": "/help/macros-2.svg",
+          "alt": "Run and stop macros: Stop one run"
+        },
+        {
+          "title": "Edit the macro",
+          "body": "Right-click or press F2 to open the Workflow/Macro editor.",
+          "image": "/help/macros-3.svg",
+          "alt": "Run and stop macros: Edit the macro"
+        }
+      ],
+      "shortcuts": [
+        {
+          "keys": "F2",
+          "action": "Edit the selected macro or open the external editor"
+        }
+      ],
+      "related": [
+        "workflow-editor",
+        "macro-library",
+        "pending-jobs"
+      ]
+    },
+    {
+      "id": "macro-library",
+      "category": "workflow",
+      "title": "Manage the Macro Library",
+      "summary": "Keep reusable workflows in the app-wide Macro Library; duplicate, reorder, export, or import them.",
+      "keywords": [
+        "manage the macro library"
+      ],
+      "steps": [
+        {
+          "title": "Open Library",
+          "body": "Open the Macro Library to browse saved workflows and macros.",
+          "image": "/help/macro-library-1.svg",
+          "alt": "Manage the Macro Library: Open Library"
+        },
+        {
+          "title": "Duplicate or import",
+          "body": "Choose Duplicate to make another library item, or Import file to add a macro package. The library is shared across the app.",
+          "image": "/help/macro-library-2.svg",
+          "alt": "Manage the Macro Library: Duplicate or import"
+        },
+        {
+          "title": "Export and organize",
+          "body": "Use Export file for a local package, drag rows or use Alt+Arrow to reorder, and choose Share when the shared shelf is available.",
+          "image": "/help/macro-library-3.svg",
+          "alt": "Manage the Macro Library: Export and organize"
+        }
+      ],
+      "related": [
+        "workflow-editor",
+        "macros",
+        "project-files"
+      ],
+      "target": "export"
+    },
+    {
+      "id": "crop-sketch",
+      "category": "edit",
+      "title": "Crop an image",
+      "summary": "Crop a card in place and keep the change undoable.",
+      "keywords": [
+        "crop",
+        "ratio",
+        "apply crop",
+        "cancel crop"
+      ],
+      "steps": [
+        {
+          "title": "Open Crop",
+          "body": "Choose Crop from a selected image card’s context menu.",
+          "image": "/help/crop-sketch-1.svg",
+          "alt": "Crop an image: Open Crop"
+        },
+        {
+          "title": "Set the frame",
+          "body": "Choose a ratio or drag the crop frame, then press Enter or choose Apply.",
+          "image": "/help/crop-sketch-2.svg",
+          "alt": "Crop an image: Set the frame"
+        },
+        {
+          "title": "Cancel safely",
+          "body": "Press Esc or choose Cancel to leave the original card unchanged.",
+          "image": "/help/crop-sketch-3.svg",
+          "alt": "Crop an image: Cancel safely"
+        }
+      ],
+      "notes": [
+        "Crop Apply updates the image in place and remains undoable."
+      ],
+      "related": [
+        "navigation-shortcuts",
+        "external-editor"
+      ]
+    },
+    {
+      "id": "sketch",
+      "category": "edit",
+      "title": "Sketch a new image",
+      "summary": "Draw over a card and apply the drawing as a nearby copy.",
+      "keywords": [
+        "sketch",
+        "draw",
+        "apply sketch",
+        "cancel sketch"
+      ],
+      "steps": [
+        {
+          "title": "Open Sketch",
+          "body": "Choose Sketch from a selected image card’s context menu.",
+          "image": "/help/sketch-1.svg",
+          "alt": "Sketch a new image: Open Sketch"
+        },
+        {
+          "title": "Draw and Apply",
+          "body": "Draw on the overlay, then choose Apply to create a new image beside the source.",
+          "image": "/help/sketch-2.svg",
+          "alt": "Sketch a new image: Draw and Apply"
+        },
+        {
+          "title": "Cancel safely",
+          "body": "Press Esc or choose Cancel to leave the source image unchanged.",
+          "image": "/help/sketch-3.svg",
+          "alt": "Sketch a new image: Cancel safely"
+        }
+      ],
+      "notes": [
+        "Sketch Apply creates a new image beside the source; the source stays clean."
+      ],
+      "related": [
+        "crop-sketch",
+        "external-editor"
+      ]
+    },
+    {
+      "id": "external-editor",
+      "category": "edit",
+      "title": "Use the external editor",
+      "summary": "F2 opens the configured editor; the first save creates a new result beside the source, and later saves update that result.",
+      "keywords": [
+        "use the external editor"
+      ],
+      "steps": [
+        {
+          "title": "Configure once",
+          "body": "Open Settings and set the external editor path, then use Test to confirm it starts.",
+          "image": "/help/external-editor-1.svg",
+          "alt": "Use the external editor: Configure once"
+        },
+        {
+          "title": "Open with F2",
+          "body": "Select an image and press F2, or choose External editor from its menu.",
+          "image": "/help/external-editor-2.svg",
+          "alt": "Use the external editor: Open with F2"
+        },
+        {
+          "title": "Return to CanAI",
+          "body": "Save in the external editor and return. The first save creates a new result beside the source; later saves update that result.",
+          "image": "/help/external-editor-3.svg",
+          "alt": "Use the external editor: Return to CanAI"
+        }
+      ],
+      "shortcuts": [
+        {
+          "keys": "F2",
+          "action": "Open the configured external editor"
+        }
+      ],
+      "related": [
+        "crop-sketch",
+        "settings-local"
+      ]
+    },
+    {
+      "id": "compare",
+      "category": "edit",
+      "title": "Compare versions and results",
+      "summary": "Compare images with Curtain, Switching, or Difference; compare videos with Side by side or Curtain.",
+      "keywords": [
+        "compare versions and results"
+      ],
+      "steps": [
+        {
+          "title": "Open Compare",
+          "body": "Select two compatible image or video cards and choose Compare.",
+          "image": "/help/compare-1.svg",
+          "alt": "Compare versions and results: Open Compare"
+        },
+        {
+          "title": "Change the view",
+          "body": "Press Q to start a candidate set, click items to add them, then press Enter to open Compare. Images offer Curtain, Switching, or Difference; videos offer Side by side or Curtain.",
+          "image": "/help/compare-2.svg",
+          "alt": "Compare versions and results: Change the view"
+        },
+        {
+          "title": "Sync video",
+          "body": "Turn on Sync video to keep playback position aligned between the two cards.",
+          "image": "/help/compare-3.svg",
+          "alt": "Compare versions and results: Sync video"
+        }
+      ],
+      "shortcuts": [
+        {
+          "keys": "Q",
+          "action": "Start a candidate set"
+        },
+        {
+          "keys": "Click",
+          "action": "Add or remove a candidate"
+        },
+        {
+          "keys": "Enter",
+          "action": "Open Compare"
+        },
+        {
+          "keys": "Space — hold",
+          "action": "Show the original; on video, play or pause"
+        }
+      ],
+      "related": [
+        "timeline",
+        "restore-generation"
+      ]
+    },
+    {
+      "id": "timeline",
+      "category": "edit",
+      "title": "Trim video on the timeline",
+      "summary": "The timeline keeps cuts, crops, extracted audio, and frames in one place.",
+      "keywords": [
+        "trim video on the timeline"
+      ],
+      "steps": [
+        {
+          "title": "Open Timeline",
+          "body": "Select a video and open its Timeline controls.",
+          "image": "/help/timeline-1.svg",
+          "alt": "Trim video on the timeline: Open Timeline"
+        },
+        {
+          "title": "Trim or cut",
+          "body": "Press T to open the editor, then use Cut at cursor position, Remove segment under cursor, or Find cuts. Separate audio creates an audio object.",
+          "image": "/help/timeline-2.svg",
+          "alt": "Trim video on the timeline: Trim or cut"
+        },
+        {
+          "title": "Capture or apply",
+          "body": "Use Enable cropping for a crop pass, Capture frame to canvas for the current frame, and Apply edits when the timeline is ready.",
+          "image": "/help/timeline-3.svg",
+          "alt": "Trim video on the timeline: Capture or apply"
+        }
+      ],
+      "shortcuts": [
+        {
+          "keys": "T",
+          "action": "Open timeline editing"
+        },
+        {
+          "keys": "S",
+          "action": "Cut at the cursor"
+        },
+        {
+          "keys": "C",
+          "action": "Remove or restore the segment under the cursor"
+        },
+        {
+          "keys": "F",
+          "action": "Capture the current frame"
+        }
+      ],
+      "related": [
+        "compare",
+        "crop-sketch",
+        "export"
+      ],
+      "notes": [
+        "Video, frame-saving, and export errors use English. Source filenames and clip names are kept as entered.",
+        "On tablet, select a video and open Clip editing. Cut, Crop, and Capture frame stay below the preview.",
+        "Drag Playback position on the single timeline to seek. Start and End trim the clip; drag a cut down to join it again.",
+        "Crop follows the video image. Move its frame or drag a corner; precise values appear beside the preview on wide screens.",
+        "More contains segment actions, captured frames, audio extraction, and Find cuts. The ? control shows editing shortcuts.",
+        "In Clip editing, More offers Delete segment or Restore segment. Join at a listed time removes a cut without hiding the video."
+      ]
+    },
+    {
+      "id": "export",
+      "category": "share",
+      "title": "Export selected results",
+      "summary": "Download selected cards or export grouped folders without changing board data.",
+      "keywords": [
+        "export selected results"
+      ],
+      "steps": [
+        {
+          "title": "Select cards",
+          "body": "Select one or more image, video, audio, or text cards on the Canvas.",
+          "image": "/help/export-1.svg",
+          "alt": "Export selected results: Select cards"
+        },
+        {
+          "title": "Choose a group",
+          "body": "Assign a marker from 1 to 999 to selected cards; enter 0 to remove a marker. Grouped export uses the selected marker.",
+          "image": "/help/export-2.svg",
+          "alt": "Export selected results: Choose a group"
+        },
+        {
+          "title": "Download",
+          "body": "Choose Download selected or export a ZIP folder to a real local destination.",
+          "image": "/help/export-3.svg",
+          "alt": "Export selected results: Download"
+        }
+      ],
+      "notes": [
+        "Export copies user content. It does not publish a board or grant provider rights.",
+        "Markers are selection metadata for grouped export; 0 clears the marker."
+      ],
+      "related": [
+        "project-files",
+        "library",
+        "timeline"
+      ],
+      "target": "export"
+    },
+    {
+      "id": "navigation-shortcuts",
+      "category": "share",
+      "title": "Navigate the Canvas quickly",
+      "summary": "Use pan, zoom, copy, and the Board map while you work across the Canvas and Workflow surfaces.",
+      "keywords": [
+        "navigate the canvas quickly",
+        "board map"
+      ],
+      "steps": [
+        {
+          "title": "Pan and zoom",
+          "body": "Hold Space and drag, or drag with the middle mouse button to pan. Scroll to zoom around the pointer. Use the Board map to navigate.",
+          "image": "/help/navigation-shortcuts-1.svg",
+          "alt": "Navigate the Canvas quickly: Pan, zoom, and use the bottom-left Board map"
+        },
+        {
+          "title": "Fit the board or move around the board",
+          "body": "Shift+1 fits the Canvas. Pan or zoom to stop. The person-and-gear icon opens Board access, where managers set View or Edit permissions.",
+          "image": "/help/navigation-shortcuts-2.svg",
+          "alt": "The people icon opens Board participants; the person-and-gear icon opens Board access"
+        },
+        {
+          "title": "Copy safely",
+          "body": "Hold Alt while dragging to copy the selected item and keep the original in place.",
+          "image": "/help/navigation-shortcuts-3.svg",
+          "alt": "Navigate the Canvas quickly: Copy safely with Alt drag"
+        },
+        {
+          "title": "Undo and redo",
+          "body": "Use Ctrl+Z to undo your latest Canvas edit. Press Ctrl+Shift+Z or Ctrl+Y to redo it. Inside a text field, these shortcuts change the text instead of the board.",
+          "image": "/help/navigation-shortcuts-4.svg",
+          "alt": "Undo with Ctrl+Z and redo with Ctrl+Shift+Z or Ctrl+Y"
+        }
+      ],
+      "notes": [
+        "The Board map stays in the bottom-left corner. Click or drag it to navigate, and collapse it when you need more room.",
+        "On narrow canvases, if the left column overlaps the prompt dock, the map sits 16 px above it.",
+        "The Board map moves your view while keeping the current selection."
+      ],
+      "shortcuts": [
+        {
+          "keys": "Space + drag",
+          "action": "Pan the Canvas"
+        },
+        {
+          "keys": "Middle drag",
+          "action": "Pan the Canvas"
+        },
+        {
+          "keys": "Shift+1",
+          "action": "Fit the Canvas"
+        },
+        {
+          "keys": "Alt+drag",
+          "action": "Copy the selection in place"
+        },
+        {
+          "keys": "Ctrl+Z",
+          "action": "Undo the latest Canvas edit"
+        },
+        {
+          "keys": "Ctrl+Shift+Z / Ctrl+Y",
+          "action": "Redo an undone Canvas edit"
+        }
+      ],
+      "related": [
+        "import",
+        "crop-sketch",
+        "compare"
+      ]
+    },
+    {
+      "id": "custom-model",
+      "category": "settings",
+      "title": "Add a custom fal.ai model",
+      "summary": "Link a fal.ai model, review its setup and price, run a confirmed test, then add the result to the catalog.",
+      "keywords": [
+        "add a custom fal.ai model",
+        "model wizard",
+        "custom model"
+      ],
+      "steps": [
+        {
+          "title": "Link the model",
+          "body": "Open Settings → fal.ai and models, paste the official model link, and choose Prepare test.",
+          "image": "/help/custom-model-1.svg",
+          "alt": "Add a custom fal.ai model: Link the model"
+        },
+        {
+          "title": "Review and test",
+          "body": "Check the prepared references, parameters, and estimated test price. For Krea 3 Edit, the megapixel estimate allows for the maximum output size, each reference, and the selected reasoning level. Choose Test model and confirm the paid test.",
+          "image": "/help/custom-model-2.svg",
+          "alt": "Add a custom fal.ai model: Review and test"
+        },
+        {
+          "title": "Add the result",
+          "body": "Wait for the test result, inspect it, then choose Add model to publish the tested model into your local catalog.",
+          "image": "/help/custom-model-3.svg",
+          "alt": "Add a custom fal.ai model: Add the result"
+        }
+      ],
+      "notes": [
+        "A changed test file recalculates the estimate. A model cannot be added until a valid result arrives.",
+        "Model discovery and test errors use English. Model names and sample prompts keep their original language.",
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+      ],
+      "related": [
+        "settings-provider",
+        "models",
+        "variants-cost"
+      ],
+      "target": "first-generation"
+    },
+    {
+      "id": "settings-provider",
+      "category": "settings",
+      "title": "Configure providers and models",
+      "summary": "Provider keys, catalog models, and price confirmations stay explicit.",
+      "keywords": [
+        "configure providers and models"
+      ],
+      "steps": [
+        {
+          "title": "Open Settings",
+          "body": "Open Settings → fal.ai and models to see provider status and the current model catalog.",
+          "image": "/help/settings-provider-1.svg",
+          "alt": "Configure providers and models: Open Settings"
+        },
+        {
+          "title": "Save a key",
+          "body": "Enter the key in the local settings form. CanAI stores only the provider configuration needed for requests.",
+          "image": "/help/settings-provider-2.svg",
+          "alt": "Configure providers and models: Save a key"
+        },
+        {
+          "title": "Confirm new models",
+          "body": "Review a new model’s parameters and cost before it becomes available for generation.",
+          "image": "/help/settings-provider-3.svg",
+          "alt": "Configure providers and models: Confirm new models"
+        }
+      ],
+      "notes": [
+        "Generation stays unavailable until a provider is connected. Review the estimate before confirming a request.",
+        "Connection errors use English. If the message asks for details, open Diagnostics to inspect the original server response."
+      ],
+      "related": [
+        "quick-start",
+        "models",
+        "variants-cost"
+      ]
+    },
+    {
+      "id": "settings-local",
+      "category": "settings",
+      "title": "Keep the local app portable",
+      "summary": "Keep boards, media, and settings together under the local app folder.",
+      "keywords": [
+        "keep the local app portable"
+      ],
+      "steps": [
+        {
+          "title": "Keep the folder together",
+          "body": "Move or copy the whole app folder when transferring a portable installation.",
+          "image": "/help/settings-local-1.svg",
+          "alt": "Keep the local app portable: Keep the folder together"
+        },
+        {
+          "title": "Stop before backup",
+          "body": "Stop CanAI before copying the folder so active files finish writing.",
+          "image": "/help/settings-local-2.svg",
+          "alt": "Keep the local app portable: Stop before backup"
+        },
+        {
+          "title": "Protect your data",
+          "body": "Keep your provider key and board data private; do not include them in screenshots or shared backups.",
+          "image": "/help/settings-local-3.svg",
+          "alt": "Keep the local app portable: Protect your data"
+        }
+      ],
+      "notes": [
+        "A provider is contacted only when you start a request."
+      ],
+      "related": [
+        "project-files",
+        "settings-provider"
+      ]
+    },
+    {
+      "id": "tablet-lan",
+      "category": "settings",
+      "title": "Use the tablet client on a LAN",
+      "summary": "The tablet surface can connect to the local app on your network with deliberate access limits.",
+      "keywords": [
+        "use the tablet client on a lan"
+      ],
+      "steps": [
+        {
+          "title": "Open Tablet access",
+          "body": "In Settings → Tablet access, set an access code and choose Turn on access.",
+          "image": "/help/tablet-lan-1.svg",
+          "alt": "Use the tablet client on a LAN: Open Tablet access"
+        },
+        {
+          "title": "Open the listed address",
+          "body": "On the tablet, open one of the local addresses shown in Settings and enter the access code.",
+          "image": "/help/tablet-lan-2.svg",
+          "alt": "Use the tablet client on a LAN: Open the listed address"
+        },
+        {
+          "title": "Keep access private",
+          "body": "Sign out on the tablet to revoke that device’s session. Turn access off on the computer to revoke all sessions; devices must enter the code again after access is turned back on.",
+          "image": "/help/tablet-lan-3.svg",
+          "alt": "Use the tablet client on a LAN: Keep access private"
+        }
+      ],
+      "notes": [
+        "LAN access exposes the local app to devices on that network. It does not include This edition administration.",
+        "When Tablet access is off, tablet sign-in is blocked even at its localhost address. The desktop app remains available."
+      ],
+      "related": [
+        "settings-local",
+        "tablet-gestures"
+      ]
+    },
+    {
+      "id": "tablet-gestures",
+      "category": "settings",
+      "title": "Use tablet touch gestures",
+      "summary": "Select, pan, zoom, resize, and manage history with the tablet’s touch controls.",
+      "keywords": [
+        "use tablet touch gestures",
+        "tablet gestures",
+        "touch controls"
+      ],
+      "steps": [
+        {
+          "title": "Select and frame",
+          "body": "Tap an object to select it. Drag an empty area for a marquee; with a stylus, draw over an object to start one.",
+          "image": "/help/tablet-gestures-1.svg",
+          "alt": "Use tablet touch gestures: Select and frame"
+        },
+        {
+          "title": "Pan and zoom",
+          "body": "Drag an empty area with one finger to move around. Pinch with two fingers to zoom and pan without changing card size.",
+          "image": "/help/tablet-gestures-2.svg",
+          "alt": "Use tablet touch gestures: Pan and zoom"
+        },
+        {
+          "title": "Open object actions",
+          "body": "Double-tap a finished image or video to open it large. Hold an object for actions, including Resize; Apply saves one history step.",
+          "image": "/help/tablet-gestures-3.svg",
+          "alt": "Use tablet touch gestures: Open object actions"
+        },
+        {
+          "title": "Use touch history",
+          "body": "Two fingers undo, three fingers redo or swipe down to copy and paste, and four fingers hide the interface. More contains Show all and 1:1.",
+          "image": "/help/tablet-gestures-4.svg",
+          "alt": "Use tablet touch gestures: Use touch history"
+        }
+      ],
+      "notes": [
+        "Drag the prompt-panel handle to move it; − and + change width, ↔ resizes the edge, and Return to bottom resets it.",
+        "More offers Smaller interface and Larger interface; pinch the panels for a quick size change.",
+        "Hold two fingers to undo repeatedly, or hold three fingers to redo repeatedly. Hide the interface with four fingers and tap again to restore it.",
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
+        "Clip editing keeps a large preview and one timeline. Crop values move beside the video in landscape and collapse on narrow screens.",
+        "Tap a name to visit their cursor or Follow to move with their view. A pan, pinch or zoom stops following."
+      ],
+      "shortcuts": [
+        {
+          "keys": "Two-finger tap",
+          "action": "Undo"
+        },
+        {
+          "keys": "Three-finger swipe right",
+          "action": "Redo"
+        },
+        {
+          "keys": "Three-finger swipe down",
+          "action": "Copy and paste"
+        },
+        {
+          "keys": "Four-finger tap",
+          "action": "Hide or restore the interface"
+        }
+      ],
+      "related": [
+        "tablet-lan",
+        "navigation-shortcuts",
+        "crop-sketch"
+      ]
+    },
+    {
+      "id": "recovery",
+      "category": "recovery",
+      "title": "Recover after a restart",
+      "summary": "Resume saved work after a normal restart, or review a restored backup without repeating an uncertain paid request.",
+      "keywords": [
+        "recover after a restart"
+      ],
+      "steps": [
+        {
+          "title": "Reopen the app",
+          "body": "Start CanAI again and open Tasks or the board that contained the pending card.",
+          "image": "/help/recovery-1.svg",
+          "alt": "Recover after a restart: Reopen the app"
+        },
+        {
+          "title": "Wait for restore",
+          "body": "Normal restarts resume queued work and saved provider requests. After a backup restore, jobs without a verified request ID are held for review and media cleanup is paused.",
+          "image": "/help/recovery-2.svg",
+          "alt": "Recover after a restart: Wait for restore"
+        },
+        {
+          "title": "Use Retry deliberately",
+          "body": "Choose Retry only after reading the task status; it starts a new provider call.",
+          "image": "/help/recovery-3.svg",
+          "alt": "Recover after a restart: Use Retry deliberately"
+        },
+        {
+          "title": "Review a recovered backup",
+          "body": "Seeing Recovered data needs review? Keep a copy of the whole app folder. Compare boards and Tasks before retrying; repair missing work before resuming cleanup.",
+          "image": "/help/recovery-4.svg",
+          "alt": "Recovered data warning with known requests resumed and uncertain requests held for review"
+        }
+      ],
+      "notes": [
+        "A cancelled job does not resume. Keep the app folder intact so saved boards and tasks remain available.",
+        "If both the main state file and its backup are unreadable, CanAI stops with a recovery message instead of replacing your data with an empty state.",
+        "Desktop and tablet errors use English. Your board names, prompts, and content keep their original language. An unfamiliar server error points to Diagnostics."
+      ],
+      "related": [
+        "pending-jobs",
+        "tasks-retry",
+        "project-files"
+      ],
+      "target": "recovery"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+name: Release candidate verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to verify
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-candidate-${{ inputs.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    name: Windows x64 package and launcher smoke
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          persist-credentials: false
+      - name: Record checked-out revision
+        id: source
+        shell: powershell
+        run: |
+          $commit = (git rev-parse HEAD).Trim()
+          "commit=$commit" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "CANAI_SOURCE_COMMIT=$commit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.1
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Install pinned Gitleaks
+        shell: powershell
+        run: |
+          $line = node scripts/install-gitleaks.mjs --output (Join-Path $env:RUNNER_TEMP 'gitleaks') | Select-String '^binary: '
+          if (-not $line) { throw 'gitleaks installer did not report a binary path' }
+          $binary = $line.Line.Substring(8).Trim()
+          if (-not $binary) { throw 'gitleaks installer reported an empty binary path' }
+          "GITLEAKS_BIN=$binary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install locked dependencies
+        run: |
+          npm ci --no-fund --no-audit
+          npm --prefix server ci --no-fund --no-audit
+          npm --prefix client ci --no-fund --no-audit
+      - name: Check, test, and build
+        run: |
+          npm run check
+          npm test
+          npm run build
+      - name: Build the Windows release ZIP
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\make-dist.ps1
+      - name: Smoke-test start, stop, and restart
+        shell: powershell
+        run: |
+          $zip = Get-ChildItem -LiteralPath dist-package -Filter '*.zip' | Select-Object -First 1
+          if (-not $zip) { throw 'No Windows release ZIP was created' }
+          $smokeRoot = Join-Path $env:RUNNER_TEMP ('canai-smoke-' + [Guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $smokeRoot -Force | Out-Null
+          Expand-Archive -LiteralPath $zip.FullName -DestinationPath $smokeRoot -Force
+          $package = Get-ChildItem -LiteralPath $smokeRoot -Directory | Select-Object -First 1
+          if (-not $package) { throw 'The release ZIP has no package directory' }
+          node scripts/smoke-distribution.mjs $package.FullName --platform windows
+      - name: Record Windows package provenance
+        shell: powershell
+        run: |
+          $zip = Get-ChildItem -LiteralPath dist-package -Filter '*.zip' | Select-Object -First 1
+          $hash = (Get-FileHash -LiteralPath $zip.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $name = "CanAI-windows-x64-$($env:CANAI_SOURCE_COMMIT.Substring(0, 12)).zip"
+          New-Item -ItemType Directory -Path release -Force | Out-Null
+          Copy-Item -LiteralPath $zip.FullName -Destination (Join-Path release $name)
+          "$hash  $name" | Set-Content -LiteralPath (Join-Path release "$name.sha256") -Encoding ascii
+          @{
+            sourceCommit = $env:CANAI_SOURCE_COMMIT
+            platform = 'win32'
+            arch = 'x64'
+            node = (node --version)
+            package = $name
+            sha256 = $hash
+            checks = @('typecheck', 'regression-tests', 'client-build', 'windows-launch-stop-restart')
+            runUrl = "$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY)/actions/runs/$($env:GITHUB_RUN_ID)"
+          } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path release 'provenance-windows-x64.json') -Encoding utf8
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: CanAI-windows-x64-${{ steps.source.outputs.commit }}
+          path: release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  macos-arm64:
+    name: macOS Apple Silicon package and launcher smoke
+    runs-on: macos-15
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          persist-credentials: false
+      - name: Record checked-out revision
+        id: source
+        run: |
+          COMMIT=$(git rev-parse HEAD)
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "CANAI_SOURCE_COMMIT=$COMMIT" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.1
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Install pinned Gitleaks
+        shell: bash
+        run: |
+          binary="$(node scripts/install-gitleaks.mjs --output "$RUNNER_TEMP/gitleaks" | sed -n 's/^binary: //p')"
+          test -n "$binary"
+          echo "GITLEAKS_BIN=$binary" >> "$GITHUB_ENV"
+      - name: Install locked dependencies
+        run: |
+          test "$(uname -m)" = arm64
+          npm ci --no-fund --no-audit
+          npm --prefix server ci --no-fund --no-audit
+          npm --prefix client ci --no-fund --no-audit
+      - name: Check, test, and build
+        run: |
+          npm run check
+          npm test
+          npm run build
+      - name: Restore media tools for these exact build inputs
+        id: media-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: runtime/media-tools
+          key: canai-media-macos15-arm64-${{ hashFiles('scripts/build-ffmpeg-macos.sh') }}
+      - name: Build pinned portable media tools
+        if: steps.media-cache.outputs.cache-hit != 'true'
+        run: zsh scripts/build-ffmpeg-macos.sh
+      - name: Reject dependencies outside macOS system libraries
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process'
+          for (const file of ['ffmpeg', 'ffprobe']) {
+            const binary = `runtime/media-tools/${file}`
+            const linked = execFileSync('otool', ['-L', binary], { encoding: 'utf8' })
+            console.log(linked)
+            for (const line of linked.trim().split('\n').slice(1)) {
+              const library = line.trim().split(' (')[0]
+              if (!library.startsWith('/usr/lib/') && !library.startsWith('/System/Library/')) {
+                throw new Error(`${binary} depends on a non-system library: ${library}`)
+              }
+            }
+          }
+          NODE
+      - name: Save media build
+        if: steps.media-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: runtime/media-tools
+          key: ${{ steps.media-cache.outputs.cache-primary-key }}
+      - name: Build the macOS release ZIP
+        run: zsh make-dist.sh
+      - name: Smoke-test start, stop, and restart
+        run: |
+          ZIP=$(find dist-package -maxdepth 1 -name '*.zip' -print -quit)
+          [ -n "$ZIP" ] || { echo 'No macOS release ZIP was created' >&2; exit 1; }
+          SMOKE_ROOT=$(mktemp -d "$RUNNER_TEMP/canai-smoke.XXXXXX")
+          ditto -x -k "$ZIP" "$SMOKE_ROOT"
+          PACKAGE=$(find "$SMOKE_ROOT" -mindepth 1 -maxdepth 1 -type d -print -quit)
+          [ -n "$PACKAGE" ] || { echo 'The release ZIP has no package directory' >&2; exit 1; }
+          node scripts/smoke-distribution.mjs "$PACKAGE" --platform macos
+      - name: Record macOS package provenance
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises'
+          import { createHash } from 'node:crypto'
+          const entries = (await fs.readdir('dist-package')).filter(name => name.endsWith('.zip'))
+          if (entries.length === 0) throw new Error('No macOS release ZIP was created')
+          const source = entries[0]
+          const content = await fs.readFile(`dist-package/${source}`)
+          const sha256 = createHash('sha256').update(content).digest('hex')
+          const name = `CanAI-macos-arm64-${process.env.CANAI_SOURCE_COMMIT.slice(0, 12)}.zip`
+          await fs.mkdir('release', { recursive: true })
+          await fs.writeFile(`release/${name}`, content)
+          await fs.writeFile(`release/${name}.sha256`, `${sha256}  ${name}\n`)
+          await fs.writeFile('release/provenance-macos-arm64.json', JSON.stringify({
+            sourceCommit: process.env.CANAI_SOURCE_COMMIT,
+            platform: process.platform,
+            arch: process.arch,
+            node: process.version,
+            package: name,
+            sha256,
+            checks: ['typecheck', 'regression-tests', 'client-build', 'macos-launch-stop-restart'],
+            runUrl: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+          }, null, 2) + '\n')
+          NODE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: CanAI-macos-arm64-${{ steps.source.outputs.commit }}
+          path: release/*
+          if-no-files-found: error
+          retention-days: 30

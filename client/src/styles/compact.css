@@ -1,0 +1,620 @@
+/* Узкий desktop-режим: функции не уменьшаются до неразличимых иконок,
+   а перестраиваются в доступные панели. Этот слой намеренно идёт последним. */
+@media (max-width: 600px) {
+  :root {
+    --compact-target: 44px;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .app-shell,
+  .gallery-view,
+  .gallery-scroll,
+  .gallery-inner,
+  .space-host,
+  .space-pane,
+  .canvas-space,
+  .canvas-main,
+  .nodes-space {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Верхняя панель доски */
+  .top-bar {
+    min-height: 52px;
+    height: 52px;
+    gap: 4px;
+    padding: 0 6px;
+  }
+
+  .brand-back {
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+    padding: 0;
+    justify-content: center;
+  }
+
+  .brand-back span.brand,
+  .top-project-name-dot {
+    display: none;
+  }
+
+  .top-bar-title-group {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .top-project-name,
+  .top-project-name-input {
+    min-width: 0;
+    max-width: 100%;
+    min-height: var(--compact-target);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
+  .top-bar-compact-actions {
+    flex: none;
+    margin-left: auto;
+  }
+
+  .compact-overflow-trigger {
+    position: relative;
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+  }
+
+  .compact-overflow-trigger[data-attention='true']::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--danger);
+  }
+
+  .compact-overflow-panel {
+    position: fixed;
+    top: 58px;
+    right: 8px;
+    z-index: calc(var(--z-modal) - 1);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(320px, calc(100vw - 16px));
+    max-height: calc(100dvh - 66px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-control);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .compact-overflow-panel[hidden] {
+    display: none !important;
+  }
+
+  .compact-overflow-panel button,
+  .compact-overflow-panel a,
+  .compact-overflow-panel input,
+  .compact-overflow-panel select {
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+  }
+
+  .top-bar .compact-overflow-panel button {
+    min-width: var(--compact-target);
+  }
+
+  .compact-overflow-panel > button,
+  .compact-topbar-status,
+  .compact-topbar-export,
+  .compact-topbar-tasks,
+  .compact-topbar-balance {
+    width: 100%;
+  }
+
+  .top-bar .compact-overflow-panel > button,
+  .top-bar .compact-topbar-export > *,
+  .top-bar .compact-topbar-tasks > *,
+  .top-bar .compact-topbar-balance > * {
+    width: 100%;
+  }
+
+  .compact-overflow-panel > button,
+  .compact-topbar-export > *,
+  .compact-topbar-tasks > *,
+  .compact-topbar-balance > * {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  /* Кнопки доски лежат в своей обёртке (display: contents), поэтому
+     селектор «> button» до них не достаёт — выравниваем отдельно. */
+  .top-bar .compact-overflow-panel .share-topbar-button {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  /* Иконочные кнопки в меню идут с подписью — возвращаем им поля. */
+  .compact-overflow-panel .theme-toggle-btn,
+  .compact-overflow-panel .help-button,
+  .compact-overflow-panel .share-topbar-button {
+    padding: 0 var(--space-3);
+  }
+
+  /* Промпт */
+  .prompt-dock {
+    bottom: 6px;
+    width: calc(100% - 12px);
+    max-width: calc(100% - 12px);
+  }
+
+  .generation-series-cue {
+    padding: 0 12px;
+  }
+
+  .prompt-bar {
+    max-height: calc(100dvh - 70px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 12px 10px 10px;
+    border-radius: var(--radius-panel);
+  }
+
+  .prompt-bar textarea {
+    min-height: var(--compact-target);
+  }
+
+  .prompt-clear-btn {
+    width: var(--compact-target);
+    height: var(--compact-target);
+  }
+
+  .pane-tabs {
+    min-width: 0;
+  }
+
+  .pane-tabs button {
+    min-height: var(--compact-target);
+  }
+
+  .prompt-actions {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  .prompt-actions-right {
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .kind-toggle button,
+  .prompt-actions .generate,
+  .prompt-actions .ask,
+  .prompt-settings-trigger {
+    min-height: var(--control-h-emphasis);
+  }
+
+  /* В узком окне сегмент растягивается до пальца (--compact-target), но форму
+     не меняет: отступ и промежуток берутся из канона. Свои 0 10px здесь были
+     остатком от старой раскладки — разница с общими 12px читалась как
+     небрежность именно там, где элементы стоят вплотную. */
+  .kind-toggle button {
+    width: auto;
+    min-width: var(--compact-target);
+  }
+
+  .prompt-actions .generate,
+  .prompt-actions .ask {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prompt-settings-section,
+  .prompt-settings-region {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prompt-settings-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 0 12px;
+    line-height: 1;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--text-2);
+    font: inherit;
+    font-size: var(--text-control);
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .prompt-settings-trigger[data-attention='true']::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+
+  .prompt-settings-region[hidden] {
+    display: none !important;
+  }
+
+  .prompt-settings-region {
+    margin-top: 8px;
+  }
+
+  .gen-controls-secondary.is-stacked,
+  .gen-controls-secondary.is-stacked .param-controls.compact {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .gen-controls-secondary.is-stacked {
+    margin-top: 0;
+  }
+
+  .gen-controls-secondary.is-stacked .gen-select,
+  .gen-controls-secondary.is-stacked .gen-count,
+  .gen-controls-secondary.is-stacked .param-row,
+  .gen-controls-secondary.is-stacked .param-input {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+  }
+
+  .gen-controls-secondary.is-stacked .gen-count {
+    display: grid;
+    grid-template-columns: var(--compact-target) 1fr var(--compact-target);
+    padding: 0;
+  }
+
+  .gen-controls-secondary.is-stacked .gen-count button,
+  .macros-inline-btn {
+    min-width: var(--compact-target);
+    width: var(--compact-target);
+    min-height: var(--compact-target);
+    height: var(--compact-target);
+  }
+
+  .macros-inline-btn.more,
+  .macros-inline-btn.add {
+    min-width: var(--compact-target);
+    width: var(--compact-target);
+  }
+
+  .prompt-settings-region .macros-inline {
+    width: 100%;
+    padding: 2px 0;
+  }
+
+  .inline-notice button {
+    min-height: var(--compact-target);
+  }
+
+  .assistant-shelf-head button,
+  .assistant-shelf-head select {
+    min-width: var(--compact-target);
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+  }
+
+  /* Галерея */
+  .gallery-topbar {
+    min-height: 52px;
+    height: 52px;
+    gap: 8px;
+    padding: 0 8px;
+  }
+
+  .gallery-topbar .brand {
+    min-width: 0;
+    margin-right: auto;
+  }
+
+  .gallery-topbar .tab.icon-btn,
+  .gallery-topbar .team-status {
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+    min-height: var(--compact-target);
+  }
+
+  .gallery-inner {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 28px 20px 56px;
+  }
+
+  .gallery-title {
+    font-size: clamp(30px, 10vw, 40px);
+  }
+
+  .gallery-toolbar {
+    width: 100%;
+  }
+
+  .gallery-toolbar-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery-toolbar-actions .gallery-new,
+  .gallery-toolbar-actions .gallery-search {
+    grid-column: 1 / -1;
+  }
+
+  .gallery-toolbar-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gallery-source-filter {
+    width: 100%;
+  }
+
+  .gallery-source-filter button {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 8px;
+    white-space: normal;
+  }
+
+  .gallery-new,
+  .gallery-trash,
+  .gallery-search,
+  .gallery-sort {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+    justify-content: center;
+  }
+
+  .gallery-sort {
+    height: var(--compact-target);
+  }
+
+  .gallery-sort-trigger {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--compact-target);
+  }
+
+  .gallery-sort-menu {
+    min-width: 0;
+  }
+
+  .gallery-search input {
+    width: 100%;
+    height: 100%;
+    min-height: var(--compact-target);
+  }
+
+  .project-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .project-menu-btn {
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+  }
+
+  .project-menu {
+    max-width: calc(100vw - 32px);
+  }
+
+  .project-menu button,
+  .project-menu a {
+    min-height: var(--compact-target);
+  }
+
+  /* Редактор макроса */
+  .nodes-toolbar-compact {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    transform: none;
+    overflow: visible;
+    padding: 6px;
+  }
+
+  .nodes-toolbar-compact .nodes-back,
+  .nodes-toolbar-compact .compact-overflow-trigger {
+    min-width: var(--compact-target);
+    min-height: var(--compact-target);
+  }
+
+  .nodes-toolbar-compact .macro-name-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+  }
+
+  .nodes-toolbar-compact .compact-overflow-panel {
+    top: 66px;
+  }
+
+  .nodes-compact-add {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+  }
+
+  .nodes-compact-add .nodes-toolbar-label {
+    grid-column: 1 / -1;
+  }
+
+  .nodes-compact-add .node-add-btn {
+    width: 100%;
+    min-height: var(--compact-target);
+  }
+
+  .nodes-space .react-flow__controls-button {
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+    min-height: var(--compact-target);
+  }
+
+  .nodes-space .gen-node-del {
+    width: var(--compact-target);
+    min-width: var(--compact-target);
+    height: var(--compact-target);
+    min-height: var(--compact-target);
+  }
+
+  .nodes-space .node-input-source-select {
+    min-height: var(--compact-target);
+  }
+
+  /* Диалоги и плавающие панели не могут быть шире viewport. */
+  .modal-card,
+  .settings-modal,
+  .recovery-modal,
+  .billing-modal,
+  .export-panel,
+  .generation-task-panel,
+  .task-center-panel,
+  .assistant-shelf,
+  .macro-library-panel,
+  .add-menu {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    box-sizing: border-box;
+  }
+
+  .versions-modal > header {
+    padding: 16px;
+  }
+
+  .versions-modal-body {
+    padding: 0 16px 16px;
+  }
+
+  .version-row {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .version-action {
+    grid-column: 1 / -1;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .settings-modal {
+    width: calc(100% - 16px);
+    padding: 0;
+  }
+
+  .settings-header,
+  .settings-actions {
+    padding-inline: 16px;
+  }
+
+  .settings-body {
+    padding: 16px;
+  }
+
+  /* На узком экране колонка разделов съела бы половину ширины — кладём её
+     сверху лентой, как ряд вкладок. */
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .settings-nav {
+    flex-direction: row;
+    width: auto;
+    overflow-x: auto;
+    padding: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-nav-item {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .settings-section-heading,
+  .settings-editor-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-editor-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .settings-editor-actions .editor-close,
+  .settings-key-row .editor-close,
+  .settings-actions button,
+  .settings-technical summary {
+    min-height: var(--compact-target);
+  }
+
+  .settings-modal input:not([type="checkbox"]),
+  .settings-modal select {
+    min-height: var(--compact-target);
+    box-sizing: border-box;
+  }
+
+  .settings-modal .settings-segmented input {
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+  }
+
+  pre,
+  code {
+    max-width: 100%;
+  }
+
+  pre {
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@canai/model-catalog",
+  "version": "2026.9.9-1",
+  "private": true,
+  "license": "LicenseRef-CanAI-Community-1.0",
+  "type": "module",
+  "exports": {
+    ".": "./catalog.ts",
+    "./imageParams": "./imageParams.ts",
+    "./canonBridge": "./canonBridge.ts"
+  }
+}

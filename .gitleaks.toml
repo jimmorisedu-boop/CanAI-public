@@ -1,0 +1,69 @@
+title = "CanAI public release secret policy"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "canai-fal-key"
+description = "FAL_KEY assignments must never contain a real key"
+regex = '''(?i)(?:FAL_KEY|FAL_API_KEY)\s*(?:=|:)\s*[\"']?([a-z0-9_-]{16,}(?::[a-z0-9_-]{16,})?)[\"']?'''
+secretGroup = 1
+keywords = ["FAL_KEY", "FAL_API_KEY"]
+
+[[rules.allowlists]]
+description = "Exact synthetic fixture literals only"
+condition = "AND"
+regexTarget = "secret"
+paths = [
+  '''^scripts/make-dist\.test\.mjs$''',
+  '''^scripts/migrate-data\.test\.mjs$''',
+  '''^scripts/smoke-distribution\.test\.mjs$''',
+  '''^scripts/update-secret-backup\.test\.mjs$''',
+  '''^server/src/agents/host-wire\.test\.ts$''',
+  '''^server/src/diagnosticReport\.test\.ts$''',
+]
+regexes = [
+  '''^synthetic-test-key$''',
+  '''^synthetic-backup-key$''',
+  '''^synthetic-old-key$''',
+  '''^synthetic-new-key$''',
+  '''^must-not-be-read$''',
+  '''^test-key-from-installation-a$''',
+  '''^tlv_00000000-0000-0000-0000-000000000000$''',
+  '''^12345678-1234-1234-1234-123456789abc:0123456789abcdef0123456789abcdef$''',
+  '''^eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.xyzxyzxyzxyzxyz$''',
+]
+
+[[allowlists]]
+description = "Exact synthetic JWT fixture only"
+condition = "AND"
+regexTarget = "secret"
+paths = ['''^server/src/diagnosticReport\.test\.ts$''']
+regexes = ['''^eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.xyzxyzxyzxyzxyz$''']
+
+[[allowlists]]
+description = "Exact synthetic conflict identifiers only"
+condition = "AND"
+regexTarget = "secret"
+paths = [
+  '''^server/src/projectRoutes\.test\.ts$''',
+  '''^server/src/projects\.test\.ts$''',
+]
+regexes = [
+  '''^c4d77f33-7839-4f0d-bf90-5f41ebc958bb$''',
+  '''^9b2ca32f-c155-4c5e-b5db-8273070710de$''',
+  '''^8716e395-aa08-4928-8b9b-a582ed3765fd$''',
+]
+
+[[allowlists]]
+description = "Exact synthetic client conflict identifiers only"
+condition = "AND"
+regexTarget = "secret"
+paths = ['''^client/src/spaces/canvas/projectSyncReceipt\.test\.ts$''']
+regexes = [
+  '''^9b2ca32f-c155-4c5e-b5db-8273070710de$''',
+  '''^d8d0f0e1-8a8d-4d69-9c1a-4a9d74d5a111$''',
+  '''^d8d0f0e1-8a8d-4d69-9c1a-4a9d74d5a222$''',
+  '''^d8d0f0e1-8a8d-4d69-9c1a-4a9d74d5b111$''',
+  '''^d8d0f0e1-8a8d-4d69-9c1a-4a9d74d5b222$''',
+]

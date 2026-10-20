@@ -1,0 +1,221 @@
+/* Lower action-dock agent composer and the compact helper picker. The task
+   review panel keeps its existing material in agents.css. */
+.action-dock-agents-composer {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  max-height: min(280px, calc(100dvh - 180px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* The task panel normally reserves the prompt dock through --agent-panel-bottom
+   (see agents.css). When the dock leaves less than the 48px header, keeping the
+   old absolute panel would produce a one-pixel box and clip its only toggle.
+   AgentPanel marks that measured case as compact: the body is removed, while a
+   small close/toggle stays at the side of the dock. It never grows into the
+   dock's reserved area. */
+.agent-panel.agent-panel--compact {
+  top: var(--agent-panel-compact-top, 16px);
+  right: var(--agent-panel-compact-right, auto);
+  left: var(--agent-panel-compact-left, auto);
+  bottom: auto;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  max-height: 48px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.agent-panel-collapsed.agent-panel-collapsed--compact {
+  top: var(--agent-panel-compact-top);
+  right: auto;
+  left: var(--agent-panel-compact-left);
+  width: 48px;
+  height: 48px;
+}
+.agent-panel--compact .agent-panel-header {
+  box-sizing: border-box;
+  min-height: 46px;
+  height: 46px;
+  padding: 0;
+  border-bottom: 0;
+}
+.agent-panel--compact .agent-panel-title { display: none; }
+.agent-panel--compact .agent-panel-close {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto;
+}
+.agent-panel--compact > :not(.agent-panel-header) { display: none; }
+
+/* Keep the task stream as the only scroll container in the normal panel. */
+.agent-panel:not(.agent-panel--compact) .agent-panel-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.agent-launch-composer {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+.agent-launch-composer .agent-panel-section {
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 0;
+}
+.agent-launch-composer .agent-panel-section-head {
+  margin-bottom: var(--space-1);
+}
+.agent-launch-composer .agent-panel-label textarea { min-height: 48px; }
+.agent-launch-composer .agent-panel-launch-foot { margin-top: var(--space-2); }
+.agent-launch-composer--unavailable {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-2);
+}
+
+.agent-panel-launch--compact .agent-launch-choice-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  min-width: 0;
+}
+.agent-panel-launch--compact .agent-launch-choice-row > .agent-panel-label,
+.agent-panel-launch--compact .agent-launch-choice-row > .agent-panel-value {
+  min-width: 0;
+  margin-top: 0;
+}
+.agent-panel-launch--compact .agent-launch-choice-row select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agent-panel-launch--compact .agent-panel-value {
+  min-height: var(--control-h-compact);
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+.agent-panel-launch--compact .agent-panel-value strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-panel-launch--compact > .agent-panel-label {
+  margin-top: var(--space-2);
+}
+.agent-panel-launch--compact > .agent-panel-label textarea {
+  height: 64px;
+  max-height: 84px;
+  resize: vertical;
+}
+.agent-panel-launch--compact .agent-task-advanced {
+  max-height: 116px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.agent-panel-launch--compact .agent-llm-budget {
+  max-height: 176px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.agent-panel-launch--compact .agent-panel-launch-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  min-height: var(--control-h-compact);
+  margin-inline: calc(var(--space-3) * -1);
+  padding: var(--space-2) var(--space-3) 0;
+  background: var(--surface-solid);
+}
+.agent-panel-launch--compact .agent-panel-launch-foot > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-panel-value {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+}
+.agent-panel-value strong { color: var(--text); font-weight: 650; }
+.agent-task-advanced {
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+.agent-task-advanced summary {
+  color: var(--accent-text);
+  cursor: pointer;
+  font-size: var(--text-micro);
+  font-weight: 650;
+}
+.agent-panel--tasks { min-height: 0; }
+.agent-panel-cloud-notice { margin: var(--space-2) var(--space-3) 0; }
+.settings-agents > .agent-connections { margin-inline: calc(var(--space-3) * -1); }
+.settings-agents > .agent-connections > .agent-panel-section { padding-inline: var(--space-3); }
+
+.assistant-picker-compact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.assistant-picker-label {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  white-space: nowrap;
+}
+.assistant-picker-select {
+  min-width: 0;
+  max-width: 180px;
+  height: var(--control-h-compact);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+  color: var(--text);
+  font: 600 var(--text-micro)/1 var(--font-sans);
+}
+.assistant-picker-select:focus-visible,
+.assistant-picker-manage:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.assistant-picker-scope { color: var(--text-3); font-size: var(--text-micro); }
+.assistant-picker-manage {
+  min-height: var(--control-h-compact);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--accent-text);
+  font: 650 var(--text-micro)/1 var(--font-sans);
+  cursor: pointer;
+}
+.assistant-picker-manage:hover { background: var(--accent-soft); border-color: var(--accent-soft-border); }
+
+@media (max-width: 760px) {
+  .agent-launch-composer { max-width: none; }
+  .assistant-picker-compact { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .agent-panel-launch--compact .agent-launch-choice-row { grid-template-columns: minmax(0, 1fr); }
+  .agent-panel-launch--compact .agent-panel-launch-foot { align-items: flex-end; }
+}

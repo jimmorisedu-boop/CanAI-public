@@ -1,0 +1,163 @@
+/* Компактный chrome доски.
+ *
+ * Планшетные панели остаются удобными для пальца, но не должны съедать холст:
+ * основные действия показывают иконку, а полное имя остаётся в aria-label и
+ * title. Название доски, заметка о сохранении, счётчик выбора и бейдж задач
+ * остаются видимыми.
+ *
+ * Этот файл загружается из tablet/main, правила ограничены board
+ * topbar/context menu и не меняют шапку галереи или панели промпта.
+ */
+
+/* ── шапка доски ───────────────────────────────────────────────────────── */
+
+.tablet-screen .tablet-board-topbar {
+  gap: 4px;
+  height: calc(44px + var(--tablet-safe-top));
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-topbar-actions {
+  gap: 2px;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-topbar-sep {
+  height: 20px;
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-back,
+.tablet-screen .tablet-board-topbar .tablet-icon,
+.tablet-screen .tablet-board-topbar .tablet-topbar-button {
+  width: calc(36px * var(--tablet-ui-scale));
+  min-width: calc(36px * var(--tablet-ui-scale));
+  height: calc(36px * var(--tablet-ui-scale));
+  min-height: calc(36px * var(--tablet-ui-scale));
+  padding-right: 0;
+  padding-left: 0;
+  justify-content: center;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-back {
+  gap: 0;
+}
+
+/* Подписи у действий дублируют aria-label/title и только отнимают ширину. */
+.tablet-screen .tablet-board-topbar .tablet-back > span,
+.tablet-screen .tablet-board-topbar .tablet-topbar-button > span:not(.tablet-badge) {
+  display: none;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-topbar-button {
+  gap: 0;
+}
+
+.tablet-screen .tablet-board-topbar .tablet-badge {
+  min-width: 17px;
+  height: 17px;
+  padding-right: 4px;
+  padding-left: 4px;
+  font-size: 10px;
+}
+
+/* ── панель действий выделения ────────────────────────────────────────── */
+
+.tablet-context-bar {
+  gap: 2px;
+  min-height: calc(44px * var(--tablet-ui-scale));
+  padding: 3px;
+  border-radius: 12px;
+}
+
+.tablet-context-action,
+.tablet-context-more {
+  width: calc(36px * var(--tablet-ui-scale));
+  min-width: calc(36px * var(--tablet-ui-scale));
+  height: calc(36px * var(--tablet-ui-scale));
+  min-height: calc(36px * var(--tablet-ui-scale));
+  padding-right: 0;
+  padding-left: 0;
+  gap: 0;
+  border-radius: 10px;
+}
+
+.tablet-context-action > span {
+  display: none;
+}
+
+.tablet-context-more {
+  padding-right: 0;
+  padding-left: 0;
+  font-size: 16px;
+}
+
+.tablet-context-count {
+  width: calc(26px * var(--tablet-ui-scale));
+  height: calc(26px * var(--tablet-ui-scale));
+  margin-left: 2px;
+}
+
+.tablet-context-progress {
+  max-width: 120px;
+  padding-right: 6px;
+  padding-left: 6px;
+}
+
+/* ── меню долгого нажатия ──────────────────────────────────────────────── */
+
+/* TabletItemMenu рендерится порталом в body, поэтому селектор начинается с
+   body и не зависит от того, в каком слое доски открыт портал. */
+body .tablet-item-menu {
+  width: min(220px, calc(100vw - 24px));
+  min-width: 0;
+  max-width: 220px;
+  gap: 4px;
+  padding: 6px;
+}
+
+/* The object menu has nine possible actions; give its two-column grid enough
+   room for the longest Russian labels without changing the clipboard menu. */
+body .tablet-item-menu-object {
+  width: min(344px, calc(100vw - 24px));
+  max-width: 344px;
+}
+
+/* The long-press menu has several actions. A two-column list cuts its height
+   in half while keeping every action a full-size touch target. */
+.tablet-item-menu-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.tablet-item-menu .tablet-menu-item {
+  min-width: 0;
+  min-height: max(44px, calc(36px * var(--tablet-ui-scale)));
+  padding-right: 8px;
+  padding-left: 8px;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tablet-item-menu .tablet-menu-item > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tablet-item-menu .tablet-menu-sep {
+  /* Section dividers are intentionally omitted in the compact grid. Keeping
+     them as full-width grid rows would put back the vertical whitespace this
+     layout is meant to remove; ordering and the action labels remain intact. */
+  display: none;
+}
+
+.tablet-item-menu .tablet-item-menu-title {
+  margin-bottom: 2px;
+  padding-right: 8px;
+  padding-left: 8px;
+}

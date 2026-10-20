@@ -1,0 +1,240 @@
+/* Help and first-run guide. This surface shares the settings modal shell but
+   keeps its own reading layout so cards stay useful on a narrow board. */
+.help-backdrop { z-index: var(--z-modal); }
+
+.help-modal {
+  width: min(1080px, calc(100% - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  font-family: var(--font-sans);
+}
+
+/* settings.css intentionally gives every settings dialog a three-row grid.
+   Help has a tab row as well, so use a scoped higher-specificity rule and keep
+   the reader itself as the only scrolling region. */
+.settings-modal.help-modal {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(1080px, calc(100% - 32px));
+  height: min(760px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+}
+
+.help-header { min-height: 68px; padding: var(--space-3) var(--space-5); }
+.help-header h2 { margin: 0; font-size: var(--text-title-lg); }
+.help-eyebrow,
+.help-kicker {
+  margin: 0 0 var(--space-1);
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.help-close { flex: none; font-size: var(--text-title); line-height: 1; }
+
+.help-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.help-tabs button,
+.help-categories button,
+.help-related-links button {
+  display: inline-flex;
+  min-height: var(--control-h-compact);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-3);
+  padding-block: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-control);
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+}
+.help-tabs button:hover,
+.help-categories button:hover,
+.help-related-links button:hover { color: var(--text); background: var(--surface-2); }
+.help-tabs button.active,
+.help-categories button.active { color: var(--accent-text); border-color: var(--accent-soft-border); background: var(--accent-soft); }
+.help-tabs button:focus-visible,
+.help-categories button:focus-visible,
+.help-related-links button:focus-visible,
+.help-topic-card:focus-visible,
+.help-primary-action:focus-visible,
+.help-footer button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 1px; }
+
+.settings-modal.help-modal > .help-content,
+.settings-modal.help-modal > .help-shortcuts-content {
+  min-height: 0;
+  overflow: hidden;
+}
+.settings-modal.help-modal > .help-content { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+.settings-modal.help-modal > [role="tabpanel"][hidden] { display: none; }
+.settings-modal.help-modal .help-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.help-toolbar { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5) var(--space-3); }
+.help-search { display: grid; gap: var(--space-1); }
+.help-search-label { color: var(--text-2); font-size: var(--text-secondary); font-weight: 650; }
+.help-search input {
+  width: 100%;
+  height: var(--control-h-standard);
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-3);
+  color: var(--text);
+  background: var(--surface-2);
+  font: inherit;
+  font-size: var(--text-body);
+}
+.help-search input:focus { border-color: var(--accent-soft-border); outline: 3px solid var(--accent-soft); outline-offset: 1px; }
+.help-categories { display: flex; gap: var(--space-1); overflow-x: auto; padding-bottom: 2px; }
+.help-categories button { white-space: nowrap; }
+
+.help-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 30%) minmax(0, 1fr);
+  min-height: 0;
+  padding: 0 var(--space-5) var(--space-4);
+  gap: var(--space-4);
+  overflow: hidden;
+}
+.help-topic-list {
+  display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: auto;
+  padding-right: var(--space-1);
+}
+.help-topic-card {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-3);
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: var(--space-2);
+  color: var(--text);
+  background: var(--surface-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.help-topic-card:hover { border-color: var(--border-strong); background: var(--surface-3); }
+.help-topic-card.active { border-color: var(--accent-soft-border); background: var(--accent-soft); }
+.help-topic-card img { width: 56px; height: 48px; border-radius: var(--radius-compact); object-fit: cover; background: var(--surface-3); }
+.help-topic-card span { display: grid; align-content: center; gap: var(--space-1); min-width: 0; }
+.help-topic-card strong { overflow-wrap: anywhere; font-size: var(--text-control); }
+.help-topic-card small { color: var(--text-2); font-size: var(--text-secondary); line-height: 1.35; }
+.help-empty { margin: var(--space-3); color: var(--text-2); font-size: var(--text-control); }
+
+.help-topic-detail {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-1) var(--space-2) var(--space-2) 0;
+}
+.help-topic-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+.help-topic-heading > div { min-width: 0; }
+.help-topic-heading h3 { margin: 0; font-size: var(--text-title); line-height: 1.25; }
+.help-topic-heading h3:focus { outline: 3px solid var(--accent-soft); outline-offset: 3px; border-radius: var(--radius-compact); }
+.help-summary { margin: var(--space-2) 0 0; color: var(--text-2); font-size: var(--text-body); line-height: 1.45; }
+.help-primary-action,
+.onboarding-primary-action {
+  display: inline-flex;
+  min-height: var(--control-h-standard);
+  flex: none;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-control);
+  padding: 0 var(--space-3);
+  padding-block: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-ink);
+  background: var(--accent);
+  font: inherit;
+  font-size: var(--text-control);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.help-primary-action:hover,
+.onboarding-primary-action:hover { background: var(--accent-hover); }
+.help-hero-image { margin: var(--space-4) 0; }
+.help-hero-image img { display: block; width: 100%; height: 220px; border: 1px solid var(--border); border-radius: var(--radius-control); object-fit: contain; background: var(--surface-2); }
+.help-hero-image figcaption { margin-top: var(--space-1); color: var(--text-3); font-size: var(--text-secondary); }
+.help-step-list { display: grid; gap: var(--space-3); }
+.help-step { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--space-3); }
+.help-step-number { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-pill); color: var(--accent-text); background: var(--accent-soft); font-size: var(--text-control); font-weight: 750; }
+.help-step h4,
+.help-notes summary,
+.help-shortcuts h4,
+.help-related h4 { margin: 0; font-size: var(--text-control); font-weight: 700; }
+.help-step p { margin: var(--space-1) 0 0; color: var(--text-2); font-size: var(--text-control); line-height: 1.45; }
+.help-step-image { display: block; width: min(100%, 480px); height: 240px; margin: var(--space-2) 0; border: 1px solid var(--border); border-radius: var(--radius-compact); object-fit: contain; background: var(--surface-2); }
+.help-notes,
+.help-shortcuts,
+.help-related { margin-top: var(--space-4); border-top: 1px solid var(--border); padding-top: var(--space-3); }
+.help-notes summary { cursor: pointer; }
+.help-notes ul { display: grid; gap: var(--space-2); margin: var(--space-2) 0 0; padding-left: var(--space-4); color: var(--text-2); font-size: var(--text-control); line-height: 1.4; }
+.help-shortcut-row { display: grid; grid-template-columns: minmax(72px, auto) minmax(0, 1fr); gap: var(--space-3); align-items: center; margin-top: var(--space-2); color: var(--text-2); font-size: var(--text-control); }
+.help-shortcut-row kbd { width: max-content; border: 1px solid var(--border-strong); border-radius: var(--radius-compact); padding: 2px var(--space-2); color: var(--text); background: var(--surface-2); font-family: var(--font-mono); font-size: var(--text-secondary); }
+.help-related-links { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
+.help-related-links button { min-height: var(--control-h-compact); padding-inline: var(--space-2); }
+.help-empty-detail { display: grid; place-content: center; min-height: 260px; color: var(--text-2); text-align: center; }
+.help-empty-detail h3 { margin: 0; color: var(--text); }
+.help-empty-detail p { margin: var(--space-2) 0 0; }
+.help-footer { display: flex; justify-content: flex-end; border-top: 1px solid var(--border); padding: var(--space-3) var(--space-5); }
+.help-actions { align-items: center; }
+
+.help-global-trigger {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: var(--z-canvas-ui);
+  display: grid;
+  place-items: center;
+  width: var(--control-h-emphasis);
+  height: var(--control-h-emphasis);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--text);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-md);
+  font: inherit;
+  font-size: var(--text-title);
+  font-weight: 750;
+  cursor: pointer;
+}
+.help-global-trigger:hover { border-color: var(--accent-soft-border); color: var(--accent-text); }
+.help-global-trigger:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+
+@media (max-width: 760px) {
+  .settings-modal.help-modal { width: min(calc(100% - 16px), 680px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
+  .help-header,
+  .help-toolbar,
+  .help-layout,
+  .help-footer { padding-inline: var(--space-3); }
+  .help-layout { grid-template-columns: 1fr; gap: var(--space-3); }
+  .help-topic-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 174px; }
+  .help-topic-card { grid-template-columns: 42px minmax(0, 1fr); }
+  .help-topic-card img { width: 42px; height: 38px; }
+  .help-topic-detail { padding-right: 0; }
+  .help-topic-heading { display: grid; }
+  .help-primary-action { width: max-content; }
+  .help-step-image { height: 200px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-primary-action,
+  .help-topic-card,
+  .help-global-trigger { transition: none; }
+}

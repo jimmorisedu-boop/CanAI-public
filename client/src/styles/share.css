@@ -1,0 +1,339 @@
+/* Hallmark · macrostructure: split review feed · genre: atmospheric workspace · tone: restrained · palette: graphite + vermilion
+ * states: default · hover · focus · active · disabled · loading · error · success · pre-emit critique: P5 H5 E5 S5 R5 V5
+ * contrast: pass (40–41) · tokens: pass (48) · responsive/mobile: pass (34, 49–57) · slop: pass (58 gates)
+ */
+/* Обёртка не рисует свой ряд: кнопки встают прямо в ряд топбара
+   (или в столбец компактного меню) наравне с темой и справкой. */
+.share-topbar-actions {
+  display: contents;
+}
+.share-topbar-button {
+  flex: 0 0 auto;
+  position: relative;
+}
+.share-comments-badge { position: absolute; top: -5px; right: -5px; display: grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; border-radius: var(--radius-pill); color: #fff; background: var(--danger-fill); box-shadow: 0 0 0 2px var(--topbar-bg); font-size: var(--text-micro); line-height: 1; }
+/* Неопубликованные изменения — точкой, тем же языком, что и остальные статусы:
+   тон показывает точка, а не заливка кнопки. */
+.share-stale-dot { position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--topbar-bg); }
+/* Материал окна ОБЩИЙ: те же правила отвечают и за «Поделиться», и за окно
+   помощника (.app-dialog*). Второе имя добавлено прямо в селекторы, а не
+   скопировано объявлениями — иначе два окна разъехались бы при первой же
+   правке одного из них. */
+.share-dialog-backdrop, .app-dialog-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 20px; isolation: isolate; background: var(--scrim); backdrop-filter: blur(10px) saturate(.8); }
+.share-dialog, .app-dialog { width: min(580px, 100%); max-height: calc(100vh - 40px); overflow: auto; overscroll-behavior: contain; padding: 0 24px 18px; border: 1px solid var(--border-strong); border-radius: var(--radius-panel); color: var(--text); background: color-mix(in srgb, var(--surface) 97%, transparent); box-shadow: 0 28px 90px #000b, inset 0 1px #ffffff08; }
+.share-dialog-hero, .app-dialog-hero { position: sticky; z-index: 2; top: 0; display: grid; grid-template-columns: 42px minmax(0, 1fr) 36px; gap: 12px; align-items: center; margin: 0 -24px 18px; padding: 18px 24px 15px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 96%, transparent); backdrop-filter: blur(20px); }
+.share-dialog-icon, .app-dialog-icon { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: var(--radius-panel); color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, var(--surface-2)); }
+/* Кегль и насыщенность — из канона: это заголовок крупного диалога. */
+.share-dialog h2, .app-dialog h2 { margin: 0; }
+.share-dialog-hero p, .app-dialog-hero p { margin: 3px 0 0; color: var(--text-3); font-size: var(--text-secondary); }
+.share-dialog-close, .app-dialog-close { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid transparent; border-radius: var(--radius-control); color: var(--text-3); background: transparent; }
+.share-dialog-close:hover, .app-dialog-close:hover { color: var(--text); border-color: var(--border); background: var(--surface-2); }
+.share-active-view, .share-create-view { display: grid; gap: 16px; }
+.share-create-view > p { margin: 0; color: var(--text-2); line-height: 1.5; }
+.share-dialog button, .app-dialog button { transition: transform 100ms var(--ease-out), border-color 140ms var(--ease-out), background-color 140ms var(--ease-out), color 140ms var(--ease-out), opacity 140ms var(--ease-out); }
+.share-dialog button:active:not(:disabled), .app-dialog button:active:not(:disabled) { transform: scale(.97); }
+.share-dialog button:focus-visible, .share-dialog input:focus-visible, .share-dialog summary:focus-visible, .app-dialog button:focus-visible, .app-dialog input:focus-visible, .app-dialog summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.share-dialog button:disabled, .share-switch.disabled, .app-dialog button:disabled { cursor: default; opacity: .48; }
+.share-dialog-loading, .app-dialog-loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 190px; color: var(--text-3); }
+.share-dialog-loading span, .app-dialog-loading span { width: 17px; height: 17px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: share-spin .7s linear infinite; }
+@keyframes share-spin { to { transform: rotate(360deg); } }
+.share-dialog footer, .app-dialog footer { display: flex; gap: 7px; align-items: flex-start; margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--border); color: var(--text-3); font-size: var(--text-micro); line-height: 1.45; }
+.share-field { display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: center; margin: 0; color: var(--text-2); font-size: var(--text-secondary); }
+.share-field > span { color: var(--text-3); text-align: right; }
+.share-field input, .share-link input { grid-column: 1 / -1; width: 100%; min-height: 42px; border: 1px solid var(--border); border-radius: var(--radius-control); padding: 0 12px; color: var(--text); background: var(--surface-2); }
+.share-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; border: 1px solid color-mix(in srgb, var(--accent) 70%, #fff); border-radius: var(--radius-control); color: #fff; background: var(--accent); font-weight: 800; }
+.share-status-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.share-status-line > small { color: var(--text-3); font-size: var(--text-micro); }
+.share-state { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: var(--text-secondary); }
+.share-state span { width: 9px; height: 9px; border-radius: var(--radius-pill); background: var(--text-3); }
+.share-state.active span { background: var(--ok); box-shadow: 0 0 0 4px var(--ok-soft); }
+.share-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.share-link-hint { grid-column: 1 / -1; margin-top: -2px; color: var(--text-3); font-size: var(--text-micro); line-height: 1.4; }
+.share-link input { grid-column: auto; min-width: 0; font-family: var(--font-mono); font-size: var(--text-micro); }
+.share-link button:hover, .share-dialog-actions button:hover, .share-danger-row button:hover, .share-pin-row button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.share-link button.success { color: var(--ok); border-color: var(--ok-border); background: var(--ok-soft); }
+.share-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.share-dialog-actions.single { grid-template-columns: 1fr; }
+.share-dialog-actions .share-action-primary { color: #fff; border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); background: color-mix(in srgb, var(--accent) 76%, var(--surface-2)); }
+
+.account-publication-body { display: grid; gap: 14px; }
+.account-publication-hint { margin: 0; color: var(--text-2); font-size: var(--text-secondary); line-height: 1.5; }
+.account-publication-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+/* Форма поля и кнопок — из канона (.ui-field/.ui-btn). Своя геометрия делала
+   их вдвое крупнее соседних действий того же окна: 42px и кегль 16 против
+   32px и 12. */
+.account-publication-link input { min-width: 0; }
+.account-publication-toggle { display: flex; gap: 10px; align-items: flex-start; color: var(--text-2); font-size: var(--text-secondary); line-height: 1.45; }
+.account-publication-toggle input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent); }
+.account-publication-expiry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; color: var(--text-2); font-size: var(--text-secondary); }
+.account-publication-primary-actions:has(> :only-child) { grid-template-columns: 1fr; }
+.account-publication-rotate { width: 100%; }
+.share-card { padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-panel); background: color-mix(in srgb, var(--surface-2) 72%, transparent); }
+.share-card-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.share-card-heading strong { font-size: var(--text-control); }
+.share-card-heading small { color: var(--text-3); font-size: var(--text-micro); }
+.share-permissions-card { display: grid; }
+.share-switch { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 54px; padding: 8px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.share-switch:last-child { border-bottom: 0; }
+.share-switch > span { display: grid; gap: 2px; min-width: 0; }
+.share-switch strong { color: var(--text-2); font-size: var(--text-secondary); }
+.share-switch small { color: var(--text-3); font-size: var(--text-micro); }
+.share-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.share-switch i { position: relative; flex: 0 0 auto; width: 38px; height: 22px; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); background: var(--surface-3); transition: background-color 140ms var(--ease-out), border-color 140ms var(--ease-out); }
+.share-switch i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-3); transition: transform 140ms var(--ease-out), background-color 140ms var(--ease-out); }
+.share-switch input:checked + i { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 82%, #000); }
+.share-switch input:checked + i::after { transform: translateX(16px); background: #fff; }
+.share-switch input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.share-pin-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
+.share-pin-row .share-field input { grid-column: auto; }
+.share-pin-row .share-text-button { border-color: transparent; }
+.share-advanced { border-top: 1px solid var(--border); }
+.share-advanced summary { display: flex; align-items: center; gap: 8px; padding: 12px 2px; color: var(--text-2); cursor: pointer; font-size: var(--text-secondary); list-style: none; }
+.share-advanced summary::-webkit-details-marker { display: none; }
+.share-advanced summary::before { content: '›'; color: var(--text-3); transform: rotate(0); transition: transform 140ms var(--ease-out); }
+.share-advanced[open] summary::before { transform: rotate(90deg); }
+.share-advanced summary span { margin-left: auto; color: var(--text-3); font-size: var(--text-micro); }
+.share-danger-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0 4px; }
+.share-danger-row .danger { margin-left: auto; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); background: var(--danger-soft); }
+.share-dialog-error, .share-transport-notice { margin-top: 12px; }
+.share-transport-notice { margin-bottom: 4px; }
+.share-missing-media { display: grid; gap: 12px; margin-top: 12px; padding: 14px; border: 1px solid var(--warn-border); border-radius: var(--radius-panel); color: var(--text); background: var(--surface-2); }
+.share-missing-media p { margin: 4px 0 0; color: var(--text-2); font-size: var(--text-secondary); line-height: 1.45; overflow-wrap: anywhere; }
+.share-missing-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-missing-actions button:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-3); }
+.share-missing-actions button.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); background: var(--danger-soft); }
+/* ── Замечания к доске ───────────────────────────────────────────────────
+   Слой поверх холста: метки веток и стикеры гостей в мировых координатах —
+   и панель со списком справа.
+
+   ⚠️ Правила ниже описывают РАЗМЕТКУ `BoardDiscussionPanel.tsx`, и только её.
+   Прежний набор (поповер ветки, поиск, разделы, карточки стикеров) остался от
+   двух отдельных панелей — автора и гостя. Когда их свели в одну, разметка
+   сменилась, а правила нет: половине классов не соответствовало ничего, и
+   панель рисовалась голой — поле «написать команде» вылезало за её край. */
+/* ── Замечания к сетевой доске: метки на холсте, значки, панель ──
+   Устройство как у Miro: пин на холсте, ветка у пина, боковой список веток.
+   Слой лежит поверх Konva и мышь не ловит — живые только сами метки. */
+/* ── Комментарии к сетевой доске: метки на холсте, стикеры, колонка справа ──
+   Устройство как у Miro: пин на холсте, карточка с перепиской у пина, список
+   комментариев в колонке. Слой лежит поверх Konva и мышь не ловит — живые
+   только сами метки. Камеру слой получает императивно (см. BoardMarkers):
+   transform слоя и --pin-scale ставятся в стиль, React не участвует. */
+.owner-annotations { position: absolute; z-index: 330; inset: 0; overflow: hidden; pointer-events: none; color: var(--text); }
+.canvas-main:has(.crop-toolbar) .owner-annotations { display: none; }
+.canvas-main:has(.board-card) .konva-item-toolbar,
+.canvas-main:has(.board-card) .selection-toolbar { display: none; }
+.board-marks { position: absolute; inset: 0; pointer-events: none; }
+.board-marks-layer { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; pointer-events: none; will-change: transform; --pin-scale: 1; }
+
+/* Пин: кружок с номером, экранного размера при любом зуме (scale(--pin-scale)).
+   Заказчик — вермилион (его голос заметнее всего), команда — графит. Решённый
+   гаснет, но остаётся: история спора нужна. */
+/* ⚠️ Обводка и вес цифры — из прежнего прототипа: он рисовал метку жирнее
+   (900) и обводил её цветом, противоположным заливке, чтобы кружок читался
+   и на светлой картинке, и на тёмном холсте. Тени переведены на общие
+   токены — написанная от руки rgba жила мимо всей остальной системы. */
+.board-pin { position: absolute; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 2px solid var(--bg); border-radius: 50%; color: var(--bg); background: var(--text); box-shadow: var(--shadow-md); font-size: var(--text-secondary); font-weight: 900; line-height: 1; user-select: none; pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%) scale(var(--pin-scale)); transform-origin: center; transition: box-shadow .12s var(--ease-out), background .12s var(--ease-out), color .12s var(--ease-out); }
+.board-pin.guest { border-color: #fff; color: #fff; background: var(--accent); }
+.board-pin.resolved { color: var(--text-3); background: var(--surface-3); border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+/* ⚠️ Выбранная метка ВЫВОРАЧИВАЕТСЯ, а не обрастает свечением: у прототипа
+   было именно так, и это видно с одного взгляда — свечение же на пёстрой
+   картинке терялось. */
+.board-pin.selected { color: var(--accent); background: var(--bg); border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent), var(--shadow-md); }
+.board-pin.movable { cursor: grab; }
+.board-pin.dragging { cursor: grabbing; box-shadow: var(--shadow-lg); }
+.board-pin.draft { color: #fff; background: var(--accent); border-color: #fff; pointer-events: none; }
+
+/* Стикер: фирменный значок на цветном диске, ЭКРАННОГО размера — компенсирует
+   зум так же, как числовой пин, поэтому не исчезает при отдалении. Размер
+   меняется за невидимую окружность; отдельной ручки нет. Delete удаляет
+   выбранный стикер. */
+/* ⚠️ Материал и тени взяты из прежнего прототипа сетевой доски (жил в
+   `client/src/guest/`, удалён 02.09.2026 вместе со ссылкой «с этого
+   компьютера»; просьба вернуть его вид — 08.09.2026). Там стикер был
+   обведён `--border-strong` и лежал на общей тени `--shadow-md`, а не на
+   написанной от руки rgba: на тёмном холсте цветной диск без обводки
+   сливался с материалом под ним. Свой стикер отличается каймой акцента —
+   в прототипе это был признак `owned`, и он же отвечает на вопрос «мой ли
+   это значок» без наведения. */
+.board-sticker { position: absolute; display: grid; place-items: center; border: 1px solid var(--border-strong); border-radius: 50%; color: #fff; background: var(--surface-3); box-shadow: var(--shadow-md); user-select: none; pointer-events: none; transform: translate(-50%, -50%) scale(var(--pin-scale)); transform-origin: center; transition: box-shadow .12s var(--ease-out), border-color .12s var(--ease-out); }
+.board-sticker svg { width: 58%; height: 58%; filter: drop-shadow(0 1px 1px rgba(20, 22, 26, .25)); }
+/* Эмодзи без фирменного значка — стекло, как у прочих малых поверхностей
+   над холстом (тот же материал, что у прототипа). */
+.board-sticker.raw { background: var(--material-thick); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); color: var(--text); font-size: var(--text-title-lg); line-height: 1; }
+.board-sticker.movable { pointer-events: auto; cursor: grab; border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong)); }
+.board-sticker.movable:hover { box-shadow: var(--shadow-lg); }
+.board-sticker.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg); }
+.board-sticker.dragging { cursor: grabbing; }
+.board-sticker > .board-sticker-edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: none; pointer-events: none; }
+.board-sticker-edge-hit { pointer-events: stroke; cursor: nwse-resize; }
+
+/* Указание места: плёнка поверх холста, за курсором едет будущая метка. */
+.board-placing { position: absolute; inset: 0; pointer-events: auto; cursor: crosshair; }
+.board-placing-ghost { position: absolute; display: grid; place-items: center; width: 40px; height: 40px; transform: translate(-50%, -50%); border-radius: 50%; color: #fff; background: var(--surface-3); box-shadow: var(--shadow-md); pointer-events: none; }
+.board-placing-ghost svg { width: 58%; height: 58%; }
+.board-placing-ghost.raw { background: var(--material-thick); color: var(--text); font-size: var(--text-title-lg); line-height: 1; }
+.board-placing-ghost.pin { width: 30px; height: 30px; border: 2px solid #fff; background: var(--accent); }
+.board-placing-hint { position: absolute; top: 14px; left: 50%; display: flex; align-items: center; gap: var(--space-3); padding: 6px 12px; transform: translateX(-50%); border: 1px solid rgba(255, 255, 255, .08); border-radius: var(--r-md); color: #fff; background: rgba(25, 27, 32, .95); font-size: var(--text-secondary); white-space: nowrap; pointer-events: none; }
+.board-placing-hint span { color: rgba(255, 255, 255, .55); }
+
+/* Карточка у пина живёт ВНУТРИ слоя, у своей мировой точки: сдвиг в экранных
+   пикселях задаётся ДО обратного масштаба (scale(k) translate(dx)), поэтому
+   на экране он постоянен, а сама карточка едет за холстом без задержки. */
+.board-card-host { position: absolute; width: 340px; transform: scale(var(--pin-scale)) translate(var(--card-dx, 18px), var(--card-dy, -16px)); transform-origin: 0 0; pointer-events: auto; }
+.board-card-floating { position: absolute; left: 50%; top: 50%; width: 340px; transform: translate(-50%, -50%); pointer-events: auto; }
+.board-card { display: flex; flex-direction: column; width: 100%; max-height: 320px; min-height: 0; overflow: hidden; border: 1px solid var(--border-strong); border-radius: var(--radius-panel); color: var(--text); background: var(--surface-solid); box-shadow: var(--shadow-lg); }
+.board-card-head { display: flex; flex: none; align-items: center; gap: var(--space-2); min-height: 40px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border-bottom: 1px solid var(--border); }
+.board-card-head > strong { flex: 1; min-width: 0; overflow: hidden; font-size: var(--text-control); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.board-card-number { display: grid; flex: none; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill); color: var(--bg); background: var(--text); font-size: var(--text-micro); font-weight: 800; }
+.board-card-number.guest { color: #fff; background: var(--accent); }
+.board-card-tag { flex: none; padding: 1px 6px; border-radius: var(--radius-pill); color: var(--text-3); background: var(--surface-2); font-size: var(--text-micro); font-weight: 650; }
+.board-card-tag.done { color: var(--accent-text); background: var(--accent-soft); }
+/* Действия ветки — иконки в шапке: решают и удаляют редко, а подписанный
+   подвал занимал целую строку под полем ответа и растил карточку на холсте. */
+.board-card-act { display: grid; flex: none; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-control); color: var(--text-3); background: transparent; cursor: pointer; transition: color .12s var(--ease-out), background-color .12s var(--ease-out); }
+.board-card-act:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+.board-card-act.on { color: var(--accent-text); background: var(--accent-soft); }
+.board-card-act.danger { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); }
+.board-card-act:disabled { cursor: not-allowed; opacity: .45; }
+.board-card-messages { display: grid; flex: 1; align-content: start; gap: var(--space-3); min-height: 0; overflow-y: auto; padding: var(--space-3); }
+.board-card.resolved .board-card-messages { opacity: .62; }
+.board-message { display: grid; gap: 2px; min-width: 0; }
+.board-message-head { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
+.board-message-head strong { overflow: hidden; color: var(--text-2); font-size: var(--text-secondary); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.board-message.own .board-message-head strong { color: var(--accent-text); }
+.board-message-head time, .board-message-stamp { color: var(--text-3); font-size: var(--text-micro); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.board-message-head time { margin-inline-start: auto; }
+.board-message p { margin: 0; font-size: var(--text-control); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.board-message.first p { font-size: var(--text-body); }
+/* ⚠️ Снизу отступ ОБЯЗАТЕЛЕН. Раньше здесь стоял ноль — под полем ответа шёл
+   подвал с кнопками, и его отступ работал за двоих. Подвал у существующей
+   ветки убрали (действия уехали иконками в шапку), а ноль остался: поле
+   «Ответить…» упиралось прямо в край карточки, и она выглядела обрезанной
+   (жалоба 09.09.2026). */
+.board-card-reply { display: grid; flex: none; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: end; padding: var(--space-3); border-top: 1px solid var(--border); }
+/* У нового комментария подвал с «Отмена/Отправить» идёт следом — там низ его. */
+.board-card-reply:has(+ .board-card-actions) { padding-bottom: 0; }
+/* Ряд действий остался только у нового комментария: «Отмена» и «Отправить» —
+   это шаги формы, их подписывают словами. У существующей ветки действия ушли
+   иконками в шапку. */
+.board-card-actions { display: flex; flex: none; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3) var(--space-3); }
+/* ⚠️ Тихая и обычная кнопки канона в одном ряду имеют РАЗНУЮ высоту (26 и 32)
+   и рядом читаются как съехавшие (жалоба 03.09.2026 «кнопки странно выровнены»).
+   Размер — законное исключение по поверхности, форма при этом общая. */
+.board-card-actions .ui-btn.quiet { height: var(--control-h-compact); }
+.board-draft { gap: var(--space-2); padding: var(--space-3) var(--space-3) var(--space-1); }
+.board-draft .board-card-actions { padding: 0 0 var(--space-2); }
+.ui-btn.quiet.danger { color: var(--danger); }
+
+/* Колонка комментариев: док справа от холста. Пустой док не занимает места. */
+.board-dock { display: flex; width: 360px; height: 100%; min-height: 0; border-left: 1px solid var(--border); background: var(--surface-solid); }
+.board-dock:empty { display: none; }
+.canvas-space:has(.board-dock:not(:empty)) { grid-template-columns: minmax(0, 1fr) auto; }
+.board-panel { display: flex; flex-direction: column; width: 100%; min-height: 0; color: var(--text); }
+/* Без дока (чужой контейнер) панель плавает, как раньше, левее полки ассетов. */
+.board-panel.floating { position: absolute; top: 72px; right: calc(56px + var(--space-4) + var(--space-3)); width: min(380px, calc(100% - 40px)); max-height: min(78dvh, 720px); overflow: hidden; pointer-events: auto; border: 1px solid var(--border-strong); border-radius: var(--radius-panel); background: var(--material-thick); box-shadow: var(--shadow-lg); backdrop-filter: blur(20px) saturate(1.18); -webkit-backdrop-filter: blur(20px) saturate(1.18); }
+.board-panel > header { display: flex; flex: none; align-items: center; gap: var(--space-2); min-height: 48px; padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4); border-bottom: 1px solid var(--border); }
+.board-panel > header > strong { flex: 1; min-width: 0; overflow: hidden; font-size: var(--text-panel-title); font-weight: 700; letter-spacing: -0.02em; text-overflow: ellipsis; white-space: nowrap; }
+.board-panel > header > div { display: flex; flex: none; align-items: center; gap: var(--space-1); }
+.board-panel-members { flex: none; margin: 0; padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--border); color: var(--text-3); font-size: var(--text-secondary); line-height: 1.4; }
+/* Гостевая обратная связь — временный слой ревью, а не постоянная часть
+   макета. Компактная плашка объясняет это без обучения: замечания уже видны,
+   реакции включаются отдельно, закрытие панели возвращает чистую доску. */
+.board-review-layer { display: grid; flex: none; grid-template-columns: 32px minmax(120px, 1fr) auto; gap: var(--space-2); align-items: center; margin: var(--space-3) var(--space-3) var(--space-1); padding: var(--space-2); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border)); border-radius: var(--radius-control); background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface-2)); }
+.board-review-layer-icon { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border)); border-radius: 50%; color: var(--accent-text); background: var(--surface-2); }
+.board-review-layer-copy { display: grid; gap: 1px; min-width: 0; }
+.board-review-layer-copy strong { overflow: hidden; color: var(--text); font-size: var(--text-secondary); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.board-review-layer-copy > span { overflow: hidden; color: var(--text-3); font-size: var(--text-micro); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.board-review-reactions { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 30px; padding: 0 7px; border: 1px solid var(--border); border-radius: var(--radius-pill); color: var(--text-2); background: var(--surface-2); font: inherit; font-size: var(--text-micro); font-weight: 700; white-space: nowrap; cursor: pointer; }
+.board-review-reactions:hover:not(:disabled) { border-color: var(--border-strong); color: var(--text); background: var(--surface-3); }
+.board-review-reactions:active:not(:disabled) { transform: translateY(1px); }
+.board-review-reactions.on { border-color: color-mix(in srgb, var(--accent) 54%, var(--border)); color: var(--accent-text); background: var(--accent-soft); }
+.board-review-reactions > span { display: grid; place-items: center; min-width: 18px; height: 18px; padding-inline: 4px; border-radius: var(--radius-pill); color: var(--text-2); background: var(--surface-3); font-size: var(--text-micro); font-variant-numeric: tabular-nums; }
+.board-review-reactions.on > span { color: var(--accent-ink); background: var(--accent); }
+.board-review-reactions:disabled { cursor: default; opacity: .46; }
+.board-empty { flex: 1; margin: 0; padding: var(--space-5) var(--space-4); color: var(--text-3); font-size: var(--text-secondary); line-height: 1.5; text-align: center; }
+.board-feed { display: grid; flex: 1; align-content: start; gap: 2px; min-height: 0; overflow-y: auto; padding: var(--space-2); scrollbar-gutter: stable; }
+.board-row { position: relative; border-radius: var(--radius-control); }
+.board-row.selected { background: var(--accent-soft); }
+.board-row-main { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: var(--space-2); align-items: start; width: 100%; padding: var(--space-2); border: 0; border-radius: var(--radius-control); color: var(--text); background: transparent; font: inherit; text-align: start; cursor: pointer; }
+.board-row.selected .board-row-main:hover { background: transparent; }
+.board-row-badge { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: var(--bg); background: var(--text); font-size: var(--text-micro); font-weight: 800; }
+.board-row-badge.guest { color: #fff; background: var(--accent); }
+.board-row-badge.none { border: 1px dashed var(--border-strong); color: var(--text-3); background: transparent; }
+.board-row.resolved .board-row-badge { border-color: transparent; color: var(--text-3); background: var(--surface-3); }
+.board-row-text { display: grid; gap: 2px; min-width: 0; }
+.board-row-who { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; color: var(--text-3); font-size: var(--text-micro); }
+.board-row-who strong { overflow: hidden; color: var(--text-2); font-size: var(--text-secondary); font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.board-row-summary { overflow: hidden; font-size: var(--text-control); line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+.board-row.unread .board-row-summary { font-weight: 650; }
+.board-row.resolved .board-row-summary { color: var(--text-3); }
+.board-row-meta { display: grid; justify-items: end; gap: 2px; color: var(--text-3); font-size: var(--text-micro); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.board-row-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.board-row-attach { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 var(--space-2) calc(24px + var(--space-2) + var(--space-2)); padding: 2px 8px; border: 1px solid var(--border); border-radius: var(--radius-pill); color: var(--text-2); background: var(--surface-2); font: inherit; font-size: var(--text-micro); font-weight: 650; cursor: pointer; }
+.board-row-attach:hover { border-color: var(--accent); color: var(--accent-text); }
+
+/* Инструменты: комментарий и ряд стикеров одним рядом */
+.board-tools { display: flex; flex: none; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3) 0; }
+.board-tool-btn { display: grid; flex: none; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--border); border-radius: 50%; color: var(--text-2); background: var(--surface-2); cursor: pointer; transition: background .12s var(--ease-out), border-color .12s var(--ease-out), color .12s var(--ease-out); }
+.board-tool-btn:hover { border-color: var(--border-strong); color: var(--text); }
+.board-tool-btn.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent); }
+.board-tools-divider { flex: none; width: 1px; height: 20px; background: var(--border); }
+.board-tools-stickers { display: flex; gap: 2px; }
+.board-sticker-btn { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 2px solid transparent; border-radius: 50%; color: #fff; background: var(--sticker-color, var(--surface-3)); cursor: grab; transition: transform .12s var(--spring-pop), box-shadow .12s var(--ease-out); }
+.board-sticker-btn:hover { transform: scale(1.15); box-shadow: var(--shadow-sm); }
+.board-sticker-btn:active { cursor: grabbing; transform: scale(.94); }
+.board-sticker-btn.on { border-color: var(--bg); box-shadow: 0 0 0 2px var(--sticker-color, var(--accent)); }
+.board-tools-hint { flex: none; margin: 0; padding: var(--space-1) var(--space-3) var(--space-2); border-bottom: 1px solid var(--border); color: var(--text-3); font-size: var(--text-micro); line-height: 1.4; }
+/* Форма поля — из канона (.ui-field), здесь только размер: у канона отступ
+   горизонтальный, а многострочному полю нужен и вертикальный. */
+.board-card textarea { width: 100%; min-height: 34px; max-height: 140px; padding-block: 7px; resize: none; line-height: 1.45; field-sizing: content; }
+.board-panel :focus-visible,
+.board-card :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.board-panel button,
+.board-card button { transition: transform 100ms var(--ease-out), color 160ms var(--ease-out), background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), opacity 160ms var(--ease-out); }
+.board-panel .ui-btn:active:not(:disabled),
+.board-card .ui-btn:active:not(:disabled) { transform: translateY(1px); }
+.board-panel button:disabled,
+.board-card button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .board-row-main:hover { color: var(--text); border-color: var(--border); background: var(--surface-3); }
+}
+@media (max-width: 760px) {
+  .share-pin-row { grid-template-columns: 1fr; }
+  .share-dialog-backdrop { align-items: end; padding: 0; }
+  .share-dialog { width: 100%; max-height: 88vh; padding-inline: 16px; border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
+  .share-dialog-hero { margin-inline: -16px; padding-inline: 16px; }
+  .share-link, .share-dialog-actions { grid-template-columns: 1fr; }
+  .share-danger-row { display: grid; }
+  .share-missing-actions { display: grid; }
+  .share-danger-row .danger { margin-left: 0; }
+  .board-panel.floating { left: 8px; width: auto; max-height: min(62dvh, 520px); }
+  .board-review-layer { grid-template-columns: 32px minmax(0, 1fr); }
+  .board-review-layer-copy > span { white-space: normal; }
+  .board-review-reactions { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .board-panel.floating { background: var(--surface-solid); backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .board-panel.floating, .board-row.selected { border-color: var(--border-strong); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .share-dialog button, .share-switch i, .share-switch i::after, .share-advanced summary::before, .board-panel button { transition: none; }
+  .share-dialog button:active:not(:disabled), .board-panel button:active:not(:disabled) { transform: none; }
+}
+
+/* Счётчик без непрочитанных — спокойный: он говорит «замечания есть», а не
+   «на тебя ждут». Постоянно горящий красный перестают замечать, и тогда новое
+   замечание теряется среди старых. */
+.share-comments-badge.quiet { background: var(--text-3); }
+
+/* ⚠️ Метка «есть новые замечания» на карточке доски в галерее. Точка, а не
+   счётчик: сколько именно — узнают, открыв доску, а здесь важно только «сюда
+   стоит зайти». Цвет тот же, что у непрочитанного в шапке. */
+.project-thumb-notes {
+  position: absolute; top: 10px; right: 10px; width: 10px; height: 10px;
+  border-radius: var(--radius-pill); background: var(--danger);
+  box-shadow: 0 0 0 2px var(--surface);
+}

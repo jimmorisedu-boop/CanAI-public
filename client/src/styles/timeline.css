@@ -1,0 +1,1094 @@
+/* Режим правки клипа. Раскладка — по утверждённому макету: сверху вниз плеер
+   (превью + транспорт одним блоком), плёнка, ряд монтажа. Видео занимает всё
+   свободное место; всё, что поверх него (имя клипа, «вписать кадр», выход,
+   пропорции кадрирования, полка кадров), — стеклянные плашки, а не полосы,
+   отнимающие у кадра высоту. Режим всегда тёмный, как любая монтажка. */
+
+/* Режим правки — модальный: пока он открыт, плавающие панели холста прячутся.
+   Промпт, полка ассетов, архив, зум и экспорт здесь ничего не делают, а
+   перекрывали дорожку и кнопку «Применить». */
+.canvas-space.timeline .prompt-dock,
+.canvas-space.timeline .asset-bar,
+.canvas-space.timeline .archive-bar,
+.canvas-space.timeline .zoom-bar,
+.canvas-space.timeline .board-navigator,
+.canvas-space.timeline .canvas-export-btn {
+  display: none;
+}
+
+.timeline-overlay {
+  /* ── Тёмная пара токенов — ОДИН раз, на корне. Всё, что внутри (подсказки,
+     канон кнопок, общие сообщения), читает отсюда, поэтому светлая тема
+     приложения режим не меняет. ────────────────────────────────────────── */
+  --tl-shell: #202326;
+  --tl-panel: #292c30;
+  --tl-panel-strong: #30343a;
+  --tl-preview: #101214;
+  --tl-ink: #f1f1ed;
+  --tl-muted: #a5a8a4;
+  --tl-line: rgba(255, 255, 255, 0.12);
+  --tl-line-strong: rgba(255, 255, 255, 0.22);
+  --tl-marker: #f19a55;
+  --tl-good: #75c7a5;
+  --tl-danger: #ff6b6d;
+  --tl-accent-soft: #49241d;
+  --tl-glass: rgba(13, 16, 17, 0.58);
+  --tl-glass-ink: #f7f3ea;
+  --surface: #1d1f24;
+  --surface-solid: #1d1f24;
+  --surface-3: #292c33;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text: #f5f6f8;
+  --text-2: #b0b5bf;
+  --text-3: #858b96;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.025);
+  --shadow-lg: 0 22px 64px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(255, 255, 255, 0.035);
+
+  position: absolute;
+  inset: 0;
+  /* Именно --z-overlay: своей переменной --z-canvas-overlay в проекте нет, и
+     запасное значение оказывалось НИЖЕ панелей холста (--z-canvas-ui: 300). */
+  z-index: var(--z-overlay);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  /* НЕПРОЗРАЧНЫЙ фон: сквозь прежний был виден холст доски, и под кадром
+     просвечивали чужие объекты. */
+  background: var(--tl-shell);
+  color: var(--tl-ink);
+  font-size: var(--text-control);
+}
+
+/* Фокус у самого окна: кольцо вокруг всего режима ни к чему. ⚠️ Общее кольцо
+   (focus.css) стоит с !important и цепляется к любому [tabindex] — после входа
+   с клавиатуры оно обвело бы весь экран. */
+.timeline-overlay:focus,
+.timeline-overlay:focus-visible { outline: none !important; }
+
+/* §9.1 ТЗ — презентация «показано на холсте»: оверлей остаётся смонтированным
+   (сеанс жив: очередь, резы, кроп, зум), но невидим и прозрачен для мыши,
+   чтобы человек работал с настоящим CanvasItem. Скрыли, а не размонтировали:
+   возврат по Escape показывает ровно тот же момент. */
+.timeline-overlay.canvas {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Единственное, что остаётся видимым в презентации «на холсте»: способ вернуться.
+   Потомок с visibility: visible показывается и внутри скрытого родителя. */
+.tl-back {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 5;
+  visibility: visible;
+  pointer-events: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Плеер: превью + транспорт ─────────────────────────────────────────── */
+
+.tl-player {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  border-radius: var(--radius-control);
+  background: var(--tl-preview);
+}
+
+.tl-preview {
+  position: relative;
+  min-height: 0;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+}
+
+.timeline-viewport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Приближённый кадр обязан обрезаться по окну просмотра, а не наползать на
+     транспорт и плёнку под ним; скругление берём у превью. */
+  overflow: hidden;
+  border-radius: inherit;
+  /* От размеров окна считается и размер сцены (см. .timeline-stage). */
+  container-type: size;
+}
+
+/* Приближённый кадр таскают рукой; на вписанном курсор обычный — тащить
+   нечего, и «рука» обещала бы то, чего нет. */
+.timeline-viewport.zoomed { cursor: grab; }
+.timeline-viewport.zoomed:active { cursor: grabbing; }
+
+/* Сцена ровно по форме кадра и вписана в окно по ОБЕИМ осям, заполняя его:
+   ширина — меньшее из «всё окно» и «высота окна × пропорция кадра». Без
+   пропорции элемент растягивался под окно, а видео по умолчанию заполняет свой
+   бокс — картинка получалась сплющенной. Для кропа это не косметика: рамка
+   обязана лежать ровно на том, что видно. */
+.timeline-stage {
+  position: relative;
+  flex: none;
+  width: min(100cqw, calc(100cqh * var(--tl-ratio, 1.7778)));
+  aspect-ratio: var(--tl-ratio, 1.7778);
+}
+
+.timeline-stage video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--tl-preview);
+}
+
+/* ── Рамка кадрирования ────────────────────────────────────────────────── */
+
+/* Сам слой событий не ловит: тянуть можно только саму рамку и её ручки, а
+   остальной кадр остаётся доступен панораме. */
+.tl-crop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tl-cdim {
+  position: absolute;
+  background: rgba(15, 17, 19, 0.62);
+  pointer-events: none;
+}
+
+.tl-cbox {
+  position: absolute;
+  border: calc(1px / var(--tl-zoom, 1)) solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 calc(1px / var(--tl-zoom, 1)) rgba(15, 17, 19, 0.35);
+  pointer-events: none;
+}
+
+/* Сетка третей — та же подсказка кадрирования, что у фотографии. */
+.tl-cbox::before,
+.tl-cbox::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.tl-cbox::before {
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+  border-right: 1px solid rgba(255, 255, 255, 0.28);
+  left: 33.33%;
+  right: 33.33%;
+}
+
+.tl-cbox::after {
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  top: 33.33%;
+  bottom: 33.33%;
+}
+
+.tl-cmove {
+  position: absolute;
+  cursor: move;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.tl-ch {
+  position: absolute;
+  width: calc(18px / var(--tl-zoom, 1));
+  height: calc(18px / var(--tl-zoom, 1));
+  margin: calc(-9px / var(--tl-zoom, 1)) 0 0 calc(-9px / var(--tl-zoom, 1));
+  touch-action: none;
+  cursor: nwse-resize;
+  pointer-events: auto;
+}
+
+.tl-ch.ne,
+.tl-ch.sw { cursor: nesw-resize; }
+
+.tl-ch::after {
+  content: '';
+  position: absolute;
+  inset: calc(5px / var(--tl-zoom, 1));
+  background: var(--accent);
+  border: calc(2px / var(--tl-zoom, 1)) solid #fff;
+  border-radius: var(--radius-compact);
+}
+
+/* ── Плашки поверх видео ───────────────────────────────────────────────── */
+
+/* Стекло — материал плашек над кадром: читается на любом кадре, не заливая его. */
+.tl-glass {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-control);
+  background: var(--tl-glass);
+  color: var(--tl-glass-ink);
+  backdrop-filter: blur(10px);
+}
+
+/* Мыши слой не ловит вовсе, кроме самих кнопок: под плашками идёт панорама. */
+.tl-preview-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.tl-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.tl-name strong {
+  overflow: hidden;
+  font-size: var(--text-control);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-name span {
+  overflow: hidden;
+  color: rgba(247, 243, 234, 0.74);
+  font-size: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-preview-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: auto;
+}
+
+/* Форма — из канона, общая с выходом из сравнения. Своё здесь только тень:
+   кнопка висит над кадром, а не лежит в панели. */
+.timeline-close { box-shadow: var(--shadow-lg); }
+
+/* Пропорции кадрирования — пилюля у нижнего левого края превью, только пока
+   кадрирование включено (а не отдельная строка панели). */
+.tl-presets {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  max-width: calc(100% - 24px);
+  padding: var(--space-1);
+}
+
+.tl-presets button {
+  height: var(--control-h-mini);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tl-presets button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+.tl-presets button:disabled { opacity: 0.45; cursor: default; }
+.tl-presets button.is-on { background: var(--accent); color: var(--accent-ink); }
+.tl-presets button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── Кнопки: квадрат только с иконкой ──────────────────────────────────── */
+
+/* Подписей и клавиш внутри нет — они в подсказке и aria-label. Форма одна на
+   транспорт, монтаж и полку кадров. */
+.tl-btn {
+  display: inline-grid;
+  flex: none;
+  width: var(--control-h-standard);
+  min-width: var(--control-h-standard);
+  height: var(--control-h-standard);
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--tl-ink);
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.tl-btn:hover:not(:disabled) { background: var(--tl-panel-strong); }
+.tl-btn:active:not(:disabled) { transform: translateY(1px); }
+.tl-btn:disabled { opacity: 0.46; cursor: default; }
+.tl-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Включённое состояние (кадрирование, поиск склеек, звук выключен) — мягкий
+   акцент, а не заливка: заливкой отмечены только главные действия. */
+.tl-btn.is-on {
+  border-color: var(--accent);
+  background: var(--tl-accent-soft);
+}
+
+.tl-btn.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tl-btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.tl-btn.primary:disabled { opacity: 0.64; }
+
+.tl-btn.glass {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: var(--tl-glass);
+  color: var(--tl-glass-ink);
+  backdrop-filter: blur(10px);
+}
+
+.tl-btn.glass:hover:not(:disabled) { background: rgba(13, 16, 17, 0.76); }
+.tl-btn.glass.is-on { border-color: var(--accent); }
+
+/* Подсказки нижних рядов открываются вверх и должны лежать выше полки кадров
+   (z-index 20), иначе её панель закрывала бы подпись кнопки под ней. */
+.timeline-overlay .ui-tooltip { z-index: 40; }
+
+/* ── Транспорт ─────────────────────────────────────────────────────────── */
+
+.tl-transport {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 38px;
+  padding: 0 6px;
+  border-top: 1px solid var(--tl-line-strong);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  background: var(--tl-panel);
+}
+
+.tl-timecode {
+  flex: none;
+  min-width: 66px;
+  padding: 0 5px;
+  font-size: var(--text-panel-title);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* ⚠️ Строка состояния ужимается многоточием, а не выталкивает кнопку «Снять
+   кадр» на вторую строку: пояснение уступает место рабочим элементам (то же
+   правило, что у итога монтажа). */
+.tl-live {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 18px;
+  padding-inline: 3px;
+  color: var(--tl-muted);
+  font-size: var(--text-secondary);
+  line-height: 18px;
+}
+
+.tl-live-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-live-action { flex: none; }
+
+.tl-live[data-tone='good'] { color: var(--tl-good); }
+.tl-live[data-tone='warn'] { color: var(--tl-marker); }
+.tl-live[data-tone='error'] { color: var(--tl-danger); }
+
+/* ── Полка сохранённых кадров: оверлей внутри превью ───────────────────── */
+
+/* Закрыта — кластер в правом нижнем углу; открыта — панель с лентой карточек.
+   Видео при этом не сжимается: полка лежит поверх, а не рядом. */
+.tl-shelf {
+  position: absolute;
+  right: 10px;
+  bottom: 6px;
+  left: 10px;
+  z-index: 20;
+  display: grid;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--tl-shell) 94%, transparent);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.tl-shelf[data-open='false'] {
+  right: 8px;
+  left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.tl-shelf-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tl-shelf-toggle { background: var(--tl-panel); }
+
+.tl-shelf[data-open='false'] .tl-shelf-toggle {
+  background: color-mix(in srgb, var(--tl-panel) 94%, transparent);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.tl-count {
+  display: inline-grid;
+  min-width: 24px;
+  min-height: 22px;
+  padding-inline: 6px;
+  place-items: center;
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-compact);
+  background: var(--tl-panel-strong);
+  color: var(--tl-ink);
+  font-size: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tl-shelf-context {
+  color: var(--tl-muted);
+  font-size: var(--text-secondary);
+}
+
+/* Закрытая полка лежит прямо на кадре: подписи нужна подложка, иначе на
+   светлом видео её не прочесть. */
+.tl-shelf[data-open='false'] .tl-shelf-context {
+  padding: 4px 8px;
+  border-radius: var(--radius-compact);
+  background: var(--tl-glass);
+  color: var(--tl-glass-ink);
+  backdrop-filter: blur(10px);
+}
+
+.tl-lane {
+  display: flex;
+  max-width: 100%;
+  gap: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.tl-lane-empty {
+  margin: 0;
+  padding: 6px 2px;
+  color: var(--tl-muted);
+  font-size: var(--text-control);
+}
+
+.tl-frame {
+  display: grid;
+  flex: 0 0 250px;
+  min-width: 0;
+  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 5px 8px;
+  padding: 6px;
+  border: 1px solid var(--tl-line);
+  border-radius: var(--radius-control);
+  background: var(--tl-panel);
+}
+
+/* Выбранная карточка обведена акцентом (тот же выбор, что у метки на плёнке). */
+.tl-frame.is-current {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--tl-line-strong));
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.tl-frame-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 58px;
+  grid-row: 1 / span 2;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-compact);
+  background: var(--tl-preview);
+  color: var(--tl-glass-ink);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.tl-frame-thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.tl-frame-thumb img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tl-frame-time {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  z-index: 2;
+  padding: 3px 5px;
+  border-radius: var(--radius-compact);
+  background: rgba(13, 16, 17, 0.66);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.tl-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: tl-spin 0.9s linear infinite;
+}
+
+@keyframes tl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.tl-frame-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px var(--space-2);
+  min-width: 0;
+}
+
+.tl-frame-info .ui-tooltip-host {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tl-frame-name {
+  font-size: var(--text-control);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.tl-frame-status {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  padding-left: 11px;
+  color: var(--tl-good);
+  font-size: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-frame-status::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tl-frame-status[data-tone='busy'] { color: var(--tl-marker); }
+.tl-frame-status[data-tone='error'] { color: var(--tl-danger); }
+.tl-frame-status[data-tone='cancelled'] { color: var(--tl-muted); }
+
+.tl-frame-actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2;
+  gap: var(--space-1);
+}
+
+/* ── Плёнка ────────────────────────────────────────────────────────────── */
+
+/* z-index выше соседей: головка выступает за полосу на 8px вверх и вниз и
+   должна лежать поверх транспорта и ряда монтажа, а не под их фоном. Выше
+   полки кадров (20) тоже: подсказки меток и резов открываются вверх и иначе
+   уходили бы под её панель. */
+.tl-track-block {
+  position: relative;
+  z-index: 30;
+  display: grid;
+  padding: 3px 6px;
+  border-radius: var(--radius-control);
+  background: var(--tl-panel);
+}
+
+.tl-track-stage { position: relative; }
+
+.tl-track {
+  position: relative;
+  height: 38px;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Кольцо фокуса дорожки — общее (focus.css); здесь только скругление. */
+.tl-track:focus-visible { border-radius: var(--radius-control); }
+
+/* Рамка полосы — отдельным слоем сверху, а не border: так границы плёнки и
+   система координат дорожки совпадают до пикселя (время по x считается от её
+   ширины), а рамку не режет overflow слоя кадров. */
+.tl-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-control);
+  pointer-events: none;
+}
+
+/* Единственный слой, который обрезается по скруглению: кадры, затемнение,
+   стыки. Головка, резы и метки выступают и обрезаться не должны. */
+.tl-film {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: var(--tl-panel-strong);
+  isolation: isolate;
+}
+
+.tl-film-cells {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+.tl-film-cell {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--tl-panel-strong);
+}
+
+.tl-film-cell + .tl-film-cell { box-shadow: inset 1px 0 0 rgba(16, 18, 20, 0.55); }
+
+.tl-film-cell img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tl-dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(16, 18, 20, 0.72);
+  pointer-events: none;
+}
+
+/* Границы выбранного куска — тонкой светлой линией, а не акцентом: акцент
+   здесь принадлежит головке, и две красные линии на одной полосе путались. */
+.tl-sel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+/* Удалённый кусок с дорожки НЕ пропадает: он гасится и перечёркивается.
+   Исчезни он совсем — человек не увидел бы, что именно убрал, и не нашёл бы,
+   чем вернуть; а место на дорожке продолжает занимать исходный клип. */
+.tl-gone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(15, 17, 19, 0.66) 0 6px,
+    rgba(15, 17, 19, 0.84) 6px 12px
+  );
+  pointer-events: none;
+}
+
+.tl-gone::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  border-top: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+/* Рез — стык: дорожка в этом месте физически расходится щелью, и та же щель
+   показывает, что куски сомкнутся, если стык утащить вниз. */
+.tl-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  margin-left: -3px;
+  background: var(--tl-preview);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.tl-segno {
+  position: absolute;
+  bottom: 2px;
+  padding-left: 7px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* Головка: линия акцентом, выступает на 8px вверх и вниз, сверху колпачок. */
+.tl-head {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  z-index: 6;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.tl-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 10px;
+  height: 8px;
+  border-radius: 20% 20% 50% 50%;
+  background: var(--accent);
+}
+
+/* На воспроизведении видео сообщает позицию четыре раза в секунду: без
+   сглаживания головка шагала бы рывками. Тяга и клик остаются мгновенными. */
+.tl-track-stage.is-playing .tl-head { transition: left 220ms linear; }
+
+/* Ручки входа и выхода — тихие: тонкая светлая метка по краю выбранного куска. */
+.tl-grip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 7;
+  width: 14px;
+  margin-left: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.tl-grip::before {
+  content: '';
+  width: 4px;
+  height: 70%;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.tl-grip:hover::before { background: rgba(255, 255, 255, 0.95); }
+
+/* Монтажный рез: линия 2px цветом чернил, выступ 2px, сверху точка 8px.
+   Невидимая зона захвата шире линии — в тонкую линию иначе не попасть. */
+/* ⚠️ Обёртка подсказки (.ui-tooltip-host из controls.css, подключён позже)
+   задаёт position: relative и display: inline-flex с тем же весом селектора,
+   поэтому «положить на место» её можно только селектором тяжелее: иначе метка
+   сворачивалась в нулевую высоту, и клик по ней уходил в дорожку под ней. */
+.tl-track-stage .tl-cut-host {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  z-index: 7;
+  display: block;
+  width: 0;
+}
+
+/* Пока стык тащат, подсказка под курсором только мешает. */
+.tl-track-stage .tl-cut-host.is-dragging .ui-tooltip { display: none; }
+
+.tl-cut {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -9px;
+  width: 18px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.tl-cut::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 2px;
+  background: var(--tl-ink);
+  opacity: 0.82;
+}
+
+.tl-cut::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tl-ink);
+}
+
+/* Найденный автоматически рисуется наоборот — светлым с вермилионовой
+   каймой: он ПРЕДЛОЖЕН, а не поставлен, и это должно быть видно до того,
+   как человек нажмёт «Применить». */
+.tl-cut.auto::before { opacity: 0.5; }
+
+.tl-cut.auto::after {
+  top: -1px;
+  left: 4px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--accent);
+  background: var(--tl-ink);
+}
+
+.tl-cut:hover::after { background: #fff; box-shadow: 0 0 0 2px var(--accent); }
+.tl-cut.removing { opacity: 0.35; }
+
+/* Метки сохранённых кадров — ДРУГАЯ сущность, чем резы: линия + флажок
+   оранжевым (цвет метки), а не белая линия с точкой. Слой лежит рядом с
+   дорожкой и мыши не ловит, кроме самих меток. */
+.tl-marks {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.tl-track-stage .tl-mark-host {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  display: block;
+  width: 0;
+}
+
+.tl-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -15px;
+  width: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.tl-mark::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 14px;
+  width: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--tl-marker);
+}
+
+.tl-mark::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 9px;
+  width: 12px;
+  height: 10px;
+  background: var(--tl-marker);
+  clip-path: polygon(0 0, 100% 0, 100% 67%, 50% 100%, 0 67%);
+}
+
+/* Фокус с клавиатуры — метка светлеет и тянется: кольцо вокруг всей полосы
+   в 30×46 выглядело прямоугольной рамкой через всю высоту дорожки, а флажок
+   клипом по форме кольца не обведёшь. */
+/* ⚠️ Общее кольцо фокуса (focus.css) задано с !important — перебить его можно
+   только тем же и более тяжёлым селектором. */
+.tl-mark:focus-visible { outline: none !important; }
+.tl-mark:focus-visible::before,
+.tl-mark:focus-visible::after { background: var(--tl-ink); }
+.tl-mark:focus-visible::after { transform: scale(1.25); transform-origin: 50% 0; }
+
+/* Выбранный на полке — акцентом, идущий — бледнее, упавший — пунктиром. */
+.tl-mark.is-selected::before,
+.tl-mark.is-selected::after { background: var(--accent); }
+
+.tl-mark[data-phase='busy'] { opacity: 0.56; }
+.tl-mark[data-phase='cancelled'] { opacity: 0.4; }
+
+.tl-mark[data-phase='error']::before {
+  background: repeating-linear-gradient(to bottom, var(--tl-danger) 0 3px, transparent 3px 6px);
+}
+
+.tl-mark[data-phase='error']::after { background: var(--tl-danger); }
+
+/* ── Ряд монтажа ───────────────────────────────────────────────────────── */
+
+/* Выше плёнки: подсказки кнопок монтажа открываются вверх, поверх неё. */
+.tl-montage {
+  position: relative;
+  z-index: 31;
+  padding: 3px 6px 4px;
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  background: var(--tl-panel);
+}
+
+.tl-montage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--control-h-standard);
+}
+
+.tl-montage-tools {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Чувствительность поиска склеек — компактный ползунок в этой же строке. */
+.tl-sens {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: 6px;
+}
+
+.tl-sens input {
+  width: 140px;
+  min-width: 60px;
+  accent-color: var(--accent);
+}
+
+.tl-sens output {
+  color: var(--tl-ink);
+  font-size: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ⚠️ Итог НЕЛЬЗЯ мерить его содержимым: перенос строки флексбокс решает по
+   базовым размерам, и пока итог занимал свою полную ширину, «Применить» —
+   единственная кнопка, ради которой в режим и заходят, — уезжала на ВТОРУЮ
+   строку к левому краю. Ловилось на обычном окне 1217px: стоило убрать кусок
+   (итог становится «1 клип · 3.2 с · удалено 1»), и главная кнопка прыгала
+   из-под курсора (найдено прогоном 18.09.2026). Правило то же, что у подсказки
+   о варианте модели в промпт-баре: пояснение уступает место рабочим
+   элементам, а не наоборот, — поэтому итог сжимается многоточием, а полный
+   текст уходит в подсказку. */
+.timeline-result {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-control);
+  color: var(--tl-muted);
+  font-variant-numeric: tabular-nums;
+  padding-right: 4px;
+}
+
+/* ── Мелкие поправки ───────────────────────────────────────────────────── */
+
+.tl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Узкое окно: подпись клипа остаётся одним именем, подсказка о закрытой полке
+   уходит — остаётся шеврон с числом. */
+@media (max-width: 720px) {
+  .tl-name span { display: none; }
+  .tl-shelf[data-open='false'] .tl-shelf-context { display: none; }
+  .tl-sens input { width: 80px; }
+}
+
+/* Палец, а не мышь: цели не меньше 44×44 (§7 ТЗ), метка кадра шире. */
+@media (pointer: coarse) {
+  .tl-btn {
+    width: var(--control-h-emphasis);
+    min-width: var(--control-h-emphasis);
+    height: var(--control-h-emphasis);
+  }
+
+  .tl-track { height: 44px; }
+  .tl-mark { left: -22px; width: 44px; }
+  .tl-mark::before { left: 21px; }
+  .tl-mark::after { left: 16px; }
+  .tl-transport { min-height: 52px; }
+  .tl-montage-row { min-height: var(--control-h-emphasis); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-btn,
+  .tl-track-stage.is-playing .tl-head { transition: none; }
+  .tl-spinner { animation-duration: 3s; }
+}

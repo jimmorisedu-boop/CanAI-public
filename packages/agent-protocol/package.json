@@ -1,0 +1,7 @@
+{
+  "name": "@canai/agent-protocol",
+  "private": true,
+  "license": "LicenseRef-CanAI-Community-1.0",
+  "type": "module",
+  "version": "1.0.0"
+}

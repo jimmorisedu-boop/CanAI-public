@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover: под вырез и полосу жестов iPad подстраивается сама
+         вёрстка через env(safe-area-inset-*), а не поля по краям экрана -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <!-- «На экран Домой» открывает страницу без адресной строки -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CanAI" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="apple-touch-icon" href="%BASE_URL%favicon.svg" />
+    <link rel="manifest" href="%BASE_URL%tablet.webmanifest" />
+    <title>CanAI on tablet</title>
+    <style>html { background: #0e0f12; }</style>
+    <style>
+      /* Аварийный экран рисуется БЕЗ таблиц стилей приложения: если не
+         загрузилась она, он всё равно должен быть виден. */
+      #boot-error { display: none; }
+      #boot-error[hidden] { display: none; }
+      #boot-error.on {
+        display: flex; position: fixed; inset: 0; z-index: 9999;
+        flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+        padding: 32px; text-align: center;
+        background: #0e0f12; color: #f5f6f8;
+        font: 16px/1.5 system-ui, -apple-system, sans-serif;
+      }
+      #boot-error h1 { margin: 0; font-size: 20px; font-weight: 700; }
+      #boot-error p { margin: 0; max-width: 46ch; color: #b0b5bf; }
+      #boot-error button {
+        min-height: 44px; padding: 0 20px;
+        font: inherit; font-weight: 600; color: #fff;
+        background: #d33f21; border: 0; border-radius: 999px;
+      }
+      #boot-error pre {
+        max-width: 90vw; max-height: 30vh; overflow: auto;
+        margin: 0; padding: 12px 14px; text-align: left;
+        background: #17191e; border: 1px solid rgba(255,255,255,.1); border-radius: 10px;
+        font-size: 12px; color: #b0b5bf; white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Аварийный экран вместо белого.
+         ⚠️ Это ОБЫЧНЫЙ скрипт, а не модуль, и стоит он ДО приложения — иначе
+         он не поймает то, ради чего написан. Сегодняшний белый экран случился
+         на РАЗБОРЕ модуля (crypto.randomUUID вне HTTPS), то есть раньше, чем
+         React успел появиться: предохранитель внутри React такое не ловит по
+         построению. Ловят только слушатели на window и сторож времени. -->
+    <div id="boot-error" role="alert">
+      <h1>CanAI did not start</h1>
+      <p id="boot-error-note">The page loaded, but the app did not open.</p>
+      <pre id="boot-error-detail"></pre>
+      <button type="button" id="boot-error-reload">Reload</button>
+    </div>
+    <script>
+      (function () {
+        var shown = false
+        var settled = false
+        var bootTimer = null
+        var rootObserver = null
+
+        // Сторож отвечает только за первый запуск. После первого экрана React
+        // последующие отказы запросов должны попасть в обычные уведомления, а
+        // не менять работающую доску на «CanAI не запустился».
+        function settle() {
+          if (settled) return
+          settled = true
+          if (bootTimer !== null) {
+            window.clearTimeout(bootTimer)
+            bootTimer = null
+          }
+          if (rootObserver) {
+            rootObserver.disconnect()
+            rootObserver = null
+          }
+          window.removeEventListener('error', onError)
+          window.removeEventListener('unhandledrejection', onRejection)
+        }
+
+        function show(note, detail) {
+          if (shown) return
+          shown = true
+          settle()
+          var box = document.getElementById('boot-error')
+          if (!box) return
+          if (note) document.getElementById('boot-error-note').textContent = note
+          var pre = document.getElementById('boot-error-detail')
+          pre.textContent = detail || ''
+          if (!detail) pre.style.display = 'none'
+          box.className = 'on'
+        }
+
+        // ⚠️ Строка о браузере обязана быть в самом тексте ошибки. Всё, что
+        // приезжает с чужого планшета, — это скриншот: без версии Safari
+        // непонятно даже, поддерживается ли там то, на чём приложение упало
+        // (07.09.2026 разбор упёрся ровно в это).
+        function about(detail) {
+          return [detail || 'unknown error', navigator.userAgent].join('\n\n')
+        }
+
+        // React вставляет первый элемент в #root после разбора модуля.
+        // MutationObserver ловит этот коммит без опроса; таймер ниже остаётся
+        // запасом для браузеров без MutationObserver или недоступного скрипта.
+        function mounted() {
+          var root = document.getElementById('root')
+          if (root && root.childElementCount > 0) {
+            settle()
+            return true
+          }
+          return false
+        }
+
+        var onError = function (event) {
+          if (mounted()) return
+          var error = event.error
+          var detail = (error && (error.stack || error.message)) || event.message
+          // «Script error.» без подробностей означает не поломку скрипта, а то,
+          // что браузер не дал их прочитать: скрипт отдан без CORS-заголовка.
+          if (!error && detail === 'Script error.') {
+            detail = 'Script error. — the browser hid the details (the script has no CORS headers)'
+          }
+          if (event.filename) {
+            detail += '\n' + event.filename + ':' + event.lineno + ':' + event.colno
+          }
+          show(
+            'The app could not start. Show this text to the person who set up CanAI.',
+            about(detail)
+          )
+        }
+        var onRejection = function (event) {
+          if (mounted()) return
+          var reason = event.reason
+          show(
+            'The app could not start.',
+            about((reason && (reason.stack || reason.message)) || String(reason))
+          )
+        }
+        window.addEventListener('error', onError)
+        window.addEventListener('unhandledrejection', onRejection)
+
+        // Inline onclick запрещён CSP Cloud, поэтому кнопку запускаем из этого
+        // же nonce-скрипта. На экране ошибки она остаётся обычной ссылкой на
+        // полный reload, а не зависит от React или его состояния.
+        var reload = document.getElementById('boot-error-reload')
+        if (reload) reload.addEventListener('click', function () { window.location.reload() })
+
+        var root = document.getElementById('root')
+        if (root && typeof MutationObserver === 'function') {
+          rootObserver = new MutationObserver(mounted)
+          rootObserver.observe(root, { childList: true, subtree: true })
+        }
+
+        // Ошибки может и не быть: скрипт мог просто не доехать по сети.
+        // Пустой #root через десять секунд — то же самое для человека.
+        bootTimer = window.setTimeout(function () {
+          if (settled) return
+          if (!mounted()) {
+            show('The app did not load. Check the server connection and reload the page.', about(''))
+          }
+        }, 10000)
+        mounted()
+      })()
+    </script>
+    <script type="module" src="/src/tablet/main.tsx"></script>
+  </body>
+</html>

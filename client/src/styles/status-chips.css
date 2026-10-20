@@ -1,0 +1,65 @@
+/* чипы статусов и живых задач
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── баннеры и чипы статусов ────────────────────────────── */
+
+/* .mock-banner и .load-error-banner удалены: их никто не рисовал уже давно
+   (сообщения переехали в общую плашку), а заливка тоном в них жила. */
+
+/* Место и материал — в notices.css: сообщения стоят одной стопкой в общем
+   углу и выглядят одинаково. Здесь остаётся только то, что своё. */
+.external-edit-status-card {
+  width: min(390px, 100%);
+  pointer-events: auto;
+}
+
+.external-edit-status-card strong {
+  color: var(--text);
+  font-size: var(--text-control);
+}
+
+.external-edit-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.external-edit-status-actions button {
+  font: inherit;
+}
+
+.external-edit-status-actions button:hover {
+  border-color: var(--border-strong);
+}
+
+
+.edit-notice-list {
+  /* Список имён ВНУТРИ карточки: своей поверхности у него нет — карточки в
+     карточке не бывает (DESIGN.md). Потолок высоты и прокрутка внутри себя,
+     чтобы двадцать открытых файлов не растянули сообщение на весь экран. */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 108px;
+  overflow-y: auto;
+  color: var(--text-3);
+}
+
+.edit-notice-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.edit-notice-list li span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

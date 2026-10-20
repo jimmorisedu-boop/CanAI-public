@@ -1,0 +1,379 @@
+/* форма параметров модели на ноде и в баре
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* настройки модели (форма параметров на ноде) */
+.param-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.param-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+.param-label {
+  flex: 0 0 108px;
+  white-space: normal;
+  line-height: 1.25;
+  padding-top: 2px;
+}
+
+/* Текстовые параметры (системный промпт) — во всю ширину: подпись сверху,
+   поле под ней. В две колонки длинному тексту оставалась половина ноды. */
+.param-row.wide {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.param-row.wide .param-label {
+  flex: none;
+  padding-top: 0;
+}
+
+/* Обёртка текстового поля с кнопкой «Развернуть» (промпты нод и параметры) */
+.expandable-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.param-textarea textarea {
+  width: 100%;
+  min-height: 58px;
+  max-height: 180px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.param-expand {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.param-expand:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+/* Полноразмерный редактор текстового параметра */
+.param-editor-backdrop {
+  padding: 4vh 4vw;
+}
+
+.param-editor {
+  display: flex;
+  flex-direction: column;
+  width: min(920px, 100%);
+  height: min(720px, 92vh);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.param-editor-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.param-editor-head strong {
+  flex: 1;
+  font-size: var(--text-body);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.param-editor-count {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.param-editor-close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.param-editor-close:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.param-editor-area {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 16px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+
+.param-editor-area::placeholder {
+  color: var(--text-3);
+}
+
+.param-input {
+  flex: 1;
+  min-width: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.param-input:hover {
+  border-color: var(--border-strong);
+}
+
+.param-input:focus {
+  border-color: var(--accent-soft-border);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.param-input:focus-visible {
+  outline: none !important;
+}
+
+/* компактный режим: параметры прямо в промпт-баре, ряд «пилюль» (без панели) */
+.param-controls.compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: none;
+}
+
+.param-controls.compact .param-row {
+  flex: 0 0 auto;
+  height: var(--control-h-compact);
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0 6px 0 10px;
+  font-size: var(--text-micro);
+  line-height: 1;
+}
+
+.param-controls.compact .param-label {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  padding-top: 0;
+  line-height: 1;
+}
+
+.param-controls.compact .param-input {
+  flex: 0 0 auto;
+  height: 100%;
+  width: auto;
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+  /* значения параметров — моно, как пилюли «1× / Авто / Высокое» в примерочной */
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.param-controls.compact .param-input:hover,
+.param-controls.compact .param-input:focus {
+  color: var(--text);
+}
+
+.param-controls.compact .param-slider {
+  width: 108px;
+  flex: 0 0 auto;
+}
+
+/* ⚠️ Полю сида не годится высота 100% от .param-seed: своей высоты у обёртки
+   нет, процент от неё не считается — и поле оседало в 15px, отчего цифра
+   вставала выше подписи и кубика, будто приписка сверху. Высоту задаём
+   явно — ту же, что у кубика рядом. */
+.param-controls.compact .param-seed {
+  align-items: center;
+}
+
+.param-controls.compact .param-seed .param-input {
+  width: 76px;
+  height: var(--control-h-mini);
+}
+
+.param-checkbox {
+  accent-color: var(--accent);
+}
+
+.param-slider {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.param-slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.param-slider-value {
+  flex: 0 0 28px;
+  text-align: right;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.param-seed {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.param-dice {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  border-radius: var(--radius-compact);
+  cursor: pointer;
+  font-size: var(--text-micro);
+  padding: 0 8px;
+}
+
+.param-dice:hover {
+  background: var(--surface-3);
+}
+
+.gen-node-prompt {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-control);
+  padding: 9px 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.gen-node-prompt:hover {
+  border-color: var(--border-strong);
+}
+
+.gen-node-prompt::placeholder,
+.node-model-endpoint::placeholder {
+  color: var(--text-3);
+}
+
+.gen-node-prompt:focus {
+  border-color: var(--accent-soft-border);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  outline: none !important;
+}
+
+.gen-node-prompt:focus-visible {
+  outline: none !important;
+}
+
+.gen-node-status {
+  margin-top: 6px;
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+.gen-node-status.running {
+  color: var(--warn-text);
+}
+
+.gen-node-status.error {
+  color: var(--danger);
+}
+
+.node-history {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+
+.node-history-btn:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.node-history-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.node-history-count {
+  min-width: 34px;
+  text-align: center;
+}
+
+
+/* Текстовый параметр в компактном ряду (negative_prompt у музыки, голос у
+   озвучки). В панели ноды это многострочное поле, а здесь оно тянуло за собой
+   58px высоты и кнопку «Развернуть» — ряд пилюль ломался, а значение
+   вываливалось поверх соседних кнопок. Тут это обычная пилюля с текстом. */
+.param-controls.compact .param-input[type='text'] {
+  width: 130px;
+  cursor: text;
+  text-overflow: ellipsis;
+}
+
+.param-controls.compact .param-input[type='text']:focus {
+  width: 220px;
+}

@@ -1,0 +1,111 @@
+/* видимый фокус с клавиатуры и материалы движения
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── доступность: видимый фокус с клавиатуры (WCAG AA) ─────────────────── */
+/* :focus-visible срабатывает только при Tab-навигации — мышиные клики
+   колец не рисуют. Перебивает точечные outline:none у отдельных виджетов. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px;
+}
+
+/* ── пакет «Живой инструмент»: критически затухающие отклики, каскад, материалы ──
+   Всё событийное; в покое ничего не движется. Монóтонная linear()-кривая имитирует
+   damping=1: быстро отвечает и мягко оседает, не перелетая цель. */
+:root {
+  --spring-ui: linear(0, 0.2 7%, 0.48 16%, 0.7 27%, 0.85 41%, 0.94 57%, 0.985 76%, 1);
+  --spring-pop: var(--spring-ui);
+  --spring-soft: linear(0, 0.16 8%, 0.4 18%, 0.63 31%, 0.8 46%, 0.91 61%, 0.975 79%, 1);
+}
+
+/* каскад карточек в галерее: экран «собирается» волной (задержка — инлайн) */
+@keyframes card-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+.project-card {
+  animation: card-cascade 0.36s var(--spring-soft) backwards;
+}
+
+/* шиммер на превью доски, ПОКА картинка грузится; после загрузки анимация
+   снимается целиком (:has) — в покое ничего не крутится */
+.project-thumb {
+  position: relative;
+}
+.project-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 8%, transparent), transparent);
+  pointer-events: none;
+}
+.project-thumb:has(.project-preview-media:not(.loaded))::after {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+.project-preview-media {
+  opacity: 0;
+}
+.project-preview-media.loaded {
+  opacity: 1;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+/* стекло на плавающих панелях над холстом: фон у них уже полупрозрачный
+   (var(--surface) с альфой) — добавляем только размытие. Дозировано: малые
+   площади, стоимость GPU незаметна */
+.prompt-bar,
+.zoom-bar,
+.sketch-palette,
+.canvas-context-menu {
+  backdrop-filter: blur(24px) saturate(1.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.35);
+}
+
+/* переходы экранов (галерея ↔ доска ↔ редактор макросов): мягкий кроссфейд
+   с еле заметным дыханием масштаба вместо мгновенной подмены */
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: scale(0.988);
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: scale(1.008);
+  }
+}
+::view-transition-old(root) {
+  animation: vt-out 0.18s var(--ease-out) both;
+}
+::view-transition-new(root) {
+  animation: vt-in 0.24s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card,
+  .project-thumb::after {
+    animation: none !important;
+  }
+  .project-preview-media {
+    opacity: 1;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+

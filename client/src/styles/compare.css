@@ -1,0 +1,1056 @@
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 */
+/* Hallmark · component: face-similarity · genre: modern-minimal · theme: design.md
+ * states: default · hover · focus · active · disabled · busy · error · success
+ * contrast: pass (40–41) */
+
+/* сравнение исходника с генерациями
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── Сравнение ────────────────────────────────────────────────────────────
+   Раскладку выбирает не пользователь, а типы объектов (compareLayout.ts):
+   картинки — наложением в одной рамке, видео — панелями рядом. Просмотрщик
+   сделан обычным HTML-оверлеем: штора это clip-path, разница —
+   mix-blend-mode, видео играет само (Konva тут не нужен). */
+
+/* базовая мелкая кнопка — класс уже использовался (плашка паузы каскада),
+   но своих стилей не имел и выглядел браузерной кнопкой */
+.chip-btn {
+  font: inherit;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.chip-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.chip-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.chip-btn.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+}
+
+.chip-btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+/* Плашка режима набора — СВЕРХУ холста: в этот момент пользователь смотрит
+   на объекты, а не на промпт-бар внизу. */
+.compare-picker {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-canvas-ui);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(760px, calc(100% - 32px));
+  padding: 6px 8px;
+  border: 1px solid var(--accent-soft-border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-lg);
+  animation: compare-picker-in 0.2s var(--ease-out) both;
+}
+
+@keyframes compare-picker-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.compare-picker-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-control);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* Крестик на плашке набора — призрачная иконка: набор ещё идёт, холст живой,
+   и это мелкое действие в строке подсказки. Выход из САМОГО просмотрщика —
+   другое дело, его форма живёт в каноне рядом с выходом из таймлайна. */
+.compare-dismiss {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.compare-dismiss:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.compare-dismiss:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.compare-picker-text {
+  font-size: var(--text-control);
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.compare-picker kbd {
+  margin-left: 4px;
+  padding: 1px 4px;
+  border-radius: var(--radius-compact);
+  background: rgba(255, 255, 255, 0.22);
+  font-size: var(--text-micro);
+  font-weight: 700;
+}
+
+/* Просмотрщик — поверх всего холста */
+.compare-overlay {
+  /* Просмотрщик живёт поверх произвольного кадра, поэтому chrome не наследует
+     тёмный текст светлой темы. Все glass-острова читают одну локальную пару
+     «тёмный материал / светлый текст» и одинаковы на любой фотографии. */
+  --text: #f5f6f8;
+  --text-2: #e0e3e8;
+  --text-3: #c2c7d0;
+  --border: rgba(255, 255, 255, 0.24);
+  --border-strong: rgba(255, 255, 255, 0.42);
+  --surface-3: rgba(38, 41, 47, 0.86);
+  /* Непрозрачная подложка кнопок тоже входит в локальную пару: без неё общая
+     форма брала белый фон светлой темы под здешний светлый текст. */
+  --surface-solid: #1d1f24;
+  --material-thick: rgba(22, 24, 28, 0.76);
+  --accent-text: #ff9a82;
+  --accent-soft: rgba(211, 63, 33, 0.2);
+  --accent-soft-border: rgba(255, 139, 111, 0.46);
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  background: var(--scrim);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: fade-in 0.16s var(--ease-out) both;
+}
+
+/* Шапка, лента и подсказка ПЛАВАЮТ над кадром, а не занимают свои полосы.
+   При этом шапка — не полноширинный scrim, а два локальных glass-острова:
+   изображение остаётся воздушным и не выглядит зажатым между барами. */
+.compare-head {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
+}
+
+.compare-head > * {
+  pointer-events: auto;
+}
+
+.compare-head-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  width: min(430px, calc(100% - 360px));
+  flex: 0 1 430px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(22px) saturate(1.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Кто есть кто — строка под строкой: роль, имя, служебные пометки.
+   Подсвечена та строка, что сейчас на экране (режим «Переключение»). */
+.compare-role-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 2px 0;
+  border-radius: 0;
+  border: 1px solid transparent;
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  transition: var(--transition-smooth);
+}
+
+/* активная строка помечается точкой и цветом текста, без заливки во всю
+   ширину — пометка, а не плашка */
+.compare-role-row.on {
+  color: var(--accent-text);
+}
+
+.compare-role {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.compare-role::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: transparent;
+  transition: var(--transition-smooth);
+}
+
+.compare-role-row.on .compare-role::before {
+  background: var(--accent);
+}
+
+.compare-role-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.compare-role-row.on .compare-role-name { color: var(--accent-text); }
+
+/* У результата две строки: роль прижата к числу, а не центрируется между
+   числом и пояснением о нескольких лицах. */
+.compare-role-row:has(.face-chip-comparison) { align-items: flex-start; }
+
+.compare-role-note {
+  flex: none;
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+
+/* метка объекта — та же вермилионовая плашка, что и на холсте */
+.compare-mark {
+  flex: none;
+  text-align: center;
+}
+
+.compare-modes {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-thick);
+  backdrop-filter: blur(22px) saturate(1.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16);
+  box-shadow: var(--shadow-lg);
+}
+
+.compare-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding: 8px;
+}
+
+/* наложение (только картинки) */
+.compare-frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  user-select: none;
+  /* курсор обещает ровно то, что режим умеет: две стрелки только у шторы */
+  cursor: default;
+}
+
+.compare-frame.mode-wipe { cursor: ew-resize; }
+.compare-frame.mode-toggle,
+.compare-frame.mode-diff { cursor: zoom-in; }
+.compare-frame.is-zoomed { cursor: grab; }
+
+/* Общая коробка обоих кадров: размер и положение считает overlayFrame по
+   пропорциям исходника. Чёрный фон нужен «Разнице» — она смешивается с тем,
+   что под ней, и на прозрачном давала бы мусор в полях letterbox. */
+.compare-media {
+  position: absolute;
+  background: #000;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.compare-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.compare-wipe-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.compare-wipe-handle i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-lg);
+}
+
+.compare-badge,
+.compare-panel-label {
+  position: absolute;
+  z-index: 3;
+  max-width: min(46%, 380px);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--material-thick);
+  border: 1px solid var(--border);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: var(--text-2);
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compare-panel-label {
+  top: 12px;
+  left: 12px;
+}
+
+/* Подпись кадра — СНИЗУ слева: сверху теперь плавает шапка, и вдвоём они
+   налезали друг на друга. Капса нет: имена файлов в верхнем регистре кричат. */
+.compare-badge {
+  left: 12px;
+  bottom: 12px;
+}
+
+.compare-zoom-reset {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--material-thick);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-micro);
+  cursor: pointer;
+}
+
+.compare-zoom-reset.inline {
+  position: static;
+  margin-left: 4px;
+}
+
+/* панели рядом (в сравнении есть видео) */
+.compare-panels-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-panels {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.compare-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.compare-panel.is-zoomed { cursor: grab; }
+
+.compare-sync-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  /* без will-change: transform — с ним браузер держит готовый растр слоя и
+     при зуме растягивает его, теряя разрешение */
+}
+
+.compare-sync-layer img,
+.compare-sync-layer video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.compare-player {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(720px, calc(100% - 24px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--material-thick);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-lg);
+}
+
+.compare-play {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.compare-play:hover { background: var(--accent-hover); }
+
+.compare-time {
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
+}
+
+.compare-scrub {
+  flex: 1;
+  min-width: 80px;
+  accent-color: var(--accent);
+}
+
+.compare-rates {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.compare-rate {
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.compare-rate.on {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.compare-alternate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.compare-alternate input { accent-color: var(--accent); }
+
+/* лента кандидатов */
+.compare-strip {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+  padding: 6px 8px;
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-lg);
+  overflow-x: auto;
+}
+
+.compare-thumb {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.compare-thumb img,
+.compare-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.compare-thumb.on { border-color: var(--accent); }
+.compare-thumb:hover { border-color: var(--border-strong); }
+
+.compare-thumb-mark {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+}
+
+/* в панелях снизу стоит плеер — лента и подсказка поднимаются над ним */
+.compare-overlay.is-panels .compare-player { bottom: 40px; }
+/* Полоса кандидатов поднимается над плеером. Признак — НАЛИЧИЕ ПЛЕЕРА, а не
+   раскладка: со шторой для видео плеер появился и в наложении. */
+.compare-overlay.has-player .compare-strip { bottom: 96px; }
+
+/* Согласованная нижняя планка: компактный r-md glass-блок у левого края.
+   Это НЕ внешняя пилюля — пилюльная геометрия остаётся только у самих клавиш. */
+.compare-hint {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  transform: none;
+  z-index: 4;
+  max-width: calc(100% - 36px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--radius-control);
+  background: var(--material-thick);
+  backdrop-filter: blur(18px) saturate(1.14);
+  -webkit-backdrop-filter: blur(18px) saturate(1.14);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  /* Кегль из шкалы, а не своё число: подсказка — служебная реплика, и она
+     обязана совпадать с остальной мелкой типографикой приложения. */
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out);
+}
+
+.compare-overlay.is-resting .compare-hint {
+  opacity: 0.16;
+}
+
+.compare-hint-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.compare-hint-separator {
+  width: 3px;
+  height: 3px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
+  opacity: 0.58;
+}
+
+/* Клавиша — тихая плашка, а не жирный текст: подсказка перечисляет пары
+   «клавиша → что делает», и жирность спорила бы с самим смыслом. */
+.compare-hint kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--text-micro);
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .compare-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .compare-head-main {
+    width: min(430px, 100%);
+    flex-basis: 430px;
+  }
+}
+
+@media (max-width: 520px) {
+  .compare-head {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+  }
+
+  .compare-head-main {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .compare-role-row {
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+  }
+
+  .compare-role-note {
+    display: none;
+  }
+
+  .compare-modes {
+    margin-left: 0;
+  }
+
+  .compare-hint {
+    left: 12px;
+    bottom: 12px;
+    width: calc(100% - 24px);
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    white-space: normal;
+  }
+
+  .compare-hint-separator {
+    display: none;
+  }
+}
+
+.compare-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-2);
+  font-size: var(--text-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compare-picker,
+  .compare-overlay {
+    animation: none !important;
+  }
+
+  .compare-hint {
+    transition: none;
+  }
+}
+
+/* ───── Сходство лиц ─────
+   Плашка живёт в строке кандидата — там, где решают «этот похож». Материал
+   тот же, что у остальных сообщений: тон точкой, вердикт словами, число
+   рядом. Зелёной галочки нет намеренно: вердикт получен из ПОРОГА, и порог
+   всегда виден и правится тут же. */
+.face-chip {
+  /* Продолжение строк «Исходник» и «Кандидат», а не отдельная плашка: своей
+     поверхности у неё нет, кегль и цвет наследуются от строки. Раньше здесь
+     были фон, рамка и тень — три разных языка в одном блоке из трёх строк
+     (жалоба 19.08.2026). */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Форма — из канона: выход из сравнения и выход из таймлайна это одно и то
+   же действие, и выглядеть они обязаны одинаково. Здесь остаётся только тень:
+   кнопка висит НАД кадром, а не лежит в панели. */
+.compare-head .compare-close {
+  box-shadow: var(--shadow-lg);
+}
+
+.face-chip-comparison {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  white-space: normal;
+}
+
+.face-chip-result {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.face-chip-result b {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-control);
+  letter-spacing: -0.02em;
+}
+
+.face-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+/* Вердикт остаётся нейтральным: он зависит от настраиваемого порога. Акцент
+   уже занят строкой активного кадра и не дублируется здесь. */
+.face-chip-same .face-chip-verdict { color: var(--text); }
+
+.face-chip-bad .face-dot { background: var(--danger); }
+
+.face-chip-offer {
+  cursor: pointer;
+  font: inherit;
+  color: var(--text-2);
+}
+
+.face-chip-offer:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* Порог — маленькая пилюля-действие, как у остальных сообщений, а не
+   подчёркнутый текст: подчёркивание в продукте значит ссылку. */
+.face-chip-threshold {
+  min-height: 24px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.face-chip-threshold:hover,
+.face-chip-threshold[aria-expanded='true'] {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.face-chip-threshold:focus-visible,
+.face-chip-pick:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.face-chip-threshold:active,
+.face-chip-pick:active {
+  transform: translateY(1px);
+}
+
+.face-chip-context {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.face-chip-pick {
+  min-height: 24px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.face-chip-pick:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.face-chip-threshold:disabled,
+.face-chip-pick:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-chip-threshold,
+  .face-chip-pick {
+    transition: none;
+  }
+}
+
+/* Ползунок порога раскрывается по требованию: калибруют его редко, а место
+   в шапке дорогое. */
+.face-threshold-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: var(--z-overlay);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-md);
+}
+
+.face-threshold-popover input { width: 120px; accent-color: var(--accent); }
+
+.face-threshold-popover button {
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Выбор лица на групповом кадре ───────────────────────────────────────
+   Слой открывается только по просьбе (кнопка в приписке «в кадре несколько
+   лиц») и закрывается сразу после выбора: рамки поверх картинки не должны
+   мешать тем, кто просто сравнивает кадры. */
+
+/* ⚠️ Слой рисует СВОЙ тёмный материал, а не подкрашивает --bg.
+   Просмотрщик сравнения живёт поверх произвольного кадра и держит локальную
+   пару «тёмный материал / светлый текст». Прежний фон брался из --bg, то есть
+   из СВЕТЛОЙ темы, — светлый текст ложился на светлую подложку, и шапка почти
+   не читалась (жалоба 22.08.2026). Та же ошибка, что была у кнопки выхода:
+   завёл локальную пару — задавай её целиком. */
+.face-pick {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: rgba(13, 15, 18, 0.86);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  animation: fade-in 0.16s var(--ease-out) both;
+}
+
+.face-pick-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+}
+
+/* Заголовок и пояснение — роли из общей шкалы, а не подобранные числа. */
+.face-pick-title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.face-pick-title strong {
+  color: var(--text);
+  font-size: var(--text-title-sm);
+  font-weight: 650;
+}
+
+.face-pick-title span {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+/* Кадр вписан целиком: рамки заданы долями его натурального размера, и любой
+   кроп увёл бы их от лиц. */
+.face-pick-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Обёртка размером ровно с картинку: рамки позиционируются её долями. */
+.face-pick-frame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  line-height: 0;
+}
+
+.face-pick-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Рамка лица. Двойная обводка (тёмная снаружи, светлая внутри) читается и на
+   белой рубашке, и на чёрной куртке — одноцветная терялась то там, то там. */
+.face-pick-box {
+  position: absolute;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.face-pick-box:hover {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 0 0 4px rgba(255, 255, 255, 0.16);
+}
+
+/* Выбранное лицо — акцентом: видно, какое именно сейчас меряется. */
+.face-pick-box.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 0 0 4px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+.face-pick-box:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Номер сидит НА верхней кромке по центру — тем же приёмом, что метки на
+   холсте (CompareMarks). В углу он налезал на саму рамку и спорил с ней. */
+.face-pick-box span {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(13, 15, 18, 0.92);
+  color: #fff;
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.face-pick-box.on span {
+  background: var(--accent);
+}
+
+/* ⚠️ Вся обвязка лежит ПОВЕРХ кадра, и на видео это мешает смотреть — ради
+   чего просмотрщик и открывают. После короткого покоя бледнеет не только
+   подсказка, но и всё остальное: шапка с именами, кнопка выхода, подпись
+   панели и плеер. Геометрия при этом не двигается — панели не прыгают, а
+   первое же движение мыши возвращает их. */
+.compare-overlay.is-resting .compare-head,
+.compare-overlay.is-resting .compare-close,
+.compare-overlay.is-resting .compare-panel-label,
+.compare-overlay.is-resting .compare-strip,
+.compare-overlay.is-resting .compare-player {
+  opacity: 0.12;
+  transition: opacity 0.18s var(--ease-out);
+}
+
+.compare-overlay .compare-head,
+.compare-overlay .compare-close,
+.compare-overlay .compare-panel-label,
+.compare-overlay .compare-strip,
+.compare-overlay .compare-player {
+  transition: opacity 0.18s var(--ease-out);
+}
+
+/* Пока обвязка спрятана, она не должна ловить мышь: клик по видео важнее. */
+.compare-overlay.is-resting .compare-head,
+.compare-overlay.is-resting .compare-panel-label {
+  pointer-events: none;
+}

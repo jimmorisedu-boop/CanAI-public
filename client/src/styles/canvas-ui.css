@@ -1,0 +1,1085 @@
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V5 */
+/* Hallmark · macrostructure: existing CanAI canvas chrome · component: sketch-toolbar · slop: pass */
+/* сам холст Konva и панели над ним: тулбар, зум, меню, кроп, скетч
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* холст Konva на всю область; точечная сетка — как в «примерочной»: даёт
+   рабочей области глубину. Точки очень бледные и статичные (CSS-фон, не
+   Konva) — при панораме их неподвижность глазом не считывается */
+.konva-wrap {
+  position: absolute;
+  inset: 0;
+  background-color: var(--canvas-bg);
+  background-image: radial-gradient(var(--dot-grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  overflow: hidden;
+}
+
+/* Эфемерный слой совместной доски: курсоры, занятые объекты и превью жеста.
+   Он не перехватывает события Konva; единственным интерактивным элементом
+   является кнопка сообщения о конфликте. */
+.canvas-collaboration-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 330;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.canvas-collaboration-world {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.canvas-collaboration-lock,
+.canvas-collaboration-preview {
+  border-width: calc(1px * var(--collaboration-inverse-scale, 1));
+  border-radius: var(--collaboration-frame-radius, var(--radius-compact));
+  box-sizing: border-box;
+}
+
+.canvas-collaboration-lock {
+  pointer-events: none;
+  border-style: solid;
+  box-shadow: 0 0 0 calc(1px * var(--collaboration-inverse-scale, 1)) color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.canvas-collaboration-lock-label,
+.canvas-collaboration-cursor-label {
+  display: inline-flex;
+  max-width: 180px;
+  padding: 3px 7px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: var(--text-micro);
+  font-weight: 650;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.canvas-collaboration-lock-label {
+  position: absolute;
+  left: calc(-1px * var(--collaboration-inverse-scale, 1));
+  top: calc(-22px * var(--collaboration-inverse-scale, 1));
+  transform: scale(var(--collaboration-inverse-scale, 1));
+  transform-origin: top left;
+}
+
+.canvas-collaboration-preview {
+  opacity: 0.7;
+  border-style: dashed;
+  background: color-mix(in srgb, #8c78d9 8%, transparent);
+}
+
+.canvas-collaboration-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  pointer-events: none;
+  color: var(--cursor-color, var(--accent));
+  transform: scale(var(--collaboration-inverse-scale, 1));
+  transform-origin: top left;
+}
+
+.canvas-collaboration-cursor-mark {
+  width: 0;
+  height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 11px solid currentColor;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
+}
+
+.canvas-collaboration-cursor-label {
+  background: var(--cursor-color, var(--accent));
+}
+
+.canvas-collaboration-notice {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 2;
+  width: min(520px, calc(100% - 32px));
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+/* Содержимое списка участников. Саму панель размещает иконка в шапке. */
+.canvas-collaboration-roster {
+  box-sizing: border-box;
+  display: grid;
+  gap: 5px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-regular);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+}
+
+.canvas-collaboration-roster-title {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.canvas-collaboration-roster-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+}
+
+.canvas-collaboration-roster-person {
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  padding: 3px 5px;
+  border-radius: var(--radius-compact);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.canvas-collaboration-roster-person:not(:disabled) { cursor: pointer; }
+.canvas-collaboration-roster-person:not(:disabled):hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+.canvas-collaboration-roster-person:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.canvas-collaboration-roster-person:disabled { opacity: 1; cursor: default; }
+
+.canvas-collaboration-roster-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.canvas-collaboration-roster-you {
+  color: var(--text-3);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* ⚠️ Карточка бывает НЕ ОДНА. Раньше записи выстраивались в строку рядом с
+   текстом, и на двух отклонённых правках заголовок сжимался в колонку по
+   слову, а кнопки уезжали вбок (у второго участника так и вышло, 07.09.2026).
+   Теперь это столбец: объяснение сверху, записи под ним по строке на каждую. */
+.cloud-recovery-notice {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 470;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  max-width: min(760px, calc(100% - 32px));
+  padding: 10px 12px 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  border-radius: var(--radius-panel);
+  background: var(--material-regular);
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
+}
+
+.cloud-recovery-notice > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cloud-recovery-notice strong {
+  font-size: var(--text-control);
+}
+
+.cloud-recovery-notice span {
+  color: var(--text-2);
+  font-size: var(--text-micro);
+  line-height: 1.35;
+}
+
+.cloud-recovery-actions,
+.cloud-recovery-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.cloud-recovery-actions {
+  display: grid;
+  gap: 6px;
+}
+
+.cloud-recovery-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Причина отказа занимает всё свободное место, кнопки прижаты вправо. */
+.cloud-recovery-entry > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-recovery-entry button {
+  min-height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 0 9px;
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.cloud-recovery-entry button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cloud-recovery-entry button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+@media (max-width: 760px) {
+  .cloud-recovery-notice {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cloud-recovery-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Результаты одной серии, ушедшие за безопасную область канваса. Геометрия
+   приходит из единого viewport, а визуальный слой остаётся целиком в CSS. */
+.generation-series-cue {
+  position: absolute;
+  z-index: 340;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 116px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--material-regular);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+  font: inherit;
+  font-size: var(--text-control);
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(0);
+  transition: transform 120ms var(--ease-out), opacity 120ms var(--ease-out);
+}
+
+.canvas-main .asset-bar,
+.canvas-main .archive-bar {
+  z-index: 341;
+}
+
+.generation-series-cue-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .generation-series-cue:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+}
+
+.generation-series-cue:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.generation-series-cue:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.generation-series-cue:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.toast-notification {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  background: rgba(22, 24, 29, 0.92);
+  border: 1px solid var(--border-strong);
+  color: var(--text-1);
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-control);
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.sketch-icon {
+  font-size: var(--text-title-sm);
+  line-height: 1;
+}
+
+/* Панель, привязанная к точке холста: место ей считает useCanvasAnchor
+   (left/top ставятся в стиль напрямую), а середина берётся отсюда — иначе
+   пришлось бы знать её ширину до отрисовки. */
+.konva-anchored {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+/* плавающее меню над выделённой картинкой/видео */
+.konva-item-toolbar {
+  z-index: 350;
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  box-shadow: var(--shadow-md);
+}
+
+/* The Arrange panel is a board-level popover. Keep this toolbar above the
+   prompt dock (z-index 400) while staying below topbar/modal layers. The
+   selector is scoped to multi-selection controls so single-item actions keep
+   their existing canvas stacking order. */
+.selection-toolbar {
+  z-index: calc(var(--z-overlay, 400) + 1);
+}
+
+.konva-tool-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-title-sm);
+  line-height: 1;
+  padding: 6px 9px;
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+}
+
+.konva-tool-btn:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.selection-arrange {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selection-arrange-trigger {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 32px;
+  padding-inline: 10px;
+  font-size: var(--text-control);
+  font-weight: 650;
+}
+
+.selection-arrange-panel {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 8px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(350px, calc(100vw - 24px));
+  max-height: min(62vh, calc(100dvh - 24px));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 14px;
+  transform: translateX(-50%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-solid, var(--surface));
+  box-shadow: var(--shadow-lg);
+  text-align: left;
+}
+
+/* Portalled to body so the board's overflow clipping and prompt-dock stacking
+   context cannot hide a tall panel. Its measured fixed coordinates come from
+   arrangePlacement.ts and stay pinned while draft inputs preview. */
+.selection-arrange-panel-portal {
+  position: fixed;
+  z-index: calc(var(--z-overlay, 400) + 1);
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .selection-arrange-panel {
+    width: min(280px, calc(100vw - 24px));
+    padding: 12px;
+  }
+}
+
+.selection-arrange-panel.is-above {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+.selection-arrange-section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.selection-arrange-section h3 {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.selection-arrange-options {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.selection-arrange-layout {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.selection-arrange-option {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.selection-arrange-option:hover,
+.selection-arrange-option.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface-2));
+  color: var(--text);
+}
+
+.selection-arrange-option:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.selection-arrange-fields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.selection-arrange-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  font-weight: 600;
+}
+
+.selection-arrange-fields input {
+  width: 100%;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font: 600 12px/1 var(--font-mono);
+}
+
+/* палитра кистей в режиме скетча */
+.sketch-palette {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 450;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  min-height: 60px;
+  background: var(--material-regular, var(--surface));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  padding: 8px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+}
+
+.sketch-tool-group,
+.sketch-colors,
+.sketch-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sketch-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sketch-tool-group + .sketch-colors,
+.sketch-size-wrap,
+.sketch-actions {
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+
+.sketch-icon-button,
+.sketch-swatch {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sketch-icon-button:hover:not(:disabled),
+.sketch-swatch:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.sketch-icon-button.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.sketch-icon-button:active:not(:disabled),
+.sketch-swatch:active:not(:disabled),
+.sketch-cancel:active:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.sketch-swatch > span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+.sketch-swatch.on > span {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.sketch-size-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.sketch-size-wrap output {
+  width: 24px;
+  color: var(--text-3);
+  font: 600 11px/1 var(--font-mono, monospace);
+  text-align: right;
+}
+
+.sketch-size {
+  width: 84px;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.sketch-palette-label {
+  flex: none;
+  padding: 0 4px;
+  font-size: var(--text-control);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sketch-palette-hint {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  max-width: 220px;
+  line-height: 1.3;
+}
+
+.sketch-cancel,
+.sketch-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sketch-cancel {
+  color: var(--text-2);
+  border-color: var(--border);
+  background: transparent;
+}
+
+.sketch-cancel:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.sketch-done {
+  color: #fff;
+  background: var(--accent);
+}
+
+.sketch-done:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.sketch-done:active:not(:disabled) {
+  background: var(--accent-press);
+}
+
+.sketch-icon-button:disabled,
+.sketch-swatch:disabled,
+.sketch-cancel:disabled,
+.sketch-done:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .sketch-palette:not(.crop-toolbar) {
+    width: calc(100% - 32px);
+    overflow: hidden;
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-scroll {
+    flex: 1 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-palette-label {
+    display: none;
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-actions {
+    flex: none;
+    padding-left: 8px;
+    background: var(--material-regular, var(--surface));
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-actions span {
+    display: none;
+  }
+
+  .sketch-palette:not(.crop-toolbar) .sketch-cancel,
+  .sketch-palette:not(.crop-toolbar) .sketch-done {
+    width: 44px;
+    padding: 0;
+  }
+}
+
+/* ── кнопка экспорта по меткам (верх-право) ─────────────── */
+
+.canvas-export-btn {
+  background: var(--material-thin);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  box-shadow: none;
+  transition: var(--transition-smooth);
+}
+
+.canvas-export-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.canvas-export-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  border-color: var(--border);
+  background: transparent;
+}
+
+/* ── зум-бар холста (низ-лево) ──────────────────────────── */
+
+.zoom-bar {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 350;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--material-regular);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px 6px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  transition: var(--transition-smooth);
+}
+
+.zoom-bar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  line-height: 1;
+}
+
+.zoom-bar button:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.zoom-bar-pct {
+  min-width: 42px;
+  text-align: center;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.zoom-bar-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 3px;
+}
+
+/* ⚠️ Левый край холста — ОДНА колонка (CanvasCorner.tsx): мини-карта и
+   список «На доске» прямо над ней. Раньше каждый ставил себя сам, и список
+   стоял над соседом на угаданных 56 px — развёрнутая карта (170 px)
+   закрывала его целиком (жалоба 30.09.2026). Теперь их раскладывает сетка,
+   чисел про высоту соседа нет нигде. Карта всегда стоит у нижнего края.
+   На узком холсте её поднимает только пересечение колонки с реальным
+   `.prompt-dock`: до верхнего края дока с зазором. Центрирование уводило
+   карту в середину высокого окна (жалоба 16.10.2026). Ширина колонки
+   постоянна даже у свёрнутой карты: измерение пересечения не должно менять
+   собственные условия при переходе в компактный режим.
+   Сама колонка мышь не ловит — только то, что в ней. */
+.canvas-corner {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  bottom: 14px;
+  z-index: 342;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, auto);
+  justify-items: start;
+  row-gap: var(--space-2);
+  width: 100%;
+  max-width: min(224px, calc(100% - 28px));
+  pointer-events: none;
+}
+
+.canvas-corner.is-narrow {
+  bottom: max(14px, var(--canvas-corner-dock-reserve, 0px));
+}
+.canvas-corner.is-narrow.is-tight {
+  display: block;
+  top: 14px;
+  bottom: auto;
+  height: 42px;
+  overflow: visible;
+}
+.canvas-corner.is-tight > .board-navigator {
+  width: 42px;
+  height: 42px;
+  max-height: 42px;
+  overflow: hidden;
+  padding: 3px;
+}
+.canvas-corner.is-tight .board-navigator-header {
+  min-height: 34px;
+  padding-left: 0;
+}
+.canvas-corner.is-tight .board-navigator-header span { display: none; }
+.canvas-corner.is-tight .board-navigator-header button,
+.canvas-corner.is-tight .board-navigator-restore {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 4px;
+}
+.canvas-corner.is-tight .board-navigator-map { display: none; }
+.canvas-corner > .board-navigator { grid-row: 2; }
+.canvas-corner.is-narrow > .board-navigator {
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.board-navigator {
+  pointer-events: auto;
+  box-sizing: border-box;
+  width: 224px;
+  padding: 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  color: var(--text-2);
+}
+
+.board-navigator.is-collapsed {
+  width: auto;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.board-navigator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 30px;
+  padding-left: 5px;
+  font-size: var(--text-secondary);
+  font-weight: 700;
+}
+
+.board-navigator-header span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.board-navigator-header button,
+.board-navigator-restore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.board-navigator-restore { width: 32px; height: 32px; padding: 4px; font-weight: 700; }
+.board-navigator-header button:hover,
+.board-navigator-restore:hover { background: var(--surface-3); color: var(--text); }
+
+.board-navigator-map {
+  position: relative;
+  width: 208px;
+  height: 124px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--canvas-bg);
+  color: var(--text-3);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.board-navigator-map:has(.board-navigator-empty) { cursor: default; }
+.board-navigator-canvas { display: block; width: 100%; height: 100%; }
+.board-navigator-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .canvas-corner { left: 8px; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .board-navigator { background: var(--surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
+/* ── контекстное меню холста ────────────────────────────── */
+
+.canvas-context-menu {
+  position: absolute;
+  min-width: 220px;
+}
+
+.canvas-context-menu .add-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.canvas-context-menu .add-menu-item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.canvas-context-menu .add-menu-item.danger {
+  color: var(--danger);
+}
+
+.canvas-context-menu .add-menu-item.danger:hover {
+  background: var(--danger-soft);
+}
+
+.canvas-context-menu kbd {
+  font-family: inherit;
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  background: var(--surface-3);
+  border-radius: var(--radius-compact);
+  padding: 2px 6px;
+}
+
+.add-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 6px;
+}
+
+/* ── инлайн-редактирование текста на холсте ─────────────── */
+
+.text-edit-overlay {
+  position: absolute;
+  z-index: 360;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  line-height: 1.45;
+  /* padding задаётся инлайном (textPadding × зум) — он должен совпадать
+     с отступом, который рисует Konva, иначе текст прыгает при входе в правку */
+  resize: none;
+  outline: none;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-md);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.text-edit-overlay.is-overflowing {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ── тулбар кропа ───────────────────────────────────────── */
+
+.crop-ratio {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.crop-ratio:hover {
+  background: var(--surface-3);
+}
+
+.crop-ratio.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+

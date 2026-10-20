@@ -1,0 +1,405 @@
+/* верхняя панель приложения
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── верхняя панель ─────────────────────────────────────── */
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 16px;
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(24px) saturate(1.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.35);
+  flex: none;
+  z-index: var(--z-topbar);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.08);
+}
+
+.top-bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.personal-draft-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.personal-draft-state {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+}
+
+.personal-draft-state {
+  position: relative;
+  width: 34px;
+  padding: 0;
+}
+
+
+.personal-draft-dot {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.personal-draft-indicator.dirty .personal-draft-dot { background: var(--warn-text) }
+.personal-draft-indicator.uploading .personal-draft-dot { background: var(--accent) }
+.personal-draft-indicator.synced .personal-draft-dot { background: var(--ok) }
+.personal-draft-indicator.error .personal-draft-dot { background: var(--danger) }
+.personal-draft-indicator.error .personal-draft-state { color: var(--danger) }
+.personal-draft-indicator .spin { animation: personal-draft-spin .8s linear infinite }
+@keyframes personal-draft-spin { to { transform: rotate(360deg) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .personal-draft-indicator .spin { animation: none }
+}
+
+.brand {
+  font-weight: 800;
+  font-size: var(--text-title);
+  letter-spacing: -0.5px;
+  color: var(--text);
+  transition: var(--transition-smooth);
+}
+
+span.brand {
+  color: var(--text);
+}
+
+/* .tab — базовый вид кнопок топбара (вкладок больше нет, имя историческое) */
+.tab {
+  height: var(--control-h-compact);
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--text-control);
+  font-weight: 600;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.tab:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--border);
+}
+
+.tab:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* кнопка настроек — отдельная, без «таблеточного» фона вкладок */
+.settings-button {
+  background: var(--material-thin);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  box-shadow: none;
+  transition: var(--transition-smooth);
+}
+
+.settings-button:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.assistant-button {
+  background: var(--material-thin);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.assistant-button:hover,
+.assistant-button.active {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+.assistant-button.active {
+  color: var(--accent-text);
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+}
+
+/* Переключатель тем и кнопки доски (поделиться/комментарии) — один вид */
+.theme-toggle-btn,
+.share-topbar-button {
+  border: 1px solid var(--border);
+  background: var(--material-thin);
+  color: var(--text-2);
+  width: var(--control-h-compact);
+  min-width: var(--control-h-compact);
+  height: var(--control-h-compact);
+  padding: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: var(--transition-smooth);
+}
+
+/* Иконочные кнопки шапки — квадратные и одного размера. Объявлено РОВНО
+   здесь: подписи у них нет, а разная ширина в одном ряду читается как
+   рассинхрон (после того, как «Экспорт» и «Настройки» стали иконками, они
+   были 41×32 и 43×32 против 34×34 у соседей). Добавляешь кнопку — вешаешь
+   .tab.icon-btn, и она сама встаёт в ряд. */
+.top-bar .tab.icon-btn,
+.help-button {
+  width: var(--control-h-compact);
+  min-width: var(--control-h-compact);
+  /* Высоту задаём ЯВНО. Общий канон делает иконочную кнопку 26×26 — под
+     плотные списки; шапка крупнее, и раньше её кнопки становились 32×26,
+     то есть прямоугольными. Это законное исключение по поверхности, а не
+     разнобой: в самой шапке все кнопки одного размера. */
+  height: var(--control-h-compact);
+  padding: 0;
+}
+
+.theme-toggle-btn:hover,
+.share-topbar-button:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+/* индикатор автосохранения в топ-баре */
+/* Статус в шапке — запись доски и связь с командой. Одна роль, один материал:
+   второе имя дописано в те же правила, а не скопировано объявлениями. */
+.save-indicator,
+.team-status {
+  font-size: var(--text-micro);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  background: var(--surface-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.save-indicator::before,
+.team-status::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.save-indicator.saving::before {
+  background: var(--accent);
+  animation: pulse 1s infinite alternate;
+}
+
+.save-indicator.saved {
+  color: var(--ok);
+}
+
+.save-indicator.saved::before {
+  background: var(--ok);
+}
+
+.save-indicator.error {
+  color: var(--danger);
+}
+
+.save-indicator.error::before {
+  /* Точка была белой — на светлой теме самый важный индикатор (автосейв
+     не прошёл) оказывался невидимым на светлом же чипе. */
+  background: var(--danger);
+}
+
+/* Связь с сервером команды в шапке галереи (TeamLinkStatus): тот же статус,
+   только нажимается — проверить связь снова или войти в команду. Тона те же,
+   что у записи: идёт работа — акцент, всё хорошо — ok, беда — warn/danger. */
+.team-status {
+  border: 0;
+  font-family: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.team-status:hover {
+  background: var(--surface-2);
+}
+
+.team-status.checking::before {
+  background: var(--accent);
+  animation: pulse 1s infinite alternate;
+}
+
+.team-status.online {
+  color: var(--ok);
+}
+
+.team-status.online::before {
+  background: var(--ok);
+}
+
+.team-status.offline {
+  color: var(--warn-text);
+}
+
+.team-status.offline::before {
+  background: var(--warn-text);
+}
+
+.team-status.signed-out {
+  color: var(--danger);
+}
+
+.team-status.signed-out::before {
+  background: var(--danger);
+}
+
+/* индикатор баланса fal.ai в топ-баре */
+.fal-balance-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: var(--control-h-compact);
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--material-thin);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  box-shadow: none;
+  transition: var(--transition-smooth);
+  user-select: none;
+}
+
+.fal-balance-btn:hover {
+  color: var(--text);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.fal-balance-btn.no-balance {
+  opacity: 0.65;
+}
+
+.fal-balance-icon {
+  /* Молния — единственная цветная точка в топ-баре, и она обязана быть
+     нашей: жёлтый ни к чему в палитре не привязан (см. DESIGN.md). */
+  color: var(--accent);
+  font-size: var(--text-secondary);
+  line-height: 1;
+  display: inline-flex;
+}
+
+.fal-balance-btn.loading .fal-balance-icon {
+  animation: pulse 1s infinite alternate;
+}
+
+
+/* Тихая точка на «Настройках»: что-то из скачиваемого ещё не установлено.
+   Не модалка при старте и не напоминание каждый запуск — метка ждёт, пока
+   человек сам заглянет в настройки. */
+.settings-button {
+  position: relative;
+}
+
+.settings-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ⚠️ Точка связи — В ДРУГОМ УГЛУ значка, чем точка недостающих компонентов:
+   та зовёт нажать, а эта просто говорит, как дела. Обводка цветом кнопки
+   отделяет точку от зубцов шестерёнки, иначе она сливается с рисунком. */
+.settings-link-dot {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid var(--surface);
+  border-radius: 50%;
+}
+
+.settings-link-dot.online { background: var(--ok); }
+.settings-link-dot.offline { background: var(--danger); }
+
+/* Значок личной копии показывает состояние, а под курсором превращается в
+   действие. Обе иконки лежат друг на друге: так превращение читается одним
+   движением, а кнопка не прыгает по ширине. */
+.personal-draft-glyph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.personal-draft-glyph.action {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.personal-draft-state:hover .personal-draft-glyph.state,
+.personal-draft-state:focus-visible .personal-draft-glyph.state {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.personal-draft-state:hover .personal-draft-glyph.action,
+.personal-draft-state:focus-visible .personal-draft-glyph.action {
+  opacity: 1;
+  transform: translateY(0);
+  color: var(--accent);
+}
+
+.personal-draft-state:disabled { cursor: default }
+.personal-draft-state:disabled .personal-draft-glyph.action { opacity: 0 }
+.personal-draft-state:disabled:hover .personal-draft-glyph.state { opacity: 1; transform: none }
+
+@media (prefers-reduced-motion: reduce) {
+  .personal-draft-glyph { transition: none }
+  .personal-draft-glyph.action { transform: none }
+}
+
+/* Остаток дня команды: не кнопка — нажимать нечего, историю трат команды
+   показывает админка сервера. Тон меняется только когда деньги кончаются. */
+.team-budget { cursor: default; }
+.team-budget.low .fal-balance-val { color: var(--warning, var(--accent)); }
+.team-budget.spent { border-color: var(--accent); }
+.team-budget.spent .fal-balance-val { color: var(--accent); font-weight: 700; }

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+<title id="title">Align or arrange a selection</title><desc id="desc">The controls stay beside the cards. Alignment, layout, Columns and Gap preview immediately. Close the panel to keep one Undo step.</desc>
+<rect width="640" height="360" rx="24" fill="#f6f7f8"/>
+<g font-family="Arial, sans-serif" fill="#17181a">
+<text x="28" y="40" font-size="20" font-weight="700">Arrange selection</text>
+<g fill="#fff" stroke="#d33f21" stroke-width="2"><rect x="32" y="100" width="112" height="72" rx="6"/><rect x="168" y="100" width="112" height="72" rx="6"/><rect x="32" y="196" width="112" height="72" rx="6"/><rect x="168" y="196" width="112" height="72" rx="6"/></g>
+<path d="M26 92H286M26 180H286" stroke="#d33f21" stroke-dasharray="4 4"/>
+<text x="32" y="314" font-size="14" fill="#61656c">Close panel · One Undo</text>
+<rect x="316" y="64" width="296" height="240" rx="12" fill="#fff" stroke="#d9dde2"/>
+<text x="332" y="90" font-size="14" font-weight="700">Align</text>
+<g font-size="12" text-anchor="middle"><text x="377" y="118">Left</text><text x="464" y="118">Centre X</text><text x="551" y="118">Right</text><text x="377" y="146">Top</text><text x="464" y="146">Centre Y</text><text x="551" y="146">Bottom</text></g>
+<text x="332" y="176" font-size="14" font-weight="700">Layout</text>
+<rect x="512" y="186" width="84" height="30" rx="6" fill="#fff0eb" stroke="#d33f21"/>
+<g font-size="12" text-anchor="middle"><text x="377" y="206">Row</text><text x="464" y="206">Column</text><text x="554" y="206">Grid</text></g>
+<g font-size="12" fill="#61656c"><text x="332" y="239">Columns</text><text x="472" y="239">Gap</text></g>
+<g fill="#f6f7f8" stroke="#d9dde2"><rect x="332" y="246" width="124" height="28" rx="6"/><rect x="472" y="246" width="124" height="28" rx="6"/></g>
+<g font-size="13"><text x="344" y="265">2</text><text x="484" y="265">32</text></g>
+<text x="464" y="328" text-anchor="middle" font-size="13" fill="#61656c">Preview as you adjust</text>
+</g></svg>

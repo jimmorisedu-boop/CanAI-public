@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Undo and redo Canvas edits</title>
+  <desc id="desc">Use Ctrl+Z to undo and Ctrl+Shift+Z or Ctrl+Y to redo. Inside a text field, the shortcuts edit text.</desc>
+  <rect width="640" height="360" rx="24" fill="#f6f7f8"/>
+  <rect x="20" y="20" width="600" height="48" rx="12" fill="#edeff2"/>
+  <circle cx="46" cy="44" r="7" fill="#d33f21"/>
+  <text x="64" y="50" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#17181a">CanAI</text>
+  <text x="40" y="111" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#17181a">Undo and redo</text>
+  <rect x="40" y="132" width="260" height="122" rx="12" fill="#ffffff" stroke="#d8d0c8"/>
+  <text x="60" y="171" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#17181a">Undo</text>
+  <text x="60" y="219" font-family="Arial,sans-serif" font-size="21" fill="#17181a">Ctrl+Z</text>
+  <rect x="320" y="132" width="280" height="122" rx="12" fill="#fff4ee" stroke="#d33f21"/>
+  <text x="340" y="171" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#d33f21">Redo</text>
+  <text x="340" y="207" font-family="Arial,sans-serif" font-size="20" fill="#17181a">Ctrl+Shift+Z</text>
+  <text x="340" y="234" font-family="Arial,sans-serif" font-size="17" fill="#17181a">or Ctrl+Y</text>
+  <text x="40" y="294" font-family="Arial,sans-serif" font-size="16" fill="#6b625b">Canvas: restore an edit.</text>
+  <text x="40" y="322" font-family="Arial,sans-serif" font-size="16" fill="#6b625b">Text field: restore typed text.</text>
+</svg>

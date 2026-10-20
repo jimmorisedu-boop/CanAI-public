@@ -1,0 +1,358 @@
+/* Clip editor only: keep the preview dominant and scope every geometry rule to
+   the clip full-screen mode so archive, compare, and crop screens stay intact. */
+.tablet-full.tablet-clip-editor {
+  --clip-editor-gap: clamp(8px, 1.4vw, 18px);
+}
+
+.tablet-full.tablet-clip-editor .tablet-full-head {
+  min-height: calc(48px + var(--tablet-safe-top));
+  padding-top: var(--tablet-safe-top);
+}
+
+.tablet-full.tablet-clip-editor .tablet-full-foot {
+  position: relative;
+  min-height: 48px;
+  overflow: visible;
+  padding-top: 2px;
+  padding-bottom: calc(2px + var(--tablet-safe-bottom));
+}
+
+.tablet-full.tablet-clip-editor .tablet-full-body {
+  overflow: hidden;
+}
+
+.tablet-clip-editor-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tablet-clip-workspace {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--space-2);
+  min-height: 0;
+  padding: var(--space-2);
+}
+
+.tablet-clip-preview-area {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: var(--space-2);
+}
+
+.tablet-clip-transport {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: min(320px, 42%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.tablet-clip-crop-panel {
+  flex: 0 0 clamp(220px, 20vw, 240px);
+  min-width: 220px;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.tablet-clip-crop-panel summary {
+  min-height: var(--tablet-tap);
+  padding: var(--space-3);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
+.tablet-clip-crop-content {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.tablet-clip-ratios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.tablet-clip-ratios button {
+  min-height: var(--tablet-tap);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font: inherit;
+}
+
+.tablet-clip-ratios button.on,
+.tablet-clip-ratios button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.tablet-clip-timeline {
+  flex: none;
+  min-height: 0;
+  border-top: 1px solid var(--border);
+}
+
+.tablet-clip-editor .tablet-clip-panel {
+  padding: var(--space-1) var(--space-2);
+  border-top: 0;
+  background: var(--surface-2);
+}
+
+.tablet-track-headline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+}
+
+.tablet-track-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tablet-track-timecode {
+  color: var(--text-3);
+  font-size: var(--tablet-type-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.tablet-clip-editor .tablet-track {
+  height: 44px;
+}
+
+.tablet-track-help {
+  display: inline-flex;
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-weight: 800;
+}
+
+.tablet-track-help.on,
+.tablet-track-help:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.tablet-track-help-popover {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+}
+
+.tablet-track-filmstrip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #12151b;
+}
+
+.tablet-track-filmstrip > span {
+  flex: 1 1 0;
+  min-width: 0;
+  border-right: 1px solid rgb(255 255 255 / 13%);
+  background: linear-gradient(135deg, #1a1d24, #262b34);
+  background-position: center;
+  background-size: cover;
+}
+
+.tablet-track-filmstrip > span.ready {
+  background-color: #151922;
+}
+
+.tablet-track-filmstrip-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tablet-track-filmstrip-ticks i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(255 255 255 / 30%);
+}
+
+.tablet-track-filmstrip-ticks i span {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  color: #fff;
+  font-size: var(--text-micro);
+  font-style: normal;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+}
+
+.tablet-track-ruler {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tablet-track-ruler i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--text-3) 38%, transparent);
+}
+
+.tablet-track-ruler i span {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.tablet-clip-tools {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.tablet-clip-tools > .ui-btn {
+  flex: 0 0 auto;
+}
+
+.tablet-clip-more-wrap {
+  position: relative;
+  flex: none;
+}
+
+.tablet-clip-more {
+  max-height: min(65dvh, 480px);
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--space-2));
+  z-index: 4;
+  display: grid;
+  min-width: min(280px, calc(100vw - 24px));
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-md);
+}
+
+.tablet-clip-tool-label {
+  display: inline;
+}
+
+.tablet-clip-more .ui-btn,
+.tablet-clip-auto,
+.tablet-clip-threshold {
+  min-height: var(--tablet-tap);
+}
+
+.tablet-clip-auto,
+.tablet-clip-threshold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--tablet-type-meta);
+}
+
+.tablet-clip-auto.on {
+  color: var(--text);
+}
+
+.tablet-clip-auto input {
+  width: var(--tablet-tap);
+  height: var(--tablet-tap);
+}
+
+.tablet-clip-threshold {
+  flex-wrap: wrap;
+}
+
+.tablet-clip-threshold input {
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+
+@media (orientation: portrait), (max-width: 800px) {
+  .tablet-clip-workspace {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .tablet-clip-preview-area {
+    min-height: 0;
+    padding: var(--space-2);
+  }
+
+  .tablet-clip-crop-panel {
+    flex: 0 0 auto;
+    max-height: 34%;
+    min-width: 0;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .tablet-clip-editor .tablet-clip-panel {
+    padding-inline: var(--space-2);
+  }
+
+  .tablet-clip-more {
+    right: 0;
+    min-width: min(300px, calc(100vw - 16px));
+  }
+}
+
+@media (max-width: 560px) {
+  .tablet-clip-tools > .ui-btn {
+    min-width: var(--tablet-tap);
+    padding-inline: var(--space-2);
+  }
+
+  .tablet-clip-tool-label { display: none; }
+}

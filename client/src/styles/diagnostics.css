@@ -1,0 +1,239 @@
+/* валидация схемы нод и предохранитель интерфейса
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── Валидация схемы нод макросов ───────────────────────── */
+/* Статус графа — чип, а не три разноцветных плашки. Материал тот же, что у
+   чипа живой задачи: стекло, пилюля, тон точкой. Раньше он заливался целиком
+   зелёным/жёлтым/красным и в тулбаре редактора кричал громче всего. */
+.nodes-validation-status {
+  --notice-color: var(--ok);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--material-thick);
+  box-shadow: var(--shadow-sm);
+  margin-right: 12px;
+  user-select: none;
+  animation: pop-in 0.15s var(--ease-out);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nodes-validation-status::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--notice-color);
+}
+
+.nodes-validation-status.success {
+  --notice-color: var(--ok);
+  cursor: default;
+}
+
+.nodes-validation-status.warning {
+  --notice-color: var(--warn-text);
+}
+
+.nodes-validation-status.error {
+  --notice-color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  color: var(--text);
+}
+
+.nodes-validation-text {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.graph-diagnostics-panel {
+  position: absolute;
+  z-index: var(--z-canvas-ui);
+  top: 58px;
+  right: 16px;
+  width: min(340px, calc(100% - 32px));
+  max-height: calc(100% - 80px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-md);
+  padding: 10px;
+}
+
+.graph-diagnostics-title {
+  padding: 4px 6px 8px;
+  font-size: var(--text-control);
+  font-weight: 700;
+}
+
+.graph-diagnostic {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  border: 0;
+  border-radius: var(--radius-compact);
+  padding: 9px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.graph-diagnostic:hover { background: var(--surface-2); }
+.graph-diagnostic[role='status'] { cursor: default; }
+.graph-diagnostic[role='status']:hover { background: transparent; }
+.graph-diagnostic.error > span { color: var(--danger); }
+.graph-diagnostic.warning > span { color: var(--warn-text); }
+
+.connection-error {
+  position: absolute;
+  z-index: var(--z-canvas-ui);
+  left: 50%;
+  bottom: 18px;
+  display: flex;
+  transform: translateX(-50%);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--radius-control);
+  padding: 9px 12px;
+  background: var(--surface-solid);
+  color: var(--danger);
+}
+
+/* ── предохранитель интерфейса (ErrorBoundary) и ошибка загрузки доски ──── */
+
+.error-boundary {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: var(--z-modal);
+  padding: 24px;
+}
+
+.error-boundary-card {
+  max-width: 460px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  animation: pop-in 0.15s var(--ease-out);
+}
+
+.error-boundary-card h2 {
+  margin: 0 0 8px;
+  font-size: var(--text-title);
+  letter-spacing: -0.01em;
+}
+
+.error-boundary-card p {
+  margin: 0 0 16px;
+  color: var(--text-2);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+.error-boundary-reload {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-control);
+  padding: 9px 18px;
+  font-size: var(--text-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.error-boundary-reload:hover {
+  background: var(--accent-hover);
+}
+
+.error-boundary-card details {
+  margin-top: 16px;
+}
+
+.error-boundary-card summary {
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.error-boundary-card pre {
+  margin: 8px 0 0;
+  padding: 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-compact);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--text-2);
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* доска не загрузилась: автосейв выключен, предлагаем повторить */
+.canvas-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  font-size: var(--text-body);
+  background: var(--bg);
+}
+
+button.top-project-name {
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--text-control);
+  font-weight: 600;
+  height: var(--control-h-compact);
+  padding: 0 8px;
+  line-height: 1;
+  border-radius: var(--radius-compact);
+  transition: var(--transition-smooth);
+}
+
+button.top-project-name:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.project-card:focus-visible,
+button.top-project-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
+
+
+
+
+
+
+
+.settings-key-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.settings-key-row input {
+  flex: 1;
+  min-width: 0;
+}
+

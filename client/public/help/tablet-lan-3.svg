@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+<title id="title">Sign out or turn off Tablet access</title><desc id="desc">Sign out or turn off Tablet access</desc>
+<rect width="640" height="360" rx="24" fill="#f6f7f8"/>
+<rect x="20" y="20" width="600" height="44" rx="10" fill="#edeff2"/>
+<circle cx="43" cy="42" r="6" fill="#d33f21"/>
+<g font-family="Arial,sans-serif" fill="#17181a"><text x="60" y="48" font-size="18" font-weight="700">CanAI</text>
+<text x="42" y="102" font-size="21" font-weight="700">Revoke access</text>
+<rect x="42" y="124" width="556" height="78" rx="12" fill="#ffffff" stroke="#d7dce1"/>
+<text x="62" y="154" font-size="17" font-weight="700">Tablet: Sign out</text>
+<text x="62" y="180" font-size="14" fill="#626970">This device must enter the code again</text>
+<rect x="42" y="220" width="556" height="98" rx="12" fill="#fff4ee" stroke="#d33f21"/>
+<text x="62" y="250" font-size="17" font-weight="700">Computer: Turn off access</text>
+<text x="62" y="277" font-size="14" fill="#626970">All device sessions are revoked</text>
+<text x="62" y="300" font-size="14" fill="#626970">Turning access back on requires a new sign-in</text>
+<text x="42" y="343" font-size="13" fill="#626970">Access off = tablet sign-in blocked, including localhost</text></g></svg>

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:canai:agent:manifest:1",
+  "title": "CanAI Agent Package Manifest v1",
+  "description": "Предлагаемый контракт манифеста; не подтверждает существование адаптера или поддержку пакета текущим CanAI.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "name", "description", "version", "protocolVersion", "runtime", "taskTypes", "permissions", "connections", "lifecycle"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$", "maxLength": 120 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "description": { "type": "string", "minLength": 1, "maxLength": 600 },
+    "version": { "type": "string", "maxLength": 100, "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$" },
+    "protocolVersion": { "const": "1.0" },
+    "runtime": { "$ref": "#/$defs/runtime" },
+    "taskTypes": { "type": "array", "minItems": 1, "maxItems": 32, "items": { "$ref": "#/$defs/taskType" } },
+    "permissions": {
+      "type": "array", "uniqueItems": true,
+      "items": { "enum": ["canvas.read_selected", "media.read", "media.render", "artifact.publish", "canvas.create_results", "canvas.update_own_results", "llm.request", "generation.request", "review.request", "knowledge.propose_update"] }
+    },
+    "connections": { "type": "array", "maxItems": 16, "items": { "$ref": "#/$defs/connection" } },
+    "lifecycle": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pause", "resume", "cancel"],
+      "properties": { "pause": { "enum": ["checkpoint", "immediate"] }, "resume": { "const": true }, "cancel": { "const": true } }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string", "minLength": 1, "maxLength": 240,
+      "description": "Относительный POSIX-путь. Проверка выхода через symlink и существования выполняется Host отдельно.",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$"
+    },
+    "slug": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "maxLength": 80 },
+    "entrypoint": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["kind", "path"], "properties": { "kind": { "const": "file" }, "path": { "$ref": "#/$defs/relativePath" } } },
+        { "type": "object", "additionalProperties": false, "required": ["kind", "module"], "properties": { "kind": { "const": "module" }, "module": { "type": "string", "maxLength": 160, "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$" } } }
+      ]
+    },
+    "dependencies": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["kind"], "properties": { "kind": { "const": "stdlib" } } },
+        { "type": "object", "additionalProperties": false, "required": ["kind", "path"], "properties": { "kind": { "const": "lockfile" }, "path": { "$ref": "#/$defs/relativePath" } } }
+      ]
+    },
+    "runtime": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "version", "entrypoint", "dependencies", "maxParallelTasks"],
+      "properties": {
+        "kind": { "enum": ["node", "python"] },
+        "version": { "type": "string", "pattern": "^[1-9][0-9]*\\.(0|[1-9][0-9]*)$", "description": "Линия major.minor. Точная patch-версия фиксируется Host в установке." },
+        "entrypoint": { "$ref": "#/$defs/entrypoint" },
+        "dependencies": { "$ref": "#/$defs/dependencies" },
+        "maxParallelTasks": { "type": "integer", "minimum": 1, "maximum": 16 }
+      },
+      "allOf": [ { "if": { "properties": { "kind": { "const": "node" } } }, "then": { "properties": { "entrypoint": { "properties": { "kind": { "const": "file" } } } } } } ]
+    },
+    "taskType": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "label", "description", "inputSchema", "outputKinds"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "inputSchema": { "$ref": "#/$defs/relativePath" },
+        "outputKinds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["image", "video", "audio", "text", "document", "plan"] } },
+        "generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kinds", "maxCalls"],
+          "properties": {
+            "kinds": { "type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": { "enum": ["image", "video", "audio"] } },
+            "maxCalls": { "type": "integer", "minimum": 1, "maximum": 24 }
+          }
+        },
+        "llmCalls": { "type": "integer", "minimum": 1, "maximum": 40 }
+      }
+    },
+    "connection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "label", "kind", "required"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "kind": { "enum": ["llm", "generation", "external", "browser"] },
+        "required": { "type": "boolean" }
+      }
+    }
+  }
+}

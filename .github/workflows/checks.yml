@@ -1,0 +1,102 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner for this manual check
+        type: choice
+        options: [ubuntu-24.04, windows-latest]
+        default: ubuntu-24.04
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Type checks, tests, and build
+    runs-on: ${{ inputs.runner || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.1
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+      - name: Install gitleaks (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          binary="$(node scripts/install-gitleaks.mjs --output "$RUNNER_TEMP/gitleaks" | sed -n 's/^binary: //p')"
+          test -n "$binary"
+          echo "GITLEAKS_BIN=$binary" >> "$GITHUB_ENV"
+      - name: Install gitleaks (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $line = node scripts/install-gitleaks.mjs --output (Join-Path $env:RUNNER_TEMP 'gitleaks') | Select-String '^binary: '
+          if (-not $line) { throw 'gitleaks installer did not report a binary path' }
+          $binary = $line.Line.Substring(8).Trim()
+          if (-not $binary) { throw 'gitleaks installer reported an empty binary path' }
+          "GITLEAKS_BIN=$binary" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Scan the checkout for secrets (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: node scripts/scan-secrets.mjs --source . --mode dir --gitleaks "$GITLEAKS_BIN"
+      - name: Scan the checkout for secrets (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: node scripts/scan-secrets.mjs --source . --mode dir --gitleaks "$env:GITLEAKS_BIN"
+      - name: Install locked dependencies
+        run: |
+          npm ci --no-fund --no-audit
+          npm --prefix server ci --no-fund --no-audit
+          npm --prefix client ci --no-fund --no-audit
+      - name: Install zsh for launcher checks
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y --no-install-recommends zsh
+      - name: Type checks
+        run: npm run check
+      - name: Help coverage (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        env:
+          CANAI_HELP_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          npm run check:help
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ -n "$CANAI_HELP_BASE" ]; then
+            node scripts/check-help.mjs --base "$CANAI_HELP_BASE"
+          fi
+      - name: Help coverage (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        env:
+          CANAI_HELP_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          npm run check:help
+          if (($env:GITHUB_EVENT_NAME -eq 'pull_request') -and $env:CANAI_HELP_BASE) {
+            node scripts/check-help.mjs --base $env:CANAI_HELP_BASE
+          }
+      - name: Tests
+        run: npm test
+      - name: Client build
+        run: npm run build
+      - name: Dependency audits
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm --prefix server audit --omit=dev --audit-level=high
+          npm --prefix client audit --omit=dev --audit-level=high

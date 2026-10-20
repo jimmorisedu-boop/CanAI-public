@@ -1,0 +1,942 @@
+/* галерея досок
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── галерея досок («Твои доски») ─────────────────────────── */
+
+.gallery-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.gallery-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 20px;
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(24px) saturate(1.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.35);
+  flex: none;
+  z-index: var(--z-topbar);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Команда, настройки и тема — одинаковые компактные иконки в шапке. */
+.gallery-topbar .tab.icon-btn,
+.gallery-topbar .team-status {
+  width: var(--control-h-compact);
+  min-width: var(--control-h-compact);
+  height: var(--control-h-compact);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-3);
+  justify-content: center;
+}
+
+.gallery-topbar .team-status {
+  position: relative;
+  margin-left: auto;
+}
+
+.gallery-topbar .team-status::before {
+  position: absolute;
+  right: calc(50% - 13px);
+  bottom: calc(50% - 13px);
+  box-shadow: 0 0 0 2px var(--topbar-bg);
+}
+
+.gallery-topbar .tab.icon-btn:hover,
+.gallery-topbar .team-status:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.gallery-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.gallery-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+
+/* kicker — маленький моно-надзаголовок капсом, фирменный приём «примерочной» */
+.gallery-kicker {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.gallery-title {
+  margin: 0;
+  font-size: clamp(36px, 4.5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+  /* сплошные чернила: градиентный текст — запрещённый AI-tell (DESIGN.md) */
+  color: var(--text);
+}
+
+.gallery-subtitle {
+  margin: 12px 0 0;
+  font-size: var(--text-title-sm);
+  max-width: 60ch;
+  text-wrap: pretty;
+  color: var(--text-2);
+}
+
+.gallery-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.gallery-toolbar-actions {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(128px, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.gallery-toolbar-actions > button {
+  height: 44px;
+}
+
+.gallery-toolbar-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  min-width: 0;
+  gap: 12px;
+}
+
+@media (max-width: 1000px) {
+  .gallery-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.gallery-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  min-height: var(--control-h-emphasis);
+  border-radius: var(--radius-control);
+  padding: 0 18px;
+  font-family: inherit;
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-smooth);
+}
+
+.gallery-new:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.gallery-new:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.gallery-new:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+
+.gallery-new-plus {
+  font-size: var(--text-title);
+  line-height: 1;
+  margin-top: -1px;
+}
+
+.gallery-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--material-thin);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 0 16px;
+  height: 44px;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  box-shadow: none;
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  transition: var(--transition-smooth);
+}
+
+.gallery-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--surface);
+}
+
+.gallery-search-icon {
+  font-size: var(--text-title);
+  color: var(--text-3);
+}
+
+.gallery-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: 1;
+  color: var(--text);
+}
+
+.gallery-search input::placeholder {
+  color: var(--text-3);
+}
+
+.gallery-sort {
+  position: relative;
+  min-width: 0;
+  height: 44px;
+  white-space: nowrap;
+}
+
+.gallery-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+  height: 44px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-thin);
+  color: var(--text-2);
+  font-size: var(--text-control);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.gallery-sort-label {
+  color: var(--text-3);
+}
+
+.gallery-sort-trigger strong {
+  flex: 1;
+  text-align: left;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.gallery-sort-trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gallery-sort.is-open .gallery-sort-trigger {
+  border-color: var(--accent-soft-border);
+}
+
+.gallery-sort-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  width: 100%;
+  min-width: 214px;
+  padding: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-md);
+}
+
+.gallery-sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gallery-sort-option:hover,
+.gallery-sort-option.is-active {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.gallery-sort-option[aria-selected='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.gallery-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gallery-error {
+  margin-top: 20px;
+}
+
+.gallery-empty {
+  margin-top: 60px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--text-title-sm);
+}
+
+.gallery-section {
+  margin-top: var(--space-6);
+}
+
+.gallery-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.gallery-section-heading h2,
+.gallery-section-heading p {
+  margin: 0;
+}
+
+.gallery-section-heading h2 {
+  color: var(--text);
+  font-size: var(--text-title);
+}
+
+.gallery-section-heading p {
+  margin-top: var(--space-1);
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.gallery-section-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-3);
+  background: var(--surface-2);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.gallery-source-filter {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+.gallery-source-filter button {
+  min-height: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  color: var(--text-2);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-secondary);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.gallery-source-filter button[aria-pressed='true'] {
+  color: var(--text);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-xs);
+}
+
+.gallery-source-badge {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  min-height: 22px;
+  box-sizing: border-box;
+  padding: 3px 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-3);
+  background: var(--surface-2);
+  font-size: var(--text-micro);
+  font-weight: 650;
+  line-height: 14px;
+  text-align: right;
+}
+
+.gallery-source-badge.is-cloud {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-2));
+}
+
+.project-card-subline {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 36px;
+  gap: var(--space-2);
+}
+
+.project-card-subline .gallery-source-badge {
+  justify-self: end;
+}
+
+.team-copy-form,
+.team-copy-success,
+.board-copy-content {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* ── Участники сетевой доски ─────────────────────────────────────────────
+   Кого из команды позвали на доску и что ему разрешено. Форма заголовка,
+   полей и кнопок — из канона (.ui-dialog-title/.ui-field/.ui-btn); здесь
+   только раскладка окна. */
+.cloud-board-members {
+  display: grid;
+  gap: var(--space-4);
+  width: min(620px, calc(100vw - 32px));
+  padding: var(--space-4) var(--space-5);
+}
+.cloud-board-members > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.cloud-board-members > header p {
+  margin: var(--space-1) 0 0;
+  max-width: 62ch;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+}
+.cloud-board-member-list {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+  padding: 2px 1px;
+}
+.cloud-board-member-list > p {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+.cloud-board-member-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 230px);
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+.cloud-board-member-person {
+  display: grid;
+  min-width: 0;
+}
+.cloud-board-member-person strong {
+  overflow: hidden;
+  font-size: var(--text-control);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cloud-board-member-person small,
+.cloud-board-members footer small {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+.cloud-board-member-row select {
+  width: 100%;
+}
+.cloud-board-members footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+@media (max-width: 560px) {
+  .cloud-board-member-row {
+    grid-template-columns: 1fr;
+  }
+  .cloud-board-members footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.team-copy-form > p,
+.board-copy-content > p {
+  margin: 0;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+.team-copy-form label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  font-weight: 650;
+}
+
+.team-copy-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  background: var(--surface-2);
+  font: inherit;
+  line-height: 1;
+}
+
+.create-board-dialog {
+  width: min(660px, 100%);
+}
+
+.create-board-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.create-board-option-wrap {
+  display: grid;
+  min-width: 0;
+}
+
+.create-board-options button {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-rows: min-content 1fr;
+  gap: 3px var(--space-3);
+  align-items: start;
+  min-height: 132px;
+  padding: var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  color: var(--text);
+  background: var(--surface-2);
+  font-family: inherit;
+  font-size: var(--text-body);
+  line-height: 1.2;
+  text-align: left;
+}
+
+.create-board-options button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+}
+
+.create-board-option-icon {
+  grid-row: 1 / span 2;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-control);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-3));
+}
+
+.create-board-options strong {
+  font-size: var(--text-body);
+}
+
+.create-board-options button > span:last-child:not(.create-board-option-icon) {
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.create-board-disabled-hint {
+  margin-top: var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .create-board-options { grid-template-columns: 1fr; }
+}
+
+.gallery-search-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 60px;
+  text-align: center;
+}
+
+.gallery-search-empty h2,
+.gallery-search-empty p {
+  margin: 0;
+}
+
+.gallery-search-empty h2 {
+  color: var(--text);
+  font-size: var(--text-title);
+}
+
+.gallery-search-empty p {
+  color: var(--text-2);
+}
+
+.gallery-search-empty button {
+  font: inherit;
+}
+
+.gallery-search-empty button:focus-visible,
+.project-menu button:focus-visible,
+.project-menu a:focus-visible,
+/* Цель под палец: карточка доски — крупный элемент, и «⋯» на ней не иконка
+   плотного списка. Форма (скругление, прозрачный фон) общая, свой только
+   размер — про поверхность, а не про вид. */
+.project-menu-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.project-menu-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .gallery-search-empty button:hover:not(:disabled) {
+    background: var(--surface-3);
+  }
+}
+
+.project-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 24px;
+}
+
+.project-grid-cloud {
+  margin-top: var(--space-4);
+}
+
+.project-card {
+  position: relative;
+  min-width: 0;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.16s var(--ease-out),
+    box-shadow 0.2s var(--ease-out),
+    transform 0.32s var(--spring-ui);
+  overflow: visible;
+}
+
+button.project-card-cloud {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.project-card-cloud:disabled {
+  cursor: default;
+}
+
+.project-card-cloud:disabled:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+  transform: none;
+}
+
+.project-card.is-menu-open {
+  z-index: 10;
+}
+
+.project-card:hover {
+  /* нейтральный подъём, как у карточек «примерочной» — без цветного кольца */
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.project-card:hover .project-preview-media {
+  transform: scale(1.018);
+}
+
+.node-palette-item {
+  cursor: grab;
+  user-select: none;
+}
+
+.node-palette-item:active {
+  cursor: grabbing;
+}
+
+.node-palette-item[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.project-card:active {
+  transform: scale(0.99);
+  transition-duration: 0.08s;
+}
+
+.project-thumb {
+  aspect-ratio: 4 / 3;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  overflow: hidden;
+}
+
+.project-preview-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: var(--transition-smooth);
+}
+
+.project-thumb-empty {
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 26px 26px;
+  background-position: -1px -1px;
+  opacity: 0.25;
+  background-color: var(--canvas-bg);
+  position: relative;
+}
+
+.project-thumb-empty::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: none;
+}
+
+.project-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 12px 16px;
+}
+
+.project-name {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: var(--text-title-sm);
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-name-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 40px;
+}
+
+.project-pin-marker {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 5px;
+  color: var(--text-3);
+}
+
+.project-pin-marker.is-pinned {
+  color: var(--accent-text);
+}
+
+/* Публикация видна прямо на карточке: доска отдана наружу — это состояние,
+   а не действие, поэтому чип, а не кнопка. */
+.project-share-marker {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-3);
+}
+
+.project-share-marker.is-active {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.project-rename {
+  width: 100%;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-compact);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--text-title-sm);
+  font-weight: 700;
+  color: var(--text);
+  padding: 2px 6px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.project-date {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.project-menu-wrap {
+  position: relative;
+  flex: none;
+}
+
+.project-card-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+
+.project-menu-btn:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.project-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  background: var(--material-thick);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  transform-origin: top right;
+}
+
+.project-menu button,
+.project-menu a {
+  box-sizing: border-box;
+  text-align: left;
+  text-decoration: none;
+}
+
+.project-menu-positioner {
+  position: fixed;
+  z-index: var(--z-overlay);
+  width: max-content;
+}
+
+.project-menu-positioner > .project-menu {
+  position: static;
+  box-sizing: border-box;
+  min-width: min(160px, calc(100vw - 16px));
+  max-width: inherit;
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.project-menu button:hover,
+.project-menu a:hover {
+  background: var(--surface-3);
+}
+
+.project-menu button.danger {
+  color: var(--danger);
+}
+
+.project-menu button.danger:hover {
+  background: var(--danger-soft);
+}
+
+.project-menu button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+

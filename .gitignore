@@ -1,0 +1,48 @@
+# зависимости
+node_modules/
+.worktrees/
+.superpowers/
+
+# портативный Node.js (скачивается лаунчером или копируется с папкой)
+runtime/
+
+# секреты — ключ fal.ai живёт только локально
+server/.env
+.env
+# любые варианты env (в т.ч. временно спрятанный .env.off при тестах)
+*.env
+*.env.*
+.env.*
+
+# сгенерированный контент (картинки/видео пользователя)
+server/data/
+# копия файлов сетевых досок на этом компьютере (6.2)
+/Копия сетевых досок/
+/output/
+/outputs/
+/dist-package/
+/releases-archive/
+
+# сборка
+dist/
+client/dist-tablet-cloud/
+artifacts/
+*.local
+
+# индекс CodeGraph — служебный кэш инструмента, пересобирается сам
+.codegraph/
+
+# системный мусор
+.DS_Store
+Thumbs.db
+
+# Рабочие папки агентов, к проекту не относятся
+.agent/
+.shared/
+.ffmpeg-build/
+
+# Локальные разрешения Claude Code — персональные настройки машины
+.claude/settings.local.json
+
+# Номер сборки кладёт make-dist в ПОСТАВКУ (пункт 5.1); в репозитории ему не место.
+/build-info.json

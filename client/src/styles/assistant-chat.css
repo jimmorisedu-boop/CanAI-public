@@ -1,0 +1,483 @@
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4 · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app · contrast: pass (40–41) · slop: pass (component scope) · mobile: pass (component scope) */
+/* лента разговора и полоска эха
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* полоска эха: последняя фраза помощника, когда шторка закрыта */
+
+.prompt-chat-header strong {
+  font-size: var(--text-body);
+  line-height: 1.25;
+}
+
+.prompt-chat-save {
+  min-height: 15px;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 600;
+}
+
+.prompt-chat-save.error {
+  color: var(--danger);
+}
+
+.prompt-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+
+.prompt-chat-header-actions .icon-btn:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.prompt-chat-header-actions .icon-btn:disabled {
+  opacity: 0.35;
+}
+
+.prompt-chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-5) var(--space-5) 28px;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+.prompt-chat-load-older {
+  align-self: center;
+  min-height: 28px;
+  margin: 0 0 14px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--text-micro);
+  cursor: pointer;
+}
+
+.prompt-chat-load-older:hover:not(:disabled),
+.prompt-chat-load-older:focus-visible {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.prompt-chat-load-older:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.prompt-chat-assistant-turn {
+  align-self: stretch;
+  width: min(100%, 72ch);
+  min-width: 0;
+}
+
+.prompt-chat-model-marker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0 0 var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 650;
+}
+
+.prompt-chat-model-marker::after {
+  content: none;
+}
+
+.prompt-chat-empty {
+  max-width: 290px;
+  margin: 34px auto;
+  color: var(--text-2);
+  text-align: left;
+}
+
+.prompt-chat-empty strong {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text);
+  font-size: var(--text-title-sm);
+}
+
+.prompt-chat-empty p {
+  margin: 0;
+  font-size: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.prompt-chat-message {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-control);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.prompt-chat-message p {
+  margin: 0 0 var(--space-3);
+  white-space: pre-wrap;
+}
+
+.prompt-chat-message p:last-child {
+  margin-bottom: 0;
+}
+
+.prompt-chat-message.user {
+  align-self: flex-end;
+  max-width: min(78%, 560px);
+  margin-left: auto;
+  margin-right: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--surface-3);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.prompt-chat-message.user.system-action {
+  margin-left: 0;
+  padding: 4px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.prompt-chat-message.assistant {
+  margin-right: 0;
+  font-size: var(--text-title-sm);
+  line-height: 1.65;
+}
+
+.prompt-chat-message.assistant .chat-paragraph {
+  margin-bottom: var(--space-3);
+  line-height: inherit;
+}
+
+.prompt-chat-message.assistant .chat-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.prompt-chat-estimate {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  white-space: nowrap;
+}
+
+.prompt-chat-reply {
+  max-width: 68ch;
+  margin-bottom: 16px !important;
+  line-height: 1.62;
+}
+
+.chat-paragraph {
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+}
+
+.chat-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.chat-inline-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  padding: 1px 4px;
+  color: var(--accent);
+}
+
+.chat-code-block-wrapper {
+  margin: 8px 0 12px;
+}
+
+.chat-code-block {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  padding: 10px;
+  margin: 0 0 6px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.chat-code-block code {
+  color: var(--text-1);
+}
+
+.chat-code-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.chat-header {
+  font-size: var(--text-body);
+  font-weight: 700;
+  margin: 14px 0 8px;
+  color: var(--text-1);
+}
+
+.chat-list {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.chat-list li {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.chat-link {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.chat-link:hover {
+  color: var(--accent-hover);
+}
+
+.prompt-chat-result {
+  margin-top: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.prompt-chat-result-title {
+  margin-bottom: 8px;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.prompt-chat-result p {
+  color: var(--text);
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+
+.prompt-chat-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.prompt-chat-result-actions button,
+.prompt-chat-inline-action,
+.prompt-chat-primary,
+.prompt-chat-action {
+  transition: var(--transition-smooth);
+  flex-shrink: 0;
+}
+
+.prompt-chat-result-actions button:hover,
+.prompt-chat-inline-action:hover,
+.prompt-chat-primary:hover,
+.prompt-chat-action:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+/* Внутри готового промпта только «В строку» несёт вес основного действия.
+   Остальные команды остаются видимыми, но не образуют ещё один ряд карточек. */
+.prompt-chat-result-actions .prompt-chat-action {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-3);
+}
+
+.prompt-chat-result-actions .prompt-chat-action.primary {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-text);
+}
+
+.prompt-chat-result-actions .prompt-chat-action.primary:hover {
+  border-color: var(--border);
+  background: var(--surface-3);
+  color: var(--accent-text);
+}
+
+@media (max-width: 600px) {
+  .prompt-chat-messages {
+    padding: var(--space-4) var(--space-3) 24px;
+  }
+
+  .prompt-chat-message.user {
+    max-width: 88%;
+    margin-left: 28px;
+  }
+
+  .prompt-chat-assistant-turn {
+    width: 100%;
+  }
+
+  .prompt-chat-result {
+    padding: 0;
+  }
+}
+
+.prompt-chat-progress,
+.prompt-chat-message-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 12px;
+  min-height: 28px;
+  color: var(--text-2);
+  font-size: var(--text-micro);
+}
+
+.prompt-chat-progress .prompt-chat-inline-action,
+.prompt-chat-message-state .prompt-chat-inline-action {
+  margin-left: auto;
+  min-height: 26px;
+}
+
+.prompt-chat-message-state.error {
+  color: var(--danger);
+}
+
+.prompt-chat-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.prompt-chat-input-wrap {
+  position: relative;
+}
+
+.prompt-chat-mention-popup {
+  max-height: 220px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+
+/* Миниатюра референса в ленте — кликабельная: возвращает объект в работу.
+   Своей рамки у обёртки нет, она лишь даёт нажатие, фокус и подсказку;
+   выглядит всё тем же чипом, что и в промпт-баре. */
+.prompt-chat-ref-pick {
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.prompt-chat-ref-pick:disabled {
+  cursor: default;
+}
+
+.prompt-chat-ref-pick:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.prompt-chat-ref-pick:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Панель пакетного запуска и фокуса генераций на холсте */
+.prompt-chat-batch-action-bar {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.prompt-chat-batch-pending-row,
+.prompt-chat-dispatched-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.prompt-chat-batch-title {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.prompt-chat-batch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-small);
+  padding: 5px 12px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.prompt-chat-dispatched-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--accent-text, #f97316);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-border);
+  padding: 4px 10px;
+  border-radius: var(--radius-control);
+}
+
+.prompt-chat-focus-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+
+.prompt-chat-board-memory-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: var(--text-micro);
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}

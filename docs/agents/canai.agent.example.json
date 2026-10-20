@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "org.promptbase.production",
+  "name": "PromptBase",
+  "description": "База знаний и производство рекламы: от брифа до согласованного ролика.",
+  "version": "0.1.0",
+  "protocolVersion": "1.0",
+  "runtime": {
+    "kind": "python",
+    "version": "3.12",
+    "entrypoint": { "kind": "module", "module": "canai_adapter" },
+    "dependencies": { "kind": "stdlib" },
+    "maxParallelTasks": 1
+  },
+  "taskTypes": [
+    {
+      "id": "advertising-video",
+      "label": "Рекламный ролик",
+      "description": "Разработать и согласовать рекламу по брифу и выбранным материалам.",
+      "inputSchema": "schemas/advertising-video.input.json",
+      "outputKinds": ["image", "video", "audio", "text", "document", "plan"]
+    }
+  ],
+  "permissions": [
+    "canvas.read_selected",
+    "media.read",
+    "artifact.publish",
+    "canvas.create_results",
+    "canvas.update_own_results",
+    "llm.request",
+    "generation.request",
+    "review.request",
+    "knowledge.propose_update"
+  ],
+  "connections": [
+    { "id": "planner", "label": "Модель для планирования", "kind": "llm", "required": true },
+    { "id": "render", "label": "Генерация в CanAI", "kind": "generation", "required": false }
+  ],
+  "lifecycle": { "pause": "checkpoint", "resume": true, "cancel": true }
+}

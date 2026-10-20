@@ -1,0 +1,80 @@
+@import './tokens.css';
+
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+select option {
+  background-color: var(--surface-solid);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+}
+
+button,
+input,
+textarea,
+select {
+  font-optical-sizing: auto;
+}
+
+:root {
+  --control-height: var(--control-h-standard);
+}
+
+:where(button:not([data-control-layout='stack'])) {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+:where(button:not([data-control-layout='stack'])) > svg {
+  flex: none;
+}
+
+:where(
+  select:not([multiple]),
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden'])
+) {
+  height: var(--control-height);
+  padding-block: 0;
+  line-height: 1;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+

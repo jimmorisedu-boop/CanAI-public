@@ -1,0 +1,81 @@
+.tablet-resize-overlay {
+  position: absolute;
+  z-index: 40;
+  box-sizing: border-box;
+  touch-action: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.tablet-resize-frame {
+  position: absolute;
+  inset: 0;
+  border: max(1px, calc(1px / var(--tablet-canvas-scale, 1))) solid var(--accent, #f76f53);
+  border-radius: 6px;
+  pointer-events: none;
+  box-shadow: 0 0 0 max(2px, calc(2px / var(--tablet-canvas-scale, 1))) color-mix(in srgb, var(--accent, #f76f53) 22%, transparent);
+}
+
+.tablet-resize-menu {
+  position: absolute;
+  top: -48px;
+  right: -8px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tablet-tap, 44px);
+  height: var(--tablet-tap, 44px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--material-thick, #fff);
+  color: var(--text-2, #333);
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,.25));
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.tablet-resize-handle {
+  position: absolute;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.tablet-resize-handle.nw { left: 0; top: 0; transform: translate(-50%, -50%); }
+.tablet-resize-handle::after { content: ''; position: absolute; inset: 15px; border: 2px solid #fff; border-radius: 50%; background: var(--accent); box-shadow: 0 1px 4px #0006; }
+.tablet-resize-handle.ne { left: 100%; top: 0; transform: translate(-50%, -50%); }
+.tablet-resize-handle.sw { left: 0; top: 100%; transform: translate(-50%, -50%); }
+.tablet-resize-handle.se { left: 100%; top: 100%; transform: translate(-50%, -50%); }
+
+
+.tablet-resize-preview {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--surface-2, #fff);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tablet-resize-preview img,
+.tablet-resize-preview video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.tablet-resize-frame {
+  z-index: 2;
+}

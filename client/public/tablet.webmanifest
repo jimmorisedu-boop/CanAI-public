@@ -1,0 +1,20 @@
+{
+  "name": "CanAI",
+  "short_name": "CanAI",
+  "description": "Content generation studio — tablet client (landscape)",
+  "start_url": "/tablet/",
+  "scope": "/tablet/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0e0f12",
+  "theme_color": "#0e0f12",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/tablet/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,488 @@
+/* нодовое пространство и сама нода
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── нодовое пространство ────────────────────────────────── */
+
+.nodes-space {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--canvas-bg);
+}
+
+.nodes-flow {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+}
+
+.nodes-flow > .react-flow {
+  width: 100%;
+  height: 100%;
+}
+
+.nodes-space .react-flow__background {
+  background: var(--canvas-bg);
+}
+
+.nodes-toolbar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  padding: 8px 12px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+}
+
+.nodes-toolbar > * {
+  flex: none;
+}
+
+.nodes-toolbar-label {
+  font-size: var(--text-secondary);
+  color: var(--text-3);
+  padding-left: 4px;
+}
+
+.nodes-toolbar-spacer {
+  width: 8px;
+}
+
+.nodes-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+.nodes-save-status {
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h-compact);
+  padding: var(--label-optical-lift) 8px 0;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  line-height: 1;
+}
+
+.nodes-save-status.saved { color: var(--ok); }
+.nodes-save-status.dirty,
+.nodes-save-status.saving { color: var(--warn-text); }
+.nodes-save-status.load_failed,
+.nodes-save-status.save_failed,
+.nodes-save-status.conflict {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.node-add-btn {
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.node-add-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+/* Удаление макроса необратимо — кнопка акцентная, чтобы читалась среди обычных. */
+.node-delete-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface);
+}
+
+.node-delete-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.node-save-btn {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-2);
+}
+
+.node-save-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.node-save-btn.just-saved {
+  border-color: #3fb950;
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.12);
+}
+
+.node-save-btn.save-error {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.node-run-btn {
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s;
+}
+
+.node-run-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.node-run-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.node-run-btn.cancel {
+  background: var(--danger-fill);
+  box-shadow: none;
+}
+
+/* меню добавления ноды (правый клик / Ctrl+Space) */
+.add-menu {
+  position: fixed;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+}
+
+.add-menu-title {
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+  padding: 4px 8px 6px;
+}
+
+.add-menu-item {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-control);
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius-compact);
+  cursor: pointer;
+}
+
+.add-menu-item:hover {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* индикатор масштаба */
+.zoom-indicator {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 6;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+
+/* пустое состояние */
+.nodes-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.nodes-empty-card {
+  max-width: 460px;
+  text-align: center;
+  color: var(--text-2);
+  padding: 24px 32px;
+}
+
+.nodes-empty-card h3 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: var(--text-title);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.nodes-empty-card p {
+  margin: 8px 0;
+  font-size: var(--text-control);
+  line-height: 1.5;
+}
+
+.nodes-empty-example {
+  margin-top: 16px !important;
+  font-size: var(--text-title-sm) !important;
+  color: var(--text) !important;
+  font-weight: 600;
+}
+
+.nodes-empty-hint {
+  margin-top: 12px !important;
+  font-size: var(--text-micro) !important;
+  color: var(--text-3) !important;
+}
+
+/* сама нода */
+.gen-node {
+  position: relative;
+  width: 280px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  font-size: var(--text-control);
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-smooth);
+  overflow: hidden;
+}
+
+.gen-node.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(255, 96, 56, 0.2), 0 0 0 3px var(--accent-soft);
+}
+
+.gen-node.status-running {
+  border-color: #e6a23c;
+  box-shadow: 0 0 15px rgba(230, 162, 60, 0.35);
+  animation: node-pulse-yellow 2s infinite alternate;
+}
+
+.gen-node.status-done {
+  border-color: var(--ok);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.25);
+}
+
+.gen-node.status-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 15px rgba(255, 77, 79, 0.25);
+}
+
+@keyframes node-pulse-yellow {
+  0% {
+    box-shadow: 0 0 8px rgba(230, 162, 60, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(230, 162, 60, 0.45);
+  }
+}
+
+.gen-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.gen-node-icon {
+  font-size: var(--text-title-sm);
+}
+
+.gen-node-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: var(--text-control);
+}
+
+.gen-node-run {
+  border: none;
+  background: transparent;
+  color: var(--ok);
+  cursor: pointer;
+  font-size: var(--text-secondary);
+  padding: 0 2px;
+}
+
+.gen-node-run:hover:not(:disabled) {
+  color: #24925c;
+}
+
+.gen-node-run:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.gen-node-del {
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: var(--text-control);
+}
+
+.gen-node-del:hover {
+  color: var(--danger);
+}
+
+/* строки портов */
+.port-row {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  font-size: var(--text-micro);
+  color: var(--text-2);
+}
+
+.port-row.in {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding-left: 14px;
+  justify-content: flex-start;
+}
+
+.port-row.out {
+  position: relative;
+  padding-right: 14px;
+  justify-content: flex-end;
+}
+
+.port-label {
+  pointer-events: none;
+}
+
+.gen-node .react-flow__handle {
+  width: 24px;
+  height: 24px;
+  background: transparent !important;
+  border: none !important;
+  transition: var(--transition-smooth);
+}
+
+/* Невидимая зона захвата: ROW_H=26px — зона не должна превышать ~22px,
+   иначе соседние порты перекрываются и клик по одному срабатывает на другом */
+.gen-node .react-flow__handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+
+/* Визуальный кружок 12px рисуем по центру */
+.gen-node .react-flow__handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--surface-solid);
+  background: var(--port-color, var(--border-strong));
+  transition: var(--transition-smooth);
+}
+
+.gen-node .react-flow__handle:hover::before {
+  background: var(--accent);
+  transform: translate(-50%, -50%) scale(1.3);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.gen-node-body {
+  padding: 10px 12px 8px;
+}
+
+.node-model {
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* как на канвасе: подсказка, что по референсам включилась pair-модель */
+.node-model-eff-hint {
+  font-size: var(--text-micro);
+  line-height: 1.3;
+  color: var(--text-2);
+  padding: 2px 2px 0;
+}
+
+.node-model-select,
+.node-model-endpoint {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-control);
+  padding: 0 10px;
+  line-height: 1;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.node-model-select:hover,
+.node-model-endpoint:hover {
+  border-color: var(--border-strong);
+}
+
+.node-model-select:focus,
+.node-model-endpoint:focus {
+  border-color: var(--accent-soft-border);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  outline: none !important;
+}
+
+.node-model-select:focus-visible,
+.node-model-endpoint:focus-visible {
+  outline: none !important;
+}
+
+
+/* Заголовок группы в меню добавления. Тот же материал, что у заголовка меню,
+   но с отбивкой сверху: он разделяет списки, а не открывает их. */
+.add-menu-group {
+  margin-top: 6px;
+  padding: 6px 8px 4px;
+  border-top: 1px solid var(--border);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+}

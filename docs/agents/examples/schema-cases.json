@@ -1,0 +1,110 @@
+{
+  "description": "Независимые примеры, не последовательность запуска. expectedSchemaValid проверяется protocol.schema.json. expectedHostAction поясняет отдельную семантическую проверку Host; успешная схема не выдаёт разрешения. Все ID демонстрационные, реальных запросов/оплат нет.",
+  "cases": [
+    {
+      "name": "generation request: все обязательные поля",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "Проверить grant-render-1, подключение, модель, бюджет и состояние задачи; только затем принять операцию.",
+      "message": {"protocolVersion":"1.0","messageId":"a-render-1","taskId":"task-demo-1","executionId":"execution-1","type":"tool.request","payload":{"operationId":"shot-01-attempt-01","tool":"generation.request","arguments":{"connectionId":"render","grantId":"grant-render-1","kind":"video","prompt":"Тихий общий план дома на рассвете.","refs":[],"params":{}}}}
+    },
+    {
+      "name": "pending receipt: это ещё не результат",
+      "direction": "host-to-adapter",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "Сохранённые wait/job IDs восстанавливают ожидание; адаптер не отправляет новую попытку.",
+      "message": {"protocolVersion":"1.0","messageId":"h-render-pending-1","taskId":"task-demo-1","executionId":"execution-1","type":"tool.result","replyTo":"a-render-1","payload":{"operationId":"shot-01-attempt-01","tool":"generation.request","receiptId":"receipt-render-1","status":"pending","result":{"waitId":"wait-render-1","jobId":"job-render-1"}}}
+    },
+    {
+      "name": "review с точной областью расходов",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "Создать карточку запроса; requestedGrant не считается выданным grant до решения Host.",
+      "message": {"protocolVersion":"1.0","messageId":"a-review-render-1","taskId":"task-demo-1","executionId":"execution-1","type":"review.request","payload":{"reviewId":"review-render-1","revision":1,"stageId":"shot-01","title":"Одна попытка клипа","question":"Разрешить одну генерацию до $0.30?","materials":[],"decisions":["approved","changes-requested","rejected"],"requestedGrant":{"connectionId":"render","tool":"generation.request","artifactRefs":[],"maxCalls":1,"maxCost":{"currency":"USD","amountMicros":300000}}}}
+    },
+    {
+      "name": "решение Host с выданным grant",
+      "direction": "host-to-adapter",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "Адаптер сверяет действующую review revision; не назначает эти поля самостоятельно.",
+      "message": {"protocolVersion":"1.0","messageId":"h-review-render-decision-1","taskId":"task-demo-1","executionId":"execution-1","type":"review.decision","payload":{"reviewId":"review-render-1","revision":1,"decision":"approved","comment":"","answers":{},"actorId":"user-demo-1","decidedAt":"2026-10-02T09:01:00Z","grants":[{"id":"grant-render-1","tools":["generation.request"],"connectionId":"render","artifactRefs":[],"maxCalls":1,"maxCost":{"currency":"USD","amountMicros":300000},"status":"active"}]}}
+    },
+    {
+      "name": "generation без обязательного grantId",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Отклонить форму сообщения до submit.",
+      "message": {"protocolVersion":"1.0","messageId":"a-no-grant","taskId":"task-demo-1","executionId":"execution-1","type":"tool.request","payload":{"operationId":"bad-render-1","tool":"generation.request","arguments":{"connectionId":"render","kind":"video","prompt":"Дом на рассвете.","refs":[],"params":{}}}}
+    },
+    {
+      "name": "публикация абсолютного Windows-пути",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не читать файл; допустим только относительный путь внутри work dir.",
+      "message": {"protocolVersion":"1.0","messageId":"a-absolute-path","taskId":"task-demo-1","executionId":"execution-1","type":"tool.request","payload":{"operationId":"bad-publish-1","tool":"artifact.publish","arguments":{"path":"C:/Users/demo/secret.txt","kind":"text","caption":"Файл","mimeType":"text/plain","provenance":"reference"}}}
+    },
+    {
+      "name": "публикация с выходом через ../",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не читать файл за пределами work dir.",
+      "message": {"protocolVersion":"1.0","messageId":"a-parent-path","taskId":"task-demo-1","executionId":"execution-1","type":"tool.request","payload":{"operationId":"bad-publish-2","tool":"artifact.publish","arguments":{"path":"output/../secret.txt","kind":"text","caption":"Файл","mimeType":"text/plain","provenance":"reference"}}}
+    },
+    {
+      "name": "доработка с пробельным комментарием",
+      "direction": "host-to-adapter",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не записывать решение; потребовать конкретный комментарий.",
+      "message": {"protocolVersion":"1.0","messageId":"h-empty-comment","taskId":"task-demo-1","executionId":"execution-1","type":"review.decision","payload":{"reviewId":"review-render-1","revision":1,"decision":"changes-requested","comment":"   ","answers":{},"actorId":"user-demo-1","decidedAt":"2026-10-02T09:01:00Z","grants":[]}}
+    },
+    {
+      "name": "review.request ошибочно объявлен инструментом",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Отклонить неизвестный tool; использовать отдельный тип сообщения review.request.",
+      "message": {"protocolVersion":"1.0","messageId":"a-wrong-review-tool","taskId":"task-demo-1","executionId":"execution-1","type":"tool.request","payload":{"operationId":"bad-review-1","tool":"review.request","arguments":{}}}
+    },
+    {
+      "name": "checkpoint без устойчивого checkpointId",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не подтверждать checkpoint и не продолжать зависимый этап.",
+      "message": {"protocolVersion":"1.0","messageId":"a-no-checkpoint-id","taskId":"task-demo-1","executionId":"execution-1","type":"task.checkpoint","payload":{"stateVersion":1,"state":{"phase":"waiting_review"},"files":[]}}
+    },
+    {
+      "name": "результат канваса прислан как результат generation",
+      "direction": "host-to-adapter",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не принимать результат неверного формата; для generation нужны jobId и artifacts.",
+      "message": {"protocolVersion":"1.0","messageId":"h-wrong-result","taskId":"task-demo-1","executionId":"execution-1","type":"tool.result","replyTo":"a-render-1","payload":{"operationId":"shot-01-attempt-01","tool":"generation.request","receiptId":"receipt-render-1","status":"succeeded","result":{"workspaceId":"workspace-demo-1","items":[{"itemId":"canvas-plan-1","revision":1,"artifactId":"artifact-plan-1"}]}}}
+    },
+    {
+      "name": "failed receipt без структурированной ошибки",
+      "direction": "host-to-adapter",
+      "expectedSchemaValid": false,
+      "expectedHostAction": "Не принимать failed без error.code/message/retryable.",
+      "message": {"protocolVersion":"1.0","messageId":"h-no-error","taskId":"task-demo-1","executionId":"execution-1","type":"tool.result","replyTo":"a-render-1","payload":{"operationId":"shot-01-attempt-01","tool":"generation.request","receiptId":"receipt-render-1","status":"failed"}}
+    },
+    {
+      "name": "правильная форма, но чужой taskId",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "TASK_MISMATCH: процесс привязан к task-demo-1, сообщение чужой задачи не принимается.",
+      "message": {"protocolVersion":"1.0","messageId":"a-wrong-task","taskId":"another-task","executionId":"execution-1","type":"task.progress","payload":{"stageId":"plan","label":"Строю план","status":"running"}}
+    },
+    {
+      "name": "правильная форма, но агент назначает решение человека",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "PROTOCOL_INVALID: направление запрещено; решение не записывается, grant не выдаётся.",
+      "message": {"protocolVersion":"1.0","messageId":"a-fake-decision","taskId":"task-demo-1","executionId":"execution-1","type":"review.decision","payload":{"reviewId":"review-render-1","revision":1,"decision":"approved","comment":"","answers":{},"actorId":"user-demo-1","decidedAt":"2026-10-02T09:01:00Z","grants":[]}}
+    },
+    {
+      "name": "правильные типы чисел, но completed больше total",
+      "direction": "adapter-to-host",
+      "expectedSchemaValid": true,
+      "expectedHostAction": "PROTOCOL_INVALID: completed=4 при total=3; прогресс отклоняется семантической проверкой.",
+      "message": {"protocolVersion":"1.0","messageId":"a-overflow-progress","taskId":"task-demo-1","executionId":"execution-1","type":"task.progress","payload":{"stageId":"plan","label":"Строю план","status":"running","completed":4,"total":3}}
+    }
+  ]
+}

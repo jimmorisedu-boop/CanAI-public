@@ -1,0 +1,245 @@
+/* Шрифт и палитра «Графит + Вермилион» — ОДНА точка правды.
+   Этот файл подключают и основное приложение (base.css), и гостевая
+   страница публикации (guest.css): раньше у гостя была своя палитра
+   и свой акцент, из-за чего доска по ссылке выглядела чужим продуктом. */
+/* шрифты Onest + JetBrains Mono и палитра «Графит + Вермилион»
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── шрифты (self-hosted, офлайн; латиница + кириллица) ─────────────────────
+   Onest — интерфейс, сообщения и пользовательский текст. JetBrains Mono —
+   только технические значения: цены, размеры, время, масштаб и хоткеи. */
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/onest-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/onest-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/onest-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/onest-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+/* ── палитра «Графит + Вермилион» (Restrained: акцент только для действий/
+      выделения/статусов; уходим от AI-tells — фиолетового и крема) ───────── */
+
+:root {
+  color-scheme: dark;
+
+  /* Холодный графит: не абсолютный чёрный, чтобы материалы читались слоями. */
+  --bg: #0e0f12;
+  --surface: rgba(29, 31, 36, 0.78);
+  --surface-solid: #1d1f24;
+  --surface-2: #17191e;
+  --surface-3: #292c33;
+  --canvas-bg: #0c0e13;
+  --dot-grid: rgba(255, 255, 255, 0.055);
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --text: #f5f6f8;
+  --text-2: #b0b5bf;
+  --text-3: #858b96;
+
+  --accent: #d33f21;
+  --accent-hover: #bd3518;
+  --accent-press: #a52e14;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(211, 63, 33, 0.16);
+  --accent-soft-border: rgba(211, 63, 33, 0.34);
+  --accent-text: #ff8b6f;
+
+  /* Ошибка — из семейства вермилиона. Светлый тон для текста на графите,
+     фирменный тёмный красный — для заливки с белой надписью. */
+  --danger: #ff6b50;
+  --danger-fill: #c62a1c;
+  --danger-soft: rgba(255, 107, 80, 0.1);
+  --warn-text: #e6a23c;
+  --warn-soft: rgba(230, 162, 60, 0.1);
+  --warn-border: rgba(230, 162, 60, 0.2);
+  --ok: #4caf50;
+  --ok-soft: rgba(76, 175, 80, 0.1);
+  --ok-border: rgba(76, 175, 80, 0.2);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.025);
+  --shadow-lg: 0 22px 64px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(255, 255, 255, 0.035);
+
+  /* Функциональные материалы: вес поверхности растёт вместе с её размером. */
+  --material-thin: rgba(25, 27, 32, 0.7);
+  --material-regular: rgba(25, 27, 32, 0.84);
+  --material-thick: rgba(25, 27, 32, 0.95);
+  --scrim: rgba(4, 5, 7, 0.58);
+
+  --font-sans: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* Семантические роли рабочего UI: один источник истины для всех экранов. */
+  --text-panel-title: 16px;
+  /* Заголовки. Их не было в ролях вовсе, и 37 подписей задавались числами:
+     15, 17, 18, 20, 21, 22, 30 — то есть «на глаз похоже» ровно там, где
+     разница заметнее всего. Уровня три, и этого хватает: подзаголовок,
+     заголовок окна, заголовок крупного диалога. */
+  --text-title-sm: 15px;
+  --text-title: 18px;
+  --text-title-lg: 21px;
+  --text-display: 30px;
+  --text-body: 14px;
+  --text-control: 13px;
+  --text-secondary: 12px;
+  --text-micro: 11px;
+  --control-h-mini: 26px;
+  --control-h-compact: 32px;
+  --control-h-standard: 36px;
+  --control-h-emphasis: 44px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+
+  --radius-panel: 16px;
+  --radius-control: 10px;
+  --radius-compact: 8px;
+  --radius-pill: 999px;
+
+  /* Совместимость на время поэтапной миграции экранов. */
+  --font-ui-xs: var(--text-micro);
+  --font-ui-sm: var(--text-secondary);
+  --font-ui-md: var(--text-control);
+  --control-h-sm: var(--control-h-standard);
+  --control-h-md: var(--control-h-emphasis);
+  --r-pill: var(--radius-pill);
+  --r-lg: var(--radius-panel);
+  --r-md: var(--radius-control);
+  --r-sm: var(--radius-compact);
+
+  --z-canvas-ui: 300;
+  --z-overlay: 400;
+  --z-topbar: 500;
+  --z-modal: 1000;
+  /* Всплывающие сообщения — ВЫШЕ окон. При равных слоях окно, вставленное в
+     конец body, ложилось поверх угла сообщений: «Вернуть» после удаления было
+     размыто затемнением, а щелчок по нему попадал в подложку — окно
+     закрывалось, сообщение гасло, и вернуть удалённое было нечем. */
+  --z-notice: 1100;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth:
+    color 0.16s var(--ease-out),
+    background-color 0.16s var(--ease-out),
+    border-color 0.16s var(--ease-out),
+    box-shadow 0.2s var(--ease-out),
+    opacity 0.16s var(--ease-out),
+    transform 0.32s var(--spring-ui);
+
+  --topbar-bg: rgba(14, 15, 18, 0.72);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f7f8;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-solid: #ffffff;
+  --surface-2: #fafbfc;
+  --surface-3: #eef0f2;
+  --canvas-bg: #edeff2;
+  --dot-grid: rgba(23, 24, 26, 0.09);
+
+  --border: #e4e7ea;
+  --border-strong: #d2d7dc;
+
+  --text: #17181a;
+  --text-2: #565a61;
+  --text-3: #6b7079;
+
+  --accent: #d33f21;
+  --accent-hover: #bd3518;
+  --accent-press: #a52e14;
+  --accent-ink: #ffffff;
+  --accent-soft: #fcebe6;
+  --accent-soft-border: #f6cdc3;
+  --accent-text: #b83a20;
+
+  --danger: #c62a1c;
+  --danger-soft: #fbeae7;
+  --warn-text: #8a5a12;
+  --warn-soft: #fbf1df;
+  --warn-border: #efd9ac;
+  --ok: #157f4e;
+  --ok-soft: #eaf6ee;
+  --ok-border: #cbead7;
+
+  --shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.05), 0 1px 3px rgba(20, 22, 26, 0.07);
+  --shadow-md: 0 4px 18px rgba(20, 22, 26, 0.09);
+  --shadow-lg: 0 14px 44px rgba(20, 22, 26, 0.15);
+
+  --material-thin: rgba(255, 255, 255, 0.68);
+  --material-regular: rgba(255, 255, 255, 0.84);
+  --material-thick: rgba(255, 255, 255, 0.95);
+  --scrim: rgba(28, 30, 34, 0.34);
+  --topbar-bg: rgba(246, 247, 248, 0.76);
+}

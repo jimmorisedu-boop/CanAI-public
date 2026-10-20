@@ -1,0 +1,470 @@
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4
+ * component: task center · genre: restrained workspace · theme: CanAI existing
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: inherits verified application tokens
+ */
+
+/* центр задач в шапке
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* Центр задач в шапке. Стратегия Restrained: счётчик — пассивный статус, поэтому
+   он нейтральный; вермилион здесь не участвует вовсе, «работает» показывает
+   вращение, а не цвет. Красный — только у остановки и только по наведению. */
+.task-center {
+  position: relative;
+}
+
+/* один визуальный объект из двух зон: счётчик открывает список, квадрат гасит
+   всё разом. Раздельные кнопки рядом читались как два спорящих действия. */
+.task-center-trigger {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--material-thin);
+  overflow: hidden;
+}
+
+.task-center-button {
+  position: relative;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--text-control);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.task-center-button.busy {
+  color: var(--text-2);
+}
+
+.task-center-button:hover,
+.task-center-button.active {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+/* точка «есть упавшие» — тот же приём, что у вкладки помощника */
+.task-center-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.task-center-spin {
+  color: currentColor;
+  animation: task-center-spin 1.1s linear infinite;
+}
+
+@keyframes task-center-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-center-spin {
+    animation: none;
+  }
+}
+
+.task-center-stopall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 0 7px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.task-center-stopall:hover,
+.task-center-stopall.armed {
+  background: var(--danger-fill);
+  color: #fff;
+}
+
+.task-center-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(430px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 80px));
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.task-center-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--control-h-standard);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.task-center-title {
+  font-size: var(--text-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* «Очистить» — тихое действие в шапке панели: форма из канона. */
+
+/* плотный список со строками через волосяную линию — не карточки внутри
+   карточки (DESIGN.md: вложенные карточки запрещены) */
+.task-center-list {
+  display: grid;
+  margin-top: var(--space-1);
+}
+
+.task-launch-group {
+  border-top: 1px solid var(--border);
+}
+
+.task-launch-main {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+}
+
+.task-launch-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.task-launch-disclosure {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.task-launch-disclosure > svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--text-3);
+  transition: transform 0.15s;
+}
+
+.task-launch-disclosure > svg.expanded {
+  transform: rotate(90deg);
+}
+
+/* Одиночный запуск не раскрывается: внутри ровно то же, что и снаружи.
+   Строка при этом остаётся строкой — просто перестаёт прикидываться
+   кнопкой (без стрелки, без курсора-пальца и подсветки). */
+.task-launch-disclosure.single {
+  cursor: default;
+  padding-left: calc(13px + var(--space-2));
+}
+
+.task-launch-disclosure.single:hover .task-launch-copy > strong {
+  color: inherit;
+}
+
+.task-launch-disclosure:hover .task-launch-copy > strong {
+  color: var(--accent-text);
+}
+
+.task-launch-disclosure:focus-visible,
+.task-launch-dismiss:focus-visible,
+.task-launch-group-actions button:focus-visible,
+.task-launch-variant-actions button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.task-launch-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.task-launch-copy > strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--text-control);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-launch-meta,
+.task-launch-summary {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-launch-summary.partial,
+.task-launch-summary.error {
+  color: var(--danger);
+}
+
+.task-launch-summary.done {
+  color: var(--ok);
+}
+
+.task-launch-progress {
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-compact);
+  background: var(--surface-3);
+}
+
+.task-launch-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--text-3);
+  transition: width 0.15s;
+}
+
+.task-launch-group.done .task-launch-progress > span {
+  background: var(--ok);
+}
+
+.task-launch-group.partial .task-launch-progress > span,
+.task-launch-group.error .task-launch-progress > span {
+  background: var(--danger);
+}
+
+.task-launch-group-actions,
+.task-launch-variant-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.task-launch-group-actions {
+  justify-content: flex-end;
+}
+
+.task-launch-dismiss {
+  flex: none;
+  width: var(--control-h-standard);
+  min-width: var(--control-h-standard);
+  height: var(--control-h-standard);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-3);
+}
+
+.task-launch-dismiss:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.task-launch-group-actions button:hover:not(:disabled),
+.task-launch-variant-actions button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.task-launch-group-actions button:active:not(:disabled),
+.task-launch-variant-actions button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.task-launch-group-actions button.armed {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.task-launch-group-actions button:disabled,
+.task-launch-variant-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.task-launch-variants {
+  display: grid;
+  padding: 0 0 8px 20px;
+}
+
+.task-launch-variant {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  border-top: 1px solid var(--border);
+}
+
+.task-launch-variant-number {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-launch-variant-state {
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--text-micro);
+}
+
+.task-launch-variant.error .task-launch-variant-state,
+.task-launch-variant.cancelled .task-launch-variant-state {
+  color: var(--danger);
+}
+
+.task-launch-variant.done .task-launch-variant-state {
+  color: var(--ok);
+}
+
+.task-launch-variant-state small {
+  display: block;
+  overflow: hidden;
+  color: var(--danger);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .compact-topbar-tasks .task-center-panel {
+    position: static;
+    width: 100%;
+    max-height: min(420px, calc(100dvh - 180px));
+    margin-top: var(--space-2);
+  }
+
+  .task-launch-variant {
+    grid-template-columns: 20px minmax(0, 1fr);
+    padding: 5px 0;
+  }
+
+  .task-launch-variant-actions {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-launch-disclosure > svg,
+  .task-launch-progress > span {
+    transition: none;
+  }
+}
+
+.task-center-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+}
+
+.task-center-row > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.task-center-row strong {
+  font-size: var(--text-control);
+  font-weight: 600;
+}
+
+.task-center-row small {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--danger);
+  font-size: var(--text-micro);
+}
+
+.task-state {
+  font-size: var(--text-micro);
+  color: var(--text-3);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-state.error,
+.task-state.cancelled {
+  color: var(--danger);
+}
+
+.task-state.done {
+  color: var(--ok);
+}
+
+.task-center-actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.task-center-actions button {
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.task-center-actions button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.task-center-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.task-center-empty {
+  margin: 4px 0 6px;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.task-center-error {
+  margin: 6px 0 0;
+  color: var(--danger);
+  font-size: var(--text-secondary);
+}
+
+

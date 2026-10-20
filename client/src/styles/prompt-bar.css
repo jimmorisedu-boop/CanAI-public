@@ -1,0 +1,1065 @@
+/* промпт-док: чипы референсов, поле ввода, ряд действий, макросы
+   Часть общего листа: см. styles.css — порядок импортов ТАМ и есть каскад. */
+
+/* ── промпт-док (поверх канваса, сверху по центру) ──────── */
+
+.prompt-dock {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(800px, calc(100% - 120px));
+  display: flex;
+  /* промпт-бар снизу, статусы/баннеры растут вверх над ним */
+  flex-direction: column-reverse;
+  gap: 8px;
+  z-index: 400;
+}
+
+/* промпт-док никуда не прыгает: в скетче/кропе панели инструментов живут
+   сверху по центру, промпт остаётся снизу */
+
+.prompt-bar {
+  position: relative;
+  /* выше шторки помощника: @-подсказка и попапы бара должны быть поверх ленты */
+  z-index: 2;
+  background: var(--material-regular);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  transition: var(--transition-smooth);
+}
+
+/* Высокая шторка чата постоянно меняет размер. В Chromium на Windows blur у
+   такого родителя иногда оставляет старый растр textarea поверх нового: текст
+   двоится, а клики попадают мимо курсора. Для чата важнее стабильный ввод, чем
+   размытие фона; обычный компактный промпт сохраняет стеклянный эффект. */
+.prompt-bar.is-assistant {
+  background: var(--material-thick);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.prompt-bar-grip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  cursor: ns-resize;
+  touch-action: none;
+  z-index: 10;
+}
+
+.prompt-bar-grip i {
+  display: block;
+  width: 44px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+}
+
+.prompt-bar-grip:hover i,
+.prompt-bar-grip:focus-visible i {
+  background: var(--accent);
+}
+
+.prompt-header-actions {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-header-batch-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+.prompt-header-batch-toggle button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.prompt-header-batch-toggle button:hover:not(.on):not(:disabled) {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.prompt-header-batch-toggle button.on {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.prompt-header-batch-toggle button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.prompt-header-batch-toggle button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.prompt-collapse-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.prompt-collapse-btn:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.prompt-bar > .pane-tabs { margin-right: 170px; }
+
+/* ── action dock ──────────────────────────────────────────────
+   The mode row, helper picker, batch summary and macro shelf are one dock
+   surface. Keep the summary terse: it is a receipt (inputs → results · cost),
+   not another explanatory paragraph under the toggle. */
+.action-dock-mode-tabs {
+  margin-right: 170px;
+}
+
+.action-dock-mode-tabs.pane-tabs > button {
+  padding: 0 var(--space-3);
+  gap: 6px;
+}
+
+.action-dock-mode-tabs > button > svg {
+  display: block;
+  flex: none;
+}
+
+.action-dock-mode-tabs .pane-signal {
+  margin-left: 2px;
+}
+
+.action-dock-helper-row,
+.action-dock-library {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+}
+
+.action-dock-helper-row {
+  justify-content: flex-start;
+}
+
+.action-dock-library {
+  align-items: center;
+  padding-top: 2px;
+}
+
+.action-dock-library-label {
+  flex: none;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 700;
+}
+
+.action-dock-library > .prompt-macros,
+.action-dock-library > .assistant-macros,
+.action-dock-library > .macros-inline {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.action-dock-agents-composer {
+  min-width: 0;
+  margin-top: 10px;
+}
+
+.action-dock-preparation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+  color: var(--text-2);
+  font-size: var(--text-micro);
+}
+
+.action-dock-preparation > span:first-child,
+.action-dock-preparation-copy > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-dock-preparation-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.action-dock-preparation-label {
+  color: var(--text-3);
+  font-weight: 700;
+}
+
+.action-dock-preparation-price {
+  flex: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.action-dock-preparation-review {
+  align-items: flex-start;
+}
+
+.action-dock-preparation-review .ui-btn,
+.action-dock-preparation-quote .ui-btn,
+.action-dock-preparation-error .ui-btn {
+  flex: none;
+  min-height: 28px;
+  padding-inline: 9px;
+  font-size: var(--text-micro);
+}
+
+.action-dock-preparation-error {
+  color: var(--danger, #b42318);
+}
+
+.action-dock-prepare-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: var(--control-h-compact);
+  padding-inline: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+  color: var(--accent-text);
+  font: 650 var(--text-micro)/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.action-dock-prepare-cost {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: 500;
+}
+
+.action-dock-prepare-button:hover:not(:disabled) {
+  border-color: var(--accent-soft-border);
+  background: var(--accent-soft);
+}
+
+.action-dock-prepare-button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-dock-batch-switch button { transition: none; }
+}
+
+/* Содержимое остаётся смонтированным: черновик, диалог и прокрутка живут
+   дальше, но скрытые поля не принимают фокус и не занимают место холста. */
+.prompt-dock.is-collapsed {
+  width: min(280px, calc(100% - 120px));
+  gap: 0;
+}
+
+.prompt-dock.is-collapsed > :not(.prompt-dock-restore) { display: none; }
+
+.prompt-dock-restore {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--material-thick);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.prompt-dock-restore::before { content: ''; position: absolute; inset: -5px 0; }
+.prompt-dock-restore > span { width: 38px; height: 3px; border-radius: var(--radius-pill); background: currentColor; }
+.prompt-dock-restore:hover { border-color: var(--accent); color: var(--accent); }
+.prompt-dock-restore:focus-visible,
+.prompt-collapse-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-dock-restore, .prompt-collapse-btn { transition: none; }
+}
+
+.prompt-clear-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-control);
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: var(--transition-smooth);
+}
+
+.prompt-clear-btn:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.prompt-bar:focus-within {
+  border-color: var(--border-strong);
+}
+
+/* объект тащат над баром в окне помощника — показываем, что отпускание
+   прикрепит его референсом, а не положит на холст */
+.prompt-bar.is-drop-target {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--accent-soft-border);
+  background: color-mix(in srgb, var(--accent-soft) 45%, var(--material-regular));
+}
+
+.prompt-bar textarea {
+  width: 100%;
+  min-height: 34px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 9px 44px 8px 10px;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-title-sm);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.prompt-bar textarea:hover {
+  background: transparent;
+}
+
+.prompt-bar textarea:focus {
+  box-shadow: none;
+  outline: none !important;
+}
+
+.prompt-bar textarea:focus-visible {
+  outline: none !important;
+}
+
+.prompt-bar textarea::placeholder {
+  color: var(--text-3);
+}
+
+/* чипы-референсы (зеркалят выделение на канвасе) */
+
+.ref-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ref-chip-more {
+  padding: 3px 10px !important;
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ref-chip-more:hover {
+  background: var(--surface-4);
+  color: var(--text-2);
+}
+
+.ref-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px 6px 3px 4px;
+  font-size: var(--text-secondary);
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ref-chip img,
+.ref-chip video {
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: var(--surface-solid);
+}
+
+/* Превью референса рисуется в портале на <body> (см. RefChipPreview.tsx):
+   чипы стоят и в промпт-баре, и в ленте помощника с overflow: auto, где
+   абсолютное превью срезалось краем ленты. Координаты и сторону (сверху или
+   снизу чипа) считает refChipPreviewPos.ts — здесь только вид. */
+.ref-chip-preview {
+  position: fixed;
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  pointer-events: none;
+  z-index: var(--z-modal);
+  animation: ref-chip-preview-in 0.18s var(--ease-out) both;
+}
+
+.ref-chip-preview.place-top { transform-origin: bottom center; }
+.ref-chip-preview.place-bottom { transform-origin: top center; }
+
+@keyframes ref-chip-preview-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.ref-chip.is-replacing {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.ref-chip-preview img,
+.ref-chip-preview video {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: var(--radius-compact);
+  display: block;
+}
+
+/* Сорвавшаяся миниатюра. Значок битого файла от браузера не говорит ни что
+   это был за файл, ни что делать; плитка говорит и то, и другое, а нажатие
+   повторяет загрузку (см. refChipFallback.ts). Чип остаётся рабочим
+   референсом, поэтому не гаснет и не исчезает. */
+.ref-chip.is-broken {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  cursor: pointer;
+}
+
+.ref-chip-broken {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface-solid));
+  color: var(--danger);
+}
+
+.ref-chip.is-broken:hover .ref-chip-broken {
+  background: color-mix(in srgb, var(--danger) 24%, var(--surface-solid));
+}
+
+.ref-chip-icon {
+  font-size: var(--text-body);
+  padding-left: 4px;
+}
+
+.ref-chip-label {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ref-chip-gif {
+  white-space: nowrap;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+}
+
+.gen-hint {
+  margin-top: 8px;
+  font-size: var(--text-micro);
+  color: var(--text-3);
+}
+
+/* номерной бейдж на медиа-чипе (для inline-ссылок @1, @2…) */
+.ref-chip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  flex: none;
+}
+
+/* обёртка textarea — якорь для popup автокомплита @ */
+.prompt-input-wrap {
+  position: relative;
+}
+
+/* всплывающий список референсов при вводе @ (над полем ввода) */
+.mention-popup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lg);
+  padding: 5px;
+  z-index: var(--z-overlay);
+  animation: pop-in 0.14s var(--ease-out);
+}
+
+.mention-hint {
+  font-size: var(--text-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  padding: 4px 8px 6px;
+}
+
+.mention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: var(--radius-compact);
+  text-align: left;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-control);
+}
+
+.mention-item.active {
+  background: var(--accent-soft);
+}
+
+.mention-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 700;
+}
+
+.mention-item img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: var(--radius-compact);
+  flex: none;
+}
+
+.mention-icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  border-radius: var(--radius-compact);
+  color: var(--text-2);
+  flex: none;
+}
+
+.mention-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  min-width: 0;
+}
+
+.gen-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.gen-select {
+  max-width: 190px;
+  background: color-mix(in srgb, var(--surface-3) 72%, transparent);
+  border: 1px solid var(--border);
+  min-height: var(--control-h-compact);
+  border-radius: var(--radius-compact);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-secondary);
+  font-weight: 600;
+  padding: 0 10px;
+  line-height: 1;
+  outline: none;
+  cursor: pointer;
+}
+
+.gen-select:hover {
+  color: var(--text);
+}
+
+.gen-select:focus,
+.gen-select:focus-visible {
+  border-color: var(--border-strong);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* нижний ряд второстепенных настроек (модель + количество + параметры):
+   компактные контролы (у каждого своя рамка), разделены промежутком —
+   без вертикальных чёрточек и без общей линии сверху */
+.gen-controls-secondary {
+  --control-height: var(--control-h-compact);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.gen-controls-secondary .gen-select,
+.gen-controls-secondary .gen-count,
+.gen-controls-secondary .param-controls.compact .param-row,
+.gen-params-more {
+  box-sizing: border-box;
+  height: var(--control-h-compact);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  color: var(--text-2);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.gen-controls-secondary .gen-select:hover,
+.gen-controls-secondary .gen-count:hover,
+.gen-controls-secondary .param-controls.compact .param-row:hover,
+.gen-params-more:hover {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.gen-controls-secondary .gen-select {
+  font-size: var(--text-micro);
+  height: var(--control-h-compact);
+  min-height: 0;
+  padding: 0 9px;
+  line-height: 1;
+  max-width: 160px;
+}
+
+.gen-controls-secondary .gen-count {
+  padding: 1px 2px;
+}
+
+.gen-controls-secondary .param-controls.compact {
+  margin-top: 0;
+  padding-top: 0;
+  gap: 6px;
+  border-top: none;
+}
+
+/* Частые параметры видны сразу; редкие раскрываются ниже через «Ещё».
+   На узком окне контролы переносятся, а не прячутся за горизонтальным скроллом. */
+.gen-controls-secondary.is-inline {
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.gen-controls-secondary.is-inline .gen-select,
+.gen-controls-secondary.is-inline .param-controls.compact select.param-input {
+  field-sizing: content;
+}
+
+.gen-controls-secondary.is-inline .gen-select {
+  flex: 0 1 auto;
+  min-width: 96px;
+  max-width: 200px;
+}
+
+.gen-controls-secondary.is-inline .gen-count,
+.gen-controls-secondary.is-inline .param-controls.compact {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.gen-controls-secondary .param-controls.compact.labelled .param-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gen-controls-secondary .param-controls.compact.labelled .param-row {
+  padding: 0 5px 0 8px;
+  gap: 4px;
+}
+
+.gen-controls-secondary.is-stacked .param-controls.compact.labelled .param-input {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+}
+
+.gen-params-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  font: inherit;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  cursor: pointer;
+  flex: none;
+}
+
+.gen-params-more[aria-expanded='true'] { border-color: var(--border-strong); color: var(--text); }
+.gen-params-more:active { transform: translateY(1px); }
+.gen-params-changed { font-variant-numeric: tabular-nums; color: var(--accent-text); }
+
+/* Раскрытое по «More» — те же пилюли, что в ряду над ним, со следующей
+   строки. Форма «подпись + широкий список» в две колонки выглядела чужой
+   рядом с пилюлями (жалоба 19.10.2026). Текстовому полю отдаём ширину: в нём
+   пишут фразу, а не выбирают значение. */
+.gen-params-expanded {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+.gen-params-expanded .param-controls.compact {
+  margin: 0;
+  padding: 0;
+  gap: 6px;
+  border: 0;
+}
+
+/* текстовые параметры — полноценное поле ниже пилюль */
+.gen-params-expanded .param-controls:not(.compact) {
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.gen-params-expanded .param-dice { background: transparent; }
+
+@media (max-width: 600px) {
+  .gen-params-more { min-height: 44px; }
+}
+
+.prompt-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* макросы прямо в баре — перенесены направо к оранжевой кнопке */
+.macros-inline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  min-width: 0;
+  max-width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.macros-inline::-webkit-scrollbar {
+  display: none;
+}
+
+/* Слоты макросов повторяют квадрат 44×44 переключателей «Картинка/Видео».
+   Внутри — только первые пять букв; полное имя доступно в title и библиотеке. */
+.macro-control {
+  position: relative;
+  flex: none;
+  flex-shrink: 0;
+}
+
+.macros-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-emphasis);
+  min-width: var(--control-h-emphasis);
+  height: var(--control-h-emphasis);
+  min-height: var(--control-h-emphasis);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.05s;
+  line-height: 1;
+}
+
+.macro-slot-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  font-size: var(--text-micro);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--text-2);
+  text-align: center;
+}
+
+.macro-slot-name:empty {
+  display: none;
+}
+
+.macros-inline-btn:hover:not(:disabled) .macro-slot-name {
+  color: inherit;
+}
+
+.macros-inline-btn:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.macros-inline-btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* вход в библиотеку — в конце ряда, тише слотов: это не запуск, а разбор полок */
+.macros-inline-btn.more {
+  width: var(--control-h-emphasis);
+  padding: 0;
+  color: var(--text-3);
+  font-size: var(--text-title);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.macros-inline-btn.add {
+  width: var(--control-h-emphasis);
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-3);
+  box-shadow: none;
+}
+
+.macros-inline-btn.add:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.macros-inline-btn.running {
+  background: var(--accent-press);
+  border-color: var(--accent-press);
+  color: #fff;
+}
+
+
+/* Включённый помощник: кнопка-переключатель обязана отличаться от соседей
+   с первого взгляда — иначе непонятно, кто сейчас отвечает. */
+.macros-inline-btn.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* Окно помощника: материал общий с «Поделиться» (.app-dialog* в share.css),
+   здесь только поля — ширина под длинные инструкции и список документов. */
+
+.assistant-label {
+  display: block;
+  margin: 16px 0 6px;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  font-weight: 600;
+}
+
+.assistant-dialog input:not([type="file"]),
+.assistant-dialog select,
+.assistant-instructions {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-body);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.assistant-dialog input:not([type="file"]),
+.assistant-dialog select {
+  height: var(--control-h-standard);
+  padding: 0 14px;
+}
+
+.assistant-instructions {
+  min-height: 150px;
+  max-height: 38vh;
+  resize: vertical;
+  line-height: 1.5;
+  padding: 10px 14px;
+}
+
+.assistant-dialog input:focus,
+.assistant-dialog select:focus,
+.assistant-instructions:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.assistant-note {
+  margin: 0 0 8px;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.assistant-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.assistant-docs li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+  background: var(--surface-2);
+}
+
+.assistant-docs li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-control);
+}
+
+.assistant-docs li > small {
+  flex: none;
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.assistant-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assistant-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* Удаление — с краю: рядом с «Сохранить» по нему промахиваются. */
+.assistant-delete {
+  margin-left: auto;
+  color: var(--danger);
+}
