@@ -7,6 +7,8 @@ import { timecode } from './timelineTimecode'
 import type { TimelineSession } from './useTimelineSession'
 import { filmstripCellCount, useFilmstrip } from './useFilmstrip'
 import { useTrackSize } from './useTrackSize'
+import { useT } from '../../../i18n/context.js'
+
 
 // Плёнка клипа: одна полоса с кадрами по времени, а поверх неё — головка,
 // монтажные резы, ручки входа/выхода и метки сохранённых кадров. Рез нарисован
@@ -39,6 +41,7 @@ export function TimelineTrack({
   onPreview(time: number | null): void
   onSelectFrame(record: FrameCaptureRecord): void
 }) {
+  const t = useT()
   const trackRef = useRef<HTMLDivElement>(null)
   // Обработчики перетаскивания живут дольше одного рендера, а session — новый
   // объект на каждый. Замыкание держало сеанс, снятый в момент pointerdown:
@@ -130,13 +133,13 @@ export function TimelineTrack({
   const trimmed = inPoint > 0.001 || outPoint < duration - 0.001
 
   return (
-    <section className="tl-track-block" aria-label="Clip timeline">
+    <section className="tl-track-block" aria-label={t('Clip timeline')}>
       <div className={`tl-track-stage${playing ? ' is-playing' : ''}`}>
         <div
           className="tl-track"
           ref={trackRef}
           role="slider"
-          aria-label="Position in clip"
+          aria-label={t('Position in clip')}
           aria-valuemin={0}
           aria-valuemax={Math.round(duration * 1000) / 1000}
           aria-valuenow={Math.round(head * 1000) / 1000}
@@ -177,8 +180,8 @@ export function TimelineTrack({
           {cuts.map((cut) => (
             <Tooltip
               key={`cut-${cut.time}`}
-              title={cut.auto ? 'Cut found automatically' : 'Edit cut'}
-              hint="Drag sideways to move, down to remove · double-click removes"
+              title={cut.auto ? t('Cut found automatically') : t('Edit cut')}
+              hint={t('Drag sideways to move, down to remove · double-click removes')}
               placement="top"
               hostClassName={`tl-cut-host${dragCut?.at === cut.time ? ' is-dragging' : ''}`}
               hostStyle={{ left: percent(cut.time) }}
@@ -186,7 +189,7 @@ export function TimelineTrack({
               <div
                 className={`tl-cut${cut.auto ? ' auto' : ''}${dragCut?.removing && dragCut.at === cut.time ? ' removing' : ''}`}
                 role="button"
-                aria-label={`${cut.auto ? 'Cut' : 'Cut'} at ${timecode(cut.time)}`}
+                aria-label={t('{0} at {1}', { 0: cut.auto ? 'Cut' : 'Cut', 1: timecode(cut.time) })}
                 onPointerDown={(event) => dragSeam(event, cut.time)}
                 onDoubleClick={(event) => {
                   // Двойной клик — короткий путь к тому же, что и тяга вниз.
@@ -207,7 +210,7 @@ export function TimelineTrack({
           {frames.map((record) => (
             <Tooltip
               key={record.id}
-              title={`Frame ${timecode(record.requestedTime)}`}
+              title={t('Frame {0}', { 0: timecode(record.requestedTime) })}
               hint={frameStatusText(record)}
               placement="top"
               hostClassName="tl-mark-host"
@@ -217,7 +220,7 @@ export function TimelineTrack({
                 type="button"
                 className={`tl-mark${record.id === selectedFrameId ? ' is-selected' : ''}`}
                 data-phase={isBusyPhase(record.phase) ? 'busy' : record.phase}
-                aria-label={`Frame ${timecode(record.requestedTime)} — ${frameStatusText(record)}`}
+                aria-label={t('Frame {0} — {1}', { 0: timecode(record.requestedTime), 1: frameStatusText(record) })}
                 aria-current={record.id === selectedFrameId ? 'true' : undefined}
                 onClick={() => onSelectFrame(record)}
               />

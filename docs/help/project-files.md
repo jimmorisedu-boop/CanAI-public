@@ -27,6 +27,7 @@ Open the imported board and confirm its cards and media.
 ## Notes
 
 - The desktop Boards screen currently imports .canai files. Use Download or a ZIP from the Canvas when you want exported content; both use a real local destination.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Related topics
 

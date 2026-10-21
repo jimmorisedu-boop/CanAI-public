@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Use another window</title>
+  <desc id="desc">Two CanAI windows share a saved device language while a board remains open.</desc>
+  <rect width="960" height="540" rx="28" fill="#151515"/>
+  <rect x="78" y="74" width="492" height="326" rx="18" fill="#292929" stroke="#555"/>
+  <rect x="390" y="138" width="492" height="326" rx="18" fill="#222" stroke="#f15a3a" stroke-width="3"/>
+  <rect x="108" y="108" width="432" height="44" rx="10" fill="#373737"/>
+  <rect x="420" y="172" width="432" height="44" rx="10" fill="#373737"/>
+  <text x="132" y="137" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="20" font-weight="700">Board open</text>
+  <text x="444" y="201" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="20" font-weight="700">Language: Russian</text>
+  <rect x="126" y="188" width="372" height="166" rx="12" fill="#1d1d1d"/>
+  <rect x="438" y="252" width="372" height="166" rx="12" fill="#1d1d1d"/>
+  <circle cx="312" cy="270" r="48" fill="#383838"/>
+  <circle cx="624" cy="334" r="48" fill="#383838"/>
+  <path d="M560 430h112" stroke="#f15a3a" stroke-width="4" stroke-linecap="round"/>
+  <text x="268" y="454" fill="#a9a9a9" font-family="Arial, sans-serif" font-size="18">Saved on this device</text>
+</svg>

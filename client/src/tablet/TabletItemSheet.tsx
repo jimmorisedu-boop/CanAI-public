@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import { downloadItems } from '../spaces/canvas/konva/zipExport'
 import { runWithBoardLease } from '../spaces/canvas/konva/boardLeaseActions'
+import { useT } from '../i18n/context.js'
+
 
 // Меню объекта — по долгому нажатию.
 //
@@ -18,6 +20,7 @@ export function TabletItemSheet({
   itemId: string
   onClose(): void
 }) {
+  const t = useT()
   const item = store.getItem(itemId)
   const selected = store.getSelectedIds()
   const ids = selected.has(itemId) && selected.size > 1 ? [...selected] : [itemId]
@@ -38,12 +41,12 @@ export function TabletItemSheet({
   return (
     <>
       <div className="tablet-sheet-backdrop" onPointerDown={close} />
-      <div className="tablet-sheet" role="dialog" aria-label="Object actions">
+      <div className="tablet-sheet" role="dialog" aria-label={t('Object actions')}>
         <p className="tablet-sheet-title">
-          {many ? `Objects selected: ${ids.length}` : item.name || item.text?.slice(0, 40) || 'Object'}
+          {many ? t('Objects selected: {0}', { 0: ids.length }) : item.name || item.text?.slice(0, 40) || 'Object'}
         </p>
         <button type="button" className="ui-btn" onClick={() => { store.setSelection(ids); close() }}>
-          Use as reference
+          {t('Use as reference')}
         </button>
         <button
           type="button"
@@ -56,13 +59,15 @@ export function TabletItemSheet({
             close()
           }}
         >
-          Duplicate
+
+          {t('Duplicate')}
         </button>
         <button type="button" className="ui-btn" onClick={() => { void downloadItems(ids.map((id) => store.getItem(id)).filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))); close() }}>
-          Download
+
+          {t('Download')}
         </button>
         <button type="button" className="ui-btn" onClick={() => { store.archiveItems(ids); close() }}>
-          Archive on board
+          {t('Move to archive')}
         </button>
         <button
           type="button"
@@ -78,9 +83,9 @@ export function TabletItemSheet({
             close()
           }}
         >
-          {confirmDelete ? 'Delete for good?' : 'Delete'}
+          {confirmDelete ? t('Delete for good?') : t('Delete')}
         </button>
-        <button type="button" className="ui-btn quiet tablet-sheet-cancel" onClick={close}>Cancel</button>
+        <button type="button" className="ui-btn quiet tablet-sheet-cancel" onClick={close}>{t('Cancel')}</button>
       </div>
     </>
   )

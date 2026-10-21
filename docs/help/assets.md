@@ -27,6 +27,7 @@ Right-click an asset to unpin it. The Canvas item and local file remain availabl
 ## Notes
 
 - The shelf is per board. Assets do not become a second copy of your media file.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Related topics
 

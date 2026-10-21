@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { IconSettings } from '../../ui/icons'
+import { useT } from '../../i18n/context.js'
+
 
 export function PromptSettingsSection({
   compact,
@@ -14,6 +16,7 @@ export function PromptSettingsSection({
   onOpenChange(open: boolean): void
   children: ReactNode
 }) {
+  const t = useT()
   const regionId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const regionRef = useRef<HTMLDivElement>(null)
@@ -45,7 +48,8 @@ export function PromptSettingsSection({
           onClick={() => onOpenChange(!open)}
         >
           <IconSettings size={16} />
-          Parameters
+
+          {t('Parameters')}
         </button>
       )}
       <div
@@ -53,7 +57,7 @@ export function PromptSettingsSection({
         id={regionId}
         className="prompt-settings-region"
         role={compact ? 'region' : undefined}
-        aria-label={compact ? "Generation parameters" : undefined}
+        aria-label={compact ? t('Generation parameters') : undefined}
         hidden={compact && !open}
         onKeyDown={(event) => {
           if (!compact || event.key !== 'Escape') return

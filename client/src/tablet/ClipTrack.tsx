@@ -2,6 +2,8 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNod
 import type { TimelineSession } from '../spaces/canvas/timeline/useTimelineSession'
 import { handleTrackKey, trackBounds, trackTimeText, type TrackHandle } from './clipKeyboard'
 import { useFilmstrip } from '../spaces/canvas/timeline/useFilmstrip'
+import { useT } from '../i18n/context.js'
+
 
 // Дорожка клипа под палец.
 //
@@ -28,6 +30,7 @@ export function ClipTrack({
    * transport row and one editor timecode. */
   transport?: ReactNode
 }) {
+  const t = useT()
   const hostRef = useRef<HTMLDivElement>(null)
   const sessionRef = useRef(session)
   sessionRef.current = session
@@ -120,17 +123,17 @@ export function ClipTrack({
   return (
     <div className="tablet-clip-panel">
       <div className="tablet-track-headline">
-        <span className="tablet-track-label">Timeline</span>
-        <output className="tablet-track-timecode" aria-label="Playback time">
+        <span className="tablet-track-label">{t('Timeline')}</span>
+        <output className="tablet-track-timecode" aria-label={t('Playback time')}>
           {trackTimeText(session.head)} / {durationLabel}
         </output>
         {transport}
         <button
           type="button"
           className={`tablet-track-help${showHelp ? ' on' : ''}`}
-          aria-label="Keyboard shortcuts"
+          aria-label={t('Keyboard shortcuts')}
           aria-expanded={showHelp}
-          title="Keyboard shortcuts"
+          title={t('Keyboard shortcuts')}
           onClick={() => setShowHelp((value) => !value)}
         >?
         </button>
@@ -143,11 +146,11 @@ export function ClipTrack({
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        {peaks ? <div className="tablet-track-body" aria-label="Audio peaks">
+        {peaks ? <div className="tablet-track-body" aria-label={t('Audio peaks')}>
           {peaks.map((value, index) => (
             <i key={index} style={{ height: `${Math.max(6, value)}%` }} />
           ))}
-        </div> : filmstripReady ? <div className="tablet-track-filmstrip" aria-label="Video thumbnails">
+        </div> : filmstripReady ? <div className="tablet-track-filmstrip" aria-label={t('Video thumbnails')}>
           {filmstrip.cells.map((url, index) => (
             <span
               key={index}
@@ -163,12 +166,12 @@ export function ClipTrack({
               </i>
             ))}
           </div>
-        </div> : <div className="tablet-track-ruler" aria-label="Timeline ruler">
+        </div> : <div className="tablet-track-ruler" aria-label={t('Timeline ruler')}>
           {Array.from({ length: 11 }, (_, index) => <i key={index} style={{ left: `${index * 10}%` }}><span>{index === 0 || index === 10 ? `${Math.round((duration * index) / 10)}s` : ''}</span></i>)}
         </div>}
 
-        <span className="tablet-track-cut in" style={{ left: `${percent(session.inPoint)}%` }} onPointerDown={startDrag('in', session.inPoint)} aria-label="Start" {...slider('in', session.inPoint)} />
-        <span className="tablet-track-cut out" style={{ left: `${percent(session.outPoint)}%` }} onPointerDown={startDrag('out', session.outPoint)} aria-label="End" {...slider('out', session.outPoint)} />
+        <span className="tablet-track-cut in" style={{ left: `${percent(session.inPoint)}%` }} onPointerDown={startDrag('in', session.inPoint)} aria-label={t('Start')} {...slider('in', session.inPoint)} />
+        <span className="tablet-track-cut out" style={{ left: `${percent(session.outPoint)}%` }} onPointerDown={startDrag('out', session.outPoint)} aria-label={t('End')} {...slider('out', session.outPoint)} />
 
         <span className="tablet-track-dim left" style={{ width: `${percent(session.inPoint)}%` }} />
         <span className="tablet-track-dim right" style={{ left: `${percent(session.outPoint)}%`, right: 0 }} />
@@ -190,12 +193,12 @@ export function ClipTrack({
             style={{ left: `${percent(cut.time)}%` }}
             onPointerDown={startDrag('cut', cut.time)}
             onDoubleClick={() => session.removeCut(cut.time)}
-            aria-label={`Cut ${index + 1}`}
+            aria-label={t('Cut {0}', { 0: index + 1 })}
             {...slider('cut', cut.time)}
           />
         ))}
 
-        <span className="tablet-track-head" style={{ left: `${percent(session.head)}%` }} onPointerDown={startDrag('head', session.head)} aria-label="Playback position" {...slider('head', session.head)} />
+        <span className="tablet-track-head" style={{ left: `${percent(session.head)}%` }} onPointerDown={startDrag('head', session.head)} aria-label={t('Playback position')} {...slider('head', session.head)} />
       </div>
       {showHelp && <div className="tablet-track-help-popover" role="note">
         Arrow keys move one frame. Shift moves 10 frames. Home and End jump to the edges. Delete removes the selected cut.

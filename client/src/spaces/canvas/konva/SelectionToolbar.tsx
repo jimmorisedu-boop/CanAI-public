@@ -14,6 +14,8 @@ import { scheduleFocusRestore } from '../../../tablet/TabletPopover'
 import type { SelectionAlignment, SelectionArrangement } from './selectionGeometry'
 import { placeArrangePanel } from './arrangePlacement'
 import { hits } from '../../../ui/hotkeys'
+import { useT } from '../../../i18n/context.js'
+
 
 type SelectionAction =
   | { kind: 'align'; value: SelectionAlignment }
@@ -43,6 +45,7 @@ export function SelectionToolbar({ items, store, box }: {
   /** Shared selection bounds in world coordinates. */
   box: { x: number; y: number; right: number; bottom?: number }
 }) {
+  const t = useT()
   const [busy, setBusy] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [panelPosition, setPanelPosition] = useState<{ left: number; top: number } | null>(null)
@@ -215,10 +218,10 @@ export function SelectionToolbar({ items, store, box }: {
     setBusy(true)
     try {
       const { ok, failed } = await downloadItemsAsZip(items)
-      if (ok === 0) showErrorToast('Failed to download the selection')
-      else if (failed > 0) showToast(`Downloaded ${ok} of ${ok + failed} — some files are unavailable`)
+      if (ok === 0) showErrorToast(t('Failed to download the selection'))
+      else if (failed > 0) showToast(t('Downloaded {0} of {1} — some files are unavailable', { 0: ok, 1: ok + failed }))
     } catch {
-      showErrorToast('Failed to download the selection')
+      showErrorToast(t('Failed to download the selection'))
     } finally {
       setBusy(false)
     }
@@ -237,8 +240,8 @@ export function SelectionToolbar({ items, store, box }: {
           ref={triggerRef}
           type="button"
           className="konva-tool-btn selection-arrange-trigger"
-          title="Arrange selection"
-          aria-label="Arrange selection"
+          title={t('Arrange selection')}
+          aria-label={t('Arrange selection')}
           aria-haspopup="dialog"
           aria-expanded={panelOpen}
           onClick={() => {
@@ -251,7 +254,7 @@ export function SelectionToolbar({ items, store, box }: {
             setPinned(true)
           }}
         >
-          <IconGrid size={16} /> <span>Arrange</span>
+          <IconGrid size={16} /> <span>{t('Arrange')}</span>
         </button>
       </div>
       {panelOpen && typeof document !== 'undefined' && createPortal(
@@ -259,15 +262,15 @@ export function SelectionToolbar({ items, store, box }: {
             ref={panelRef}
             className="selection-arrange-panel selection-arrange-panel-portal"
             role="dialog"
-            aria-label="Arrange selection"
+            aria-label={t('Arrange selection')}
             style={panelPosition
               ? { left: panelPosition.left, top: panelPosition.top }
               : { left: -9999, top: -9999 }}
             onPointerDown={(event) => event.stopPropagation()}
           >
             <section className="selection-arrange-section" aria-labelledby="selection-align-label">
-              <h3 id="selection-align-label">Align</h3>
-              <div className="selection-arrange-options" role="group" aria-label="Align selection">
+              <h3 id="selection-align-label">{t('Align')}</h3>
+              <div className="selection-arrange-options" role="group" aria-label={t('Align selection')}>
                 {ALIGNMENTS.map((entry) => {
                   const active = action.kind === 'align' && action.value === entry.value
                   return (
@@ -277,7 +280,7 @@ export function SelectionToolbar({ items, store, box }: {
                       data-arrange-control="true"
                       className={`selection-arrange-option${active ? ' is-active' : ''}`}
                       aria-pressed={active}
-                      title={entry.hint}
+                      title={t(entry.hint)}
                       disabled={!canEdit}
                       onClick={() => {
                         const next = { kind: 'align', value: entry.value } as const
@@ -285,7 +288,7 @@ export function SelectionToolbar({ items, store, box }: {
                         previewAction(next)
                       }}
                     >
-                      {entry.label}
+                      {t(entry.label)}
                     </button>
                   )
                 })}
@@ -293,8 +296,8 @@ export function SelectionToolbar({ items, store, box }: {
             </section>
 
             <section className="selection-arrange-section" aria-labelledby="selection-layout-label">
-              <h3 id="selection-layout-label">Layout</h3>
-              <div className="selection-arrange-options selection-arrange-layout" role="group" aria-label="Layout selection">
+              <h3 id="selection-layout-label">{t('Layout')}</h3>
+              <div className="selection-arrange-options selection-arrange-layout" role="group" aria-label={t('Layout selection')}>
                 {ARRANGEMENTS.map((entry) => {
                   const active = action.kind === 'layout' && action.value === entry.value
                   return (
@@ -311,7 +314,7 @@ export function SelectionToolbar({ items, store, box }: {
                         previewAction(next)
                       }}
                     >
-                      {entry.label}
+                      {t(entry.label)}
                     </button>
                   )
                 })}
@@ -320,7 +323,7 @@ export function SelectionToolbar({ items, store, box }: {
 
             <div className="selection-arrange-fields">
               <label>
-                <span>Columns</span>
+                <span>{t('Columns')}</span>
                 <input
                   type="number"
                   min={1}
@@ -336,7 +339,7 @@ export function SelectionToolbar({ items, store, box }: {
                 />
               </label>
               <label>
-                <span>Gap</span>
+                <span>{t('Gap')}</span>
                 <input
                   type="number"
                   min={0}
@@ -358,8 +361,8 @@ export function SelectionToolbar({ items, store, box }: {
       <button
         type="button"
         className="konva-tool-btn"
-        title={`Move selection to Archive (${items.length}) — Shift+Delete`}
-        aria-label="Move selection to Archive"
+        title={t('Move selection to Archive ({0}) — Shift+Delete', { 0: items.length })}
+        aria-label={t('Move selection to Archive')}
         disabled={!canEdit}
         onClick={() => archiveSelection(store, ids)}
       >
@@ -368,8 +371,8 @@ export function SelectionToolbar({ items, store, box }: {
       <button
         type="button"
         className="konva-tool-btn"
-        title={`Download selection (${items.length}) as ZIP`}
-        aria-label="Download selection as ZIP"
+        title={t('Download selection ({0}) as ZIP', { 0: items.length })}
+        aria-label={t('Download selection as ZIP')}
         disabled={busy}
         onClick={() => void download()}
       >

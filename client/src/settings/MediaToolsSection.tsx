@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { mediaToolsView, shouldPollMediaTools, type FfmpegStateResponse } from './mediaToolsState'
 import { systemErrorMessage } from '../ui/systemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Компонент обработки видео в настройках: показать состояние и дать скачать.
 // Опрос идёт ТОЛЬКО пока состояние — «качается»: постоянный тик ради строчки,
@@ -10,6 +12,7 @@ import { systemErrorMessage } from '../ui/systemMessage'
 const POLL_MS = 900
 
 export function MediaToolsSection() {
+  const t = useT()
   const [state, setState] = useState<FfmpegStateResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +21,7 @@ export function MediaToolsSection() {
     api.ffmpegState()
       .then((next) => { if (!cancelled) setState(next) })
       .catch((cause: unknown) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not read component status')
+        if (!cancelled) setError(cause instanceof Error ? cause.message : t('Could not read component status'))
       })
     return () => { cancelled = true }
   }, [])
@@ -48,7 +51,7 @@ export function MediaToolsSection() {
     api.prepareFfmpeg()
       .then(setState)
       .catch((cause: unknown) => {
-        setState({ state: 'failed', message: cause instanceof Error ? cause.message : 'Could not start download' })
+        setState({ state: 'failed', message: cause instanceof Error ? cause.message : t('Could not start download') })
       })
   }
 
@@ -56,8 +59,8 @@ export function MediaToolsSection() {
     <section className="settings-section" aria-labelledby="media-tools-title">
       <div className="settings-section-heading">
         <div>
-          <h3 id="media-tools-title">Video and audio processing</h3>
-          <p>Trim, split into shots, extract audio tracks and frames.</p>
+          <h3 id="media-tools-title">{t('Video and audio processing')}</h3>
+          <p>{t('Trim, split into shots, extract audio tracks and frames.')}</p>
         </div>
         <span className="settings-connection" data-tone={view.tone} role="status">
           {view.label}

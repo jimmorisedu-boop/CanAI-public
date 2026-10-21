@@ -3,6 +3,8 @@ import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import type { CanvasItem } from '../spaces/canvas/konva/types'
 import { TabletDialog } from './TabletDialog'
 import { confirmDiscardDraft } from './confirmDiscardDraft'
+import { useT } from '../i18n/context.js'
+
 
 const MIN_SIZE = 24
 const MAX_SIZE = 10000
@@ -50,6 +52,7 @@ export function TabletResizeEditor({
   itemId: string
   onClose(): void
 }) {
+  const t = useT()
   const item = store.getItem(itemId)
   const widthRef = useRef<HTMLInputElement>(null)
   const [width, setWidth] = useState(() => displaySize(item?.w ?? MIN_SIZE))
@@ -107,22 +110,22 @@ export function TabletResizeEditor({
 
   return (
     <TabletDialog
-      title="Object size"
+      title={t('Object size')}
       onClose={close}
       wide
       actions={
         <>
-          <button type="button" className="ui-btn quiet" onClick={close}>Cancel</button>
-          <button type="button" className="ui-btn primary" onClick={apply}>Apply</button>
+          <button type="button" className="ui-btn quiet" onClick={close}>{t('Cancel')}</button>
+          <button type="button" className="ui-btn primary" onClick={apply}>{t('Apply')}</button>
         </>
       }
     >
       <div className="tablet-resize-editor">
         <p className="tablet-resize-title">{itemTitle(item)}</p>
-        <p className="tablet-resize-note">This changes the canvas card size. The original file stays unchanged.</p>
+        <p className="tablet-resize-note">{t('This changes the canvas card size. The original file stays unchanged.')}</p>
         <div className="tablet-resize-fields">
           <label>
-            <span>Width, px</span>
+            <span>{t('Width, px')}</span>
             <input
               ref={widthRef}
               className="ui-field"
@@ -136,7 +139,7 @@ export function TabletResizeEditor({
             />
           </label>
           <label>
-            <span>Height, px</span>
+            <span>{t('Height, px')}</span>
             <input
               className="ui-field"
               type="number"
@@ -151,7 +154,7 @@ export function TabletResizeEditor({
         </div>
         <label className="tablet-resize-lock">
           <input type="checkbox" checked={locked} onChange={(event) => setLocked(event.target.checked)} />
-          <span>Keep aspect ratio</span>
+          <span>{t('Keep aspect ratio')}</span>
         </label>
         {error && <p className="tablet-resize-error" role="alert">{error}</p>}
       </div>

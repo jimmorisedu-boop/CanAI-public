@@ -1,5 +1,7 @@
 import React from 'react'
 import type { GraphDiagnostic } from './graphDiagnostics'
+import { useT } from '../../i18n/context.js'
+
 
 interface Props {
   diagnostics: GraphDiagnostic[]
@@ -7,19 +9,20 @@ interface Props {
 }
 
 export function GraphDiagnosticsPanel({ diagnostics, onFocus }: Props) {
+  const t = useT()
   if (diagnostics.length === 0) return null
   return (
     <aside
       id="graph-diagnostics-panel"
       className="graph-diagnostics-panel"
-      aria-label="Graph issues"
+      aria-label={t('Graph issues')}
     >
-      <div className="graph-diagnostics-title">Graph issues</div>
+      <div className="graph-diagnostics-title">{t('Graph issues')}</div>
       {diagnostics.map((diagnostic, index) => {
         const content = (
           <>
-            <span>{diagnostic.severity === 'error' ? 'Error' : 'Warning'}</span>
-            <b>{diagnostic.message}</b>
+            <span>{diagnostic.severity === 'error' ? t('Error') : t('Warning')}</span>
+            <b>{t(diagnostic.message)}</b>
           </>
         )
         const key = `${diagnostic.code}:${diagnostic.nodeId ?? 'graph'}:${index}`

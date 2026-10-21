@@ -5,6 +5,8 @@ import type { CatalogModel } from '../../types'
 import { IconClose, IconLLM, IconTrash, IconUpload } from '../../ui/icons'
 import { showErrorToast, showToast } from './toastBus'
 import { askConfirm } from '../../ui/confirmBus'
+import { useT } from '../../i18n/context.js'
+
 
 // Окно помощника: имя, инструкции (системный промпт), модель и документы.
 // Нодовых скриптов здесь больше нет — решение пользователя 18.08.2026: нужно
@@ -42,6 +44,7 @@ export function AssistantPresetEditor({
   onSaved(saved: AssistantPreset): void
   onDeleted(id: string): void
 }) {
+  const t = useT()
   const textModels = models.filter((model) => model.kind === 'text')
   const [name, setName] = useState(preset?.name ?? '')
   const [instructions, setInstructions] = useState(preset?.instructions ?? '')
@@ -71,7 +74,7 @@ export function AssistantPresetEditor({
       onSaved({ ...(await save()), docs })
       onClose()
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : "Failed to save assistant")
+      showErrorToast(error instanceof Error ? error.message : t('Failed to save assistant'))
     } finally {
       setBusy(false)
     }
@@ -89,14 +92,14 @@ export function AssistantPresetEditor({
       for (const file of Array.from(files)) {
         const text = await file.text()
         if (!text.trim()) {
-          showErrorToast(`"${file.name}" is empty or not text`)
+          showErrorToast(t('"{0}" is empty or not text', { 0: file.name }))
           continue
         }
         const { doc } = await api.addAssistantDoc(saved.id, file.name, text)
         setDocs((current) => [...current, doc])
       }
     } catch (error) {
-      showErrorToast(error instanceof Error ? error.message : "Failed to attach file")
+      showErrorToast(error instanceof Error ? error.message : t('Failed to attach file'))
     } finally {
       setBusy(false)
       if (fileRef.current) fileRef.current.value = ''
@@ -106,7 +109,7 @@ export function AssistantPresetEditor({
   async function detach(doc: AssistantDoc): Promise<void> {
     if (!id) return
     setDocs((current) => current.filter((item) => item.id !== doc.id))
-    await api.removeAssistantDoc(id, doc.id).catch(() => showToast("The file was removed from the list only"))
+    await api.removeAssistantDoc(id, doc.id).catch(() => showToast(t('The file was removed from the list only')))
   }
 
   return createPortal(
@@ -121,36 +124,36 @@ export function AssistantPresetEditor({
         <header className="app-dialog-hero">
           <div className="app-dialog-icon"><IconLLM size={21} /></div>
           <div>
-            <h2 id={titleId}>{preset ? "Assistant" : "New assistant"}</h2>
-            <p>Instructions, model, and documents. Activate the assistant from its row.</p>
+            <h2 id={titleId}>{preset ? t('Assistant') : t('New assistant')}</h2>
+            <p>{t('Instructions, model, and documents. Activate the assistant from its row.')}</p>
           </div>
-          <button className="app-dialog-close" onClick={onClose} aria-label="Close">
+          <button className="app-dialog-close" onClick={onClose} aria-label={t('Close')}>
             <IconClose size={16} />
           </button>
         </header>
 
-        <label className="assistant-label" htmlFor={`${titleId}-name`}>Name</label>
+        <label className="assistant-label" htmlFor={`${titleId}-name`}>{t('Name')}</label>
         <input
           id={`${titleId}-name`}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Name the assistant"
+          placeholder={t('Name the assistant')}
           maxLength={80}
           autoFocus
         />
 
-        <label className="assistant-label" htmlFor={`${titleId}-instructions`}>Instructions</label>
+        <label className="assistant-label" htmlFor={`${titleId}-instructions`}>{t('Instructions')}</label>
         <textarea
           id={`${titleId}-instructions`}
-          aria-label="Assistant instructions"
+          aria-label={t('Assistant instructions')}
           className="assistant-instructions"
           value={instructions}
           maxLength={INSTRUCTIONS_LIMIT}
           onChange={(event) => setInstructions(event.target.value)}
-          placeholder="What does this assistant do? How should it behave? What should it avoid?"
+          placeholder={t('What does this assistant do? How should it behave? What should it avoid?')}
         />
 
-        <label className="assistant-label" htmlFor={`${titleId}-model`}>Model</label>
+        <label className="assistant-label" htmlFor={`${titleId}-model`}>{t('Model')}</label>
         <select
           id={`${titleId}-model`}
           value={modelId}
@@ -161,8 +164,8 @@ export function AssistantPresetEditor({
             : textModels.map((model) => <option key={model.id} value={model.id}>{model.name}</option>)}
         </select>
 
-        <label className="assistant-label">Knowledge</label>
-        <p className="assistant-note">The assistant receives text files together with its instructions.</p>
+        <label className="assistant-label">{t('Knowledge')}</label>
+        <p className="assistant-note">{t('The assistant receives text files together with its instructions.')}</p>
         {docs.length > 0 && (
           <ul className="assistant-docs">
             {docs.map((doc) => (
@@ -172,7 +175,7 @@ export function AssistantPresetEditor({
                 <button
                   type="button"
                   className="icon-btn"
-                  aria-label={`Remove ${doc.name}`}
+                  aria-label={t('Remove {0}', { 0: doc.name })}
                   onClick={() => void detach(doc)}
                 >
                   <IconTrash size={14} />
@@ -195,14 +198,14 @@ export function AssistantPresetEditor({
           disabled={busy}
           onClick={() => fileRef.current?.click()}
         >
-          <IconUpload size={16} />Upload files
+          <IconUpload size={16} />{t('Upload files')}
         </button>
 
         <div className="assistant-actions">
           <button className="generate" disabled={busy || !name.trim()} onClick={() => void submit()}>
-            {busy ? "Saving…" : "Save"}
+            {busy ? t('Saving…') : t('Save')}
           </button>
-          <button className="editor-close" onClick={onClose}>Cancel</button>
+          <button className="editor-close" onClick={onClose}>{t('Cancel')}</button>
           {id && (
             <button
               className="editor-close assistant-delete"
@@ -225,7 +228,8 @@ export function AssistantPresetEditor({
                 onClose()
               }}
             >
-              Delete
+
+              {t('Delete')}
             </button>
           )}
         </div>

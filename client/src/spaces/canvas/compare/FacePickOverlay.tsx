@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 import { useModalFocus } from '../../../tablet/modalFocus'
 import { faceBoxFraction, type DetectedFace } from './faceMath'
+import { useT } from '../../../i18n/context.js'
+
 
 // Выбор лица на групповом кадре.
 //
@@ -33,20 +35,21 @@ export function FacePickOverlay({
   onPick(index: number): void
   onCancel(): void
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useModalFocus(dialogRef, onCancel)
   return (
-    <div ref={dialogRef} tabIndex={-1} className="face-pick" role="dialog" aria-modal="true" aria-label={`Select face: ${title}`}>
+    <div ref={dialogRef} tabIndex={-1} className="face-pick" role="dialog" aria-modal="true" aria-label={t('Select face: {0}', { 0: title })}>
       <div className="face-pick-head">
         <span className="face-pick-title">
-          <strong>{title}: which face to compare</strong>
+          <strong>{title}{t(': which face to compare')}</strong>
           <span>
             {faces.length > 1
-              ? `Click the face to select; faces in the frame: ${faces.length}`
-              : 'Click a face to select it'}
+              ? t('Click the face to select; faces in the frame: {0}', { 0: faces.length })
+              : t('Click a face to select it')}
           </span>
         </span>
-        <button type="button" onClick={onCancel}>Cancel</button>
+        <button type="button" onClick={onCancel}>{t('Cancel')}</button>
       </div>
       <div className="face-pick-stage">
         {/* Обёртка сжимается ровно до картинки: рамки заданы её долями, и
@@ -66,7 +69,7 @@ export function FacePickOverlay({
               width: `${box.w * 100}%`,
               height: `${box.h * 100}%`,
             }}
-            aria-label={`Face ${index + 1}${index === selected ? ' (selected)' : ''}`}
+            aria-label={t('Face {0}{1}', { 0: index + 1, 1: index === selected ? ' (selected)' : '' })}
             onClick={() => onPick(index)}
           >
             <span>{index + 1}</span>

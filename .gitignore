@@ -5,6 +5,8 @@ node_modules/
 
 # портативный Node.js (скачивается лаунчером или копируется с папкой)
 runtime/
+!web-demo/runtime/
+!web-demo/runtime/**
 
 # секреты — ключ fal.ai живёт только локально
 server/.env

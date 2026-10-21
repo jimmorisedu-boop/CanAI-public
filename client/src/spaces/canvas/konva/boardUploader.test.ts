@@ -5,6 +5,9 @@ import ts from 'typescript'
 import { CanvasStore } from './canvasStore.js'
 import { adoptForBoard, adoptResultForBoard } from './boardUploader.js'
 
+const identityTranslate = (message: string, params?: Record<string, unknown>) =>
+  params ? message.replace(/\{(\d+)\}/gu, (token, key: string) => Object.hasOwn(params, key) ? String(params[key]) : token) : message
+
 // Execute the small drop handler without mounting the whole React shelf.
 async function handler(file: string, name: string, deps: Record<string, unknown>) {
   const source = ts.createSourceFile(
@@ -41,6 +44,7 @@ test('медленная загрузка в локальные ассеты м�
       measure: async () => ({ w: 640, h: 480, readable: true }),
       boardMediaUploader: () => () => uploading,
       notify: (notice: unknown) => notices.push(notice),
+      t: identityTranslate,
     })
     const pending = drop(0, {
       preventDefault() {},
@@ -76,6 +80,7 @@ test('битый файл в локальные ассеты не берут и 
     measure: async () => ({ w: 1024, h: 768, readable: false }),
     boardMediaUploader: () => () => { uploads += 1; return Promise.resolve({ url: '/media/x', mime: 'image/png' }) },
     notify: (notice: { kind: string; message: string }) => notices.push(notice),
+    t: identityTranslate,
   })
   await drop(0, {
     preventDefault() {},

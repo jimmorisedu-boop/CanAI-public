@@ -3,6 +3,8 @@ import type { ProjectSource, ServerStatus } from '../../types'
 import { InlineNotice } from '../../ui/InlineNotice'
 import { AUTO_DISMISS_MS } from '../../ui/noticeTiming'
 import { openSettings } from '../../settings/settingsBus'
+import { useT } from '../../i18n/context.js'
+
 
 // Стопка сообщений под промпт-баром. Вынесена из PromptBar: это чистая
 // разметка без единого решения, а занимала она восемьдесят строк посреди
@@ -36,16 +38,17 @@ export function PromptNotices({
   editorNotice: string | null
   onDismissEditorNotice(): void
 }) {
+  const t = useT()
   return (
     <>
       {projectSource !== 'cloud' && serverStatus && !serverStatus.falConfigured && (
         <InlineNotice
           className="prompt-inline-notice"
           tone={serverStatus.mockMode ? 'warning' : 'error'}
-          title={serverStatus.mockMode ? "Demo mode" : "Generation unavailable"}
-          detail={serverStatus.mockMode ? "These are test results; no AI generation was used." : "The fal.ai key is not configured."}
+          title={serverStatus.mockMode ? t('Demo mode') : t('Generation unavailable')}
+          detail={serverStatus.mockMode ? t('These are test results; no AI generation was used.') : t('The fal.ai key is not configured.')}
           action={{
-            label: "Open Settings",
+            label: t('Open Settings'),
             onClick: () => openSettings("Add a fal.ai key to enable real generations (no restart required).", 'generation'),
           }}
         />
@@ -54,17 +57,17 @@ export function PromptNotices({
         <InlineNotice
           className="prompt-inline-notice"
           tone="error"
-          title="Server unavailable"
-          detail="We check the connection automatically. If the server is closed, launch CanAI with “Run CanAI.bat”."
+          title={t('Server unavailable')}
+          detail={t('We check the connection automatically. If the server is closed, launch CanAI with “Run CanAI.bat”.')}
         />
       )}
       {serverStatusReady && catalogError && catalogEmpty && (
         <InlineNotice
           className="prompt-inline-notice"
           tone="error"
-          title="The model catalog did not load"
-          detail="The model selection is currently empty."
-          action={{ label: "Retry", onClick: onRetryCatalog }}
+          title={t('The model catalog did not load')}
+          detail={t('The model selection is currently empty.')}
+          action={{ label: t('Retry'), onClick: onRetryCatalog }}
         />
       )}
 
@@ -74,10 +77,10 @@ export function PromptNotices({
           tone="info"
           title={
             replacementNumber
-              ? `Replacing reference ${replacementNumber}`
-              : "Replacing a text reference"
+              ? t('Replacing reference {0}', { 0: replacementNumber })
+              : t('Replacing a text reference')
           }
-          detail="Select one object on the canvas or click an asset. Press Esc to cancel."
+          detail={t('Select one object on the canvas or click an asset. Press Esc to cancel.')}
           onDismiss={onCancelReplacement}
         />
       )}

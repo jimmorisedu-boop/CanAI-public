@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { IconFit } from './icons'
 import { ParamTextEditor } from './ParamTextEditor'
+import { useT } from '../i18n/context.js'
+
 
 // Текстовое поле с кнопкой «Развернуть».
 //
@@ -35,6 +37,7 @@ export function ExpandableTextarea({
   // поле растёт под содержимое до потолка (у параметров модели)
   autoGrow?: boolean
 }) {
+  const t = useT()
   const [expanded, setExpanded] = useState(false)
   const areaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -62,13 +65,13 @@ export function ExpandableTextarea({
       <button
         type="button"
         className="param-expand nodrag"
-        title="Open in a larger window"
+        title={t('Open in a larger window')}
         onClick={(event) => {
           event.preventDefault()
           setExpanded(true)
         }}
       >
-        <IconFit size={13} /> Expand
+        <IconFit size={13} /> {t('Expand')}
       </button>
       {expanded && (
         <ParamTextEditor

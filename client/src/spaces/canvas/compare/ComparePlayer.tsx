@@ -1,4 +1,6 @@
 import { IconPause, IconRun } from '../../../ui/icons'
+import { useT } from '../../../i18n/context.js'
+
 
 // Полоса плеера — ОДНА на обе раскладки сравнения (рядом и наложение).
 // Своей логики не держит: всё считает useComparePlayer, здесь только вид.
@@ -37,12 +39,13 @@ export function ComparePlayer({
   onAlternate: (value: boolean) => void
   extra?: React.ReactNode
 }) {
+  const t = useT()
   return (
     <div className="compare-player">
       <button
         className="compare-play"
-        aria-label={playing ? 'Pause' : 'Play'}
-        title={playing ? 'Pause (Space)' : 'Play (Space)'}
+        aria-label={playing ? t('Pause') : t('Play')}
+        title={playing ? t('Pause (Space)') : t('Play (Space)')}
         // не оставляем фокус на кнопке: следующий пробел ушёл бы в неё
         onClick={(event) => {
           event.currentTarget.blur()
@@ -60,7 +63,7 @@ export function ComparePlayer({
         step={0.01}
         value={Math.min(time, duration)}
         onChange={(event) => onSeek(Number(event.target.value))}
-        aria-label="Playback position"
+        aria-label={t('Playback position')}
       />
       <span className="compare-time">{formatTime(duration)}</span>
       <div className="compare-rates">
@@ -75,7 +78,7 @@ export function ComparePlayer({
         ))}
       </div>
       {canAlternate && (
-        <label className="compare-alternate" title="Space switches between the videos, each from the beginning">
+        <label className="compare-alternate" title={t('Space switches between the videos, each from the beginning')}>
           <input type="checkbox" checked={alternate} onChange={(event) => onAlternate(event.target.checked)} />
           in sequence
         </label>

@@ -1,4 +1,6 @@
 import type { CatalogDefaults, CatalogLibraryView } from '../types.js'
+import { useT } from '../i18n/context.js'
+
 
 type CatalogDefaultSlot = keyof CatalogDefaults
 
@@ -14,6 +16,7 @@ export function ModelDefaultsCard({ library, disabled, onChange }: {
   disabled: boolean
   onChange(slot: CatalogDefaultSlot, modelId: string): Promise<void>
 }) {
+  const t = useT()
   const pairedIds = new Set(library.models.flatMap(model => (
     [model.pairId, model.videoPairId].filter((id): id is string => Boolean(id))
   )))
@@ -21,8 +24,8 @@ export function ModelDefaultsCard({ library, disabled, onChange }: {
     <section className="settings-section model-defaults" aria-labelledby="model-defaults-title">
       <div className="settings-section-heading">
         <div>
-          <h3 id="model-defaults-title">Default models</h3>
-          <p>One choice for all local boards. You can still change the model for a specific generation.</p>
+          <h3 id="model-defaults-title">{t('Default models')}</h3>
+          <p>{t('One choice for all local boards. You can still change the model for a specific generation.')}</p>
         </div>
       </div>
       <div className="model-defaults-grid">
@@ -37,17 +40,17 @@ export function ModelDefaultsCard({ library, disabled, onChange }: {
           const currentAvailable = choices.some(model => model.id === current)
           const saved = library.models.find(model => model.id === current)
           return <label key={slot} className="model-default-field">
-            <span>{label}</span>
+            <span>{t(label)}</span>
             <select
-              aria-label={`Default model: ${label}`}
+              aria-label={t('Default model: {0}', { 0: label })}
               value={current ?? ''}
               disabled={disabled}
               onChange={event => { void onChange(slot, event.target.value) }}
             >
               {!currentAvailable && current && (
-                <option value={current} disabled>{saved?.name ?? current} · replacement needed</option>
+                <option value={current} disabled>{t('{0} · replacement needed', { 0: saved?.name ?? current })}</option>
               )}
-              {!current && <option value="" disabled>Choose a model</option>}
+              {!current && <option value="" disabled>{t('Choose a model')}</option>}
               {choices.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
             </select>
           </label>

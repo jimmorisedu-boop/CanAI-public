@@ -24,6 +24,10 @@ Right-click or press F2 to open the Workflow/Macro editor.
 
 ![Run and stop macros: Edit the macro](../../client/public/help/macros-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered.
+
 ## Shortcuts
 
 - **F2** — Edit the selected macro or open the external editor

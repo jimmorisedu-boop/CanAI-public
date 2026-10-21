@@ -8,6 +8,8 @@ import type { GenerationLaunchGroup } from './generationLaunches'
 import { generationConnectionLabel, type GenerationTask, type GenerationTaskState } from './generationRegistry'
 import { launchGroupView } from './launchGroupPresentation'
 import { systemErrorMessage } from '../../ui/systemMessage'
+import { useT } from '../../i18n/context.js'
+
 
 const CONFIRM_MS = 4_000
 const ACTIVE_STATES: GenerationTaskState[] = ['queued', 'running']
@@ -91,6 +93,7 @@ export function GenerationLaunchGroupRow({
   onRetry,
   onDismiss,
 }: GenerationLaunchGroupRowProps) {
+  const t = useT()
   const [confirmStop, setConfirmStop] = useState(false)
   const actions = generationLaunchGroupActionIds(group)
   const detailsId = `launch-details-${group.launchId.replace(/[^a-zA-Z0-9_-]/g, '-')}`
@@ -146,7 +149,7 @@ export function GenerationLaunchGroupRow({
             <button
               type="button"
               className="icon-btn task-launch-dismiss"
-              aria-label="Remove run from list"
+              aria-label={t('Remove run from list')}
               onClick={() => actions.dismiss.forEach(onDismiss)}
             >
               <IconClose size={13} />
@@ -160,7 +163,7 @@ export function GenerationLaunchGroupRow({
           <div
             className="task-launch-progress"
             role="progressbar"
-            aria-label={`Completed variants: ${terminalCount(group)} of ${group.variantCount}`}
+            aria-label={t('Completed variants: {0} of {1}', { 0: terminalCount(group), 1: group.variantCount })}
             aria-valuemin={0}
             aria-valuemax={group.variantCount}
             aria-valuenow={terminalCount(group)}
@@ -182,12 +185,12 @@ export function GenerationLaunchGroupRow({
                 className={confirmStop ? 'armed' : undefined}
                 onClick={stopRemaining}
               >
-                <IconStop size={13} /> {confirmStop ? "Stop this run?" : view.expandable ? "Stop remaining" : "Stop"}
+                <IconStop size={13} /> {confirmStop ? t('Stop this run?') : view.expandable ? "Stop remaining" : "Stop"}
               </button>
             )}
             {actions.retry.length > 0 && (
               <button type="button" onClick={() => actions.retry.forEach(onRetry)}>
-                <IconRefresh size={13} /> {view.expandable ? "Retry failed" : "Retry"}
+                <IconRefresh size={13} /> {view.expandable ? t('Retry failed') : t('Retry')}
               </button>
             )}
           </div>
@@ -209,18 +212,18 @@ export function GenerationLaunchGroupRow({
                 </span>
                 <span className="task-launch-variant-actions">
                   {variant.state === 'done' && (
-                    <button type="button" aria-label={`Show variant ${index}`} onClick={() => onShow([variant.jobId])}>
-                      <IconFit size={12} /> Show
+                    <button type="button" aria-label={t('Show variant {0}', { 0: index })} onClick={() => onShow([variant.jobId])}>
+                      <IconFit size={12} />  {t('Show')}
                     </button>
                   )}
                   {ACTIVE_STATES.includes(variant.state) && (
-                    <button type="button" aria-label={`Stop variant ${index}`} onClick={() => onCancel(variant.jobId)}>
-                      <IconStop size={12} /> Stop
+                    <button type="button" aria-label={t('Stop variant {0}', { 0: index })} onClick={() => onCancel(variant.jobId)}>
+                      <IconStop size={12} />  {t('Stop')}
                     </button>
                   )}
                   {variant.state === 'error' && variant.retry && (
-                    <button type="button" aria-label={`Retry variant ${index}`} onClick={() => onRetry(variant.jobId)}>
-                      <IconRefresh size={12} /> Retry
+                    <button type="button" aria-label={t('Retry variant {0}', { 0: index })} onClick={() => onRetry(variant.jobId)}>
+                      <IconRefresh size={12} />  {t('Retry')}
                     </button>
                   )}
                 </span>

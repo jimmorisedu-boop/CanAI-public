@@ -3,6 +3,8 @@ import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import { DEFAULT_FONT_SIZE } from '../spaces/canvas/konva/canvasLayout'
 import { TabletDialog } from './TabletDialog'
 import { confirmDiscardDraft } from './confirmDiscardDraft'
+import { useT } from '../i18n/context.js'
+
 
 // Правка текста на доске.
 //
@@ -24,6 +26,7 @@ export function TabletTextEditor({
   itemId: string
   onClose(): void
 }) {
+  const t = useT()
   const item = store.getItem(itemId)
   const [text, setText] = useState(item?.text ?? '')
   const [size, setSize] = useState(item?.fontSize ?? DEFAULT_FONT_SIZE)
@@ -57,28 +60,28 @@ export function TabletTextEditor({
 
   return (
     <TabletDialog
-      title="Text"
+      title={t('Text')}
       onClose={close}
       wide
       actions={
         <>
-          <button type="button" className="ui-btn quiet" onClick={close}>Cancel</button>
-          <button type="button" className="ui-btn primary" onClick={save}>Done</button>
+          <button type="button" className="ui-btn quiet" onClick={close}>{t('Cancel')}</button>
+          <button type="button" className="ui-btn primary" onClick={save}>{t('Done')}</button>
         </>
       }
     >
       <textarea
         ref={areaRef}
         className="ui-field tablet-text-area"
-        aria-label="Object text"
+        aria-label={t('Object text')}
         value={text}
         rows={6}
         style={{ fontSize: Math.min(size, 28) }}
         onChange={(event) => setText(event.target.value)}
       />
       <div className="tablet-text-sizes">
-        <span>Font size</span>
-        <div className="ui-toggle" role="group" aria-label="Font size">
+        <span>{t('Font size')}</span>
+        <div className="ui-toggle" role="group" aria-label={t('Font size')}>
           {SIZES.map((value) => (
             <button
               key={value}

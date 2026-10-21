@@ -20,6 +20,8 @@ import { previewSrc } from './remoteSession'
 import { tabletSystemMessage } from './tabletSystemMessage'
 import type { TabletMediaUploader } from './runtime'
 import type { CanvasItem } from '../spaces/canvas/konva/types'
+import { useT } from '../i18n/context.js'
+
 
 // Обрезка картинки пальцем.
 //
@@ -58,6 +60,7 @@ export function TabletCrop({
   upload: TabletMediaUploader
   onClose(): void
 }) {
+  const t = useT()
   const sourceItem = store.getItem(itemId)
   // Метаданные кропа хранят неизменяемый исходник и прежнюю рамку. Каждую
   // сессию открываем на этом исходнике, чтобы повторный кроп (в том числе
@@ -178,11 +181,11 @@ export function TabletCrop({
       // Кусок вырезан — экран закрывается, файл едет фоном на карточке с
       // процентами (пункт 3.6). Сбой загрузки после закрытия — всплывашкой.
       await applyCropInBackground(store, item, rect, upload, (failure) => {
-        notify({ kind: 'error', message: tabletSystemMessage(failure, 'Could not crop') })
+        notify({ kind: 'error', message: tabletSystemMessage(failure, t('Could not crop')) })
       })
       onClose()
     } catch (error) {
-      setError(tabletSystemMessage(error, 'Could not crop'))
+      setError(tabletSystemMessage(error, t('Could not crop')))
     } finally {
       busyRef.current = false
       setBusy(false)
@@ -206,12 +209,12 @@ export function TabletCrop({
 
   return (
     <TabletFullScreen
-      title="Crop"
+      title={t('Crop')}
       onCancel={() => void close(initialRect)}
       tone="dark"
       center={
         <div className="tablet-crop-controls">
-          <div className="ui-toggle" role="group" aria-label="Aspect ratio">
+          <div className="ui-toggle" role="group" aria-label={t('Aspect ratio')}>
             {RATIO_PRESETS.map((preset) => (
               <button
                 key={preset.label}
@@ -227,11 +230,11 @@ export function TabletCrop({
               </button>
             ))}
           </div>
-          <div className="tablet-crop-view-controls" role="group" aria-label="Preview zoom">
+          <div className="tablet-crop-view-controls" role="group" aria-label={t('Preview zoom')}>
             <button
               type="button"
               className="ui-icon-btn"
-              aria-label="Zoom preview out"
+              aria-label={t('Zoom preview out')}
               disabled={display.zoom <= 0.5}
               onClick={() => setViewZoom((value) => Math.max(0.5, value / 1.25))}
             >−</button>
@@ -239,31 +242,31 @@ export function TabletCrop({
             <button
               type="button"
               className="ui-icon-btn"
-              aria-label="Zoom preview in"
+              aria-label={t('Zoom preview in')}
               disabled={display.zoom >= 1}
               onClick={() => setViewZoom((value) => Math.min(1, value * 1.25))}
             >+</button>
-            <button type="button" className="ui-btn quiet" onClick={() => setViewZoom(1)}>Fit</button>
+            <button type="button" className="ui-btn quiet" onClick={() => setViewZoom(1)}>{t('Fit')}</button>
           </div>
         </div>
       }
       primary={
         <button type="button" className="ui-btn primary" disabled={busy} onClick={() => void apply()}>
-          {busy ? 'Cropping…' : 'Apply'}
+          {busy ? t('Cropping…') : t('Apply')}
         </button>
       }
       footer={
         <>
           <details className="tablet-crop-precise">
-            <summary>Exact dimensions</summary>
+            <summary>{t('Exact dimensions')}</summary>
             <CropFields rect={rect} bounds={bounds} ratio={ratio} disabled={busy} onChange={setRect} />
           </details>
           <span className="tablet-full-gap" />
-          <span className="tablet-hint">One undo step restores the entire frame</span>
+          <span className="tablet-hint">{t('One undo step restores the entire frame')}</span>
         </>
       }
     >
-      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, 'Could not crop')} onDismiss={() => setError(null)} />}
+      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, t('Could not crop'))} onDismiss={() => setError(null)} />}
       <div className="tablet-crop-stage" ref={stageRef}>
         <div
           className="tablet-crop-frame"

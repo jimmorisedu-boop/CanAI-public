@@ -10,6 +10,8 @@ import { MacroLibraryRow } from './MacroLibraryRow'
 import { MACRO_SLOT_COUNT, NODES } from './macroLibraryModel'
 import { useMacroLibraryActions, type LibraryNotice } from './useMacroLibraryActions'
 import { useMacroLibraryData } from './useMacroLibraryData'
+import { useT } from '../../i18n/context.js'
+
 
 /** Local macro library window: list, edit, duplicate, reorder, file exchange. */
 export function MacroLibrary({
@@ -23,6 +25,7 @@ export function MacroLibrary({
   onClose(): void
   initialNotice?: LibraryNotice | null
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useDialogFocus(dialogRef, onClose)
   const data = useMacroLibraryData(scope, projectSource)
@@ -120,9 +123,9 @@ export function MacroLibrary({
         onClick={(event) => event.stopPropagation()}
       >
         <header>
-          <h2 id="macro-lib-title">Macros</h2>
+          <h2 id="macro-lib-title">{t('Macros')}</h2>
           {!data.loading && <span className="macro-lib-count">{`${slotted.length} of ${MACRO_SLOT_COUNT}`}</span>}
-          <button className="macro-lib-close" type="button" aria-label="Close" onClick={onClose}><IconClose size={16} /></button>
+          <button className="macro-lib-close" type="button" aria-label={t('Close')} onClick={onClose}><IconClose size={16} /></button>
         </header>
 
         {data.error && <InlineNotice className="macro-lib-error" tone="error" title={data.error} action={{ label: 'Retry', onClick: () => void data.reload() }} />}
@@ -132,22 +135,22 @@ export function MacroLibrary({
           </InlineNotice>
         )}
 
-        {data.loading ? data.error ? null : <p className="macro-lib-note">Loading…</p> : shown.length === 0 ? (
-          <p className="macro-lib-note">No macros yet.</p>
+        {data.loading ? data.error ? null : <p className="macro-lib-note">{t('Loading…')}</p> : shown.length === 0 ? (
+          <p className="macro-lib-note">{t('No macros yet.')}</p>
         ) : (
           <>
-            {orphans.length > 0 && <><div className="macro-lib-section warn">Not visible in the bar</div>{orphans.map(row)}</>}
+            {orphans.length > 0 && <><div className="macro-lib-section warn">{t('Not visible in the bar')}</div>{orphans.map(row)}</>}
             {slotted.map(row)}
           </>
         )}
 
         <MacroLibraryLegacy macros={data.legacy} unit={unit} busy={busy} onRemove={actions.removeLegacy} />
         <footer className="macro-lib-footer">
-          <button className="macro-lib-add" type="button" disabled={data.loading || full} title={full ? `All ${MACRO_SLOT_COUNT} slots are occupied` : undefined} onClick={() => actions.create()}>
+          <button className="macro-lib-add" type="button" disabled={data.loading || full} title={full ? t('All {0} slots are occupied', { 0: MACRO_SLOT_COUNT }) : undefined} onClick={() => actions.create()}>
             <IconPlus size={14} /> Add macro
           </button>
-          <button className="macro-lib-add" type="button" disabled={data.loading || full || busy} title={full ? `All ${MACRO_SLOT_COUNT} slots are occupied` : 'Upload macro from file'} onClick={() => actions.importFile()}>
-            <IconUpload size={14} /> From file
+          <button className="macro-lib-add" type="button" disabled={data.loading || full || busy} title={full ? t('All {0} slots are occupied', { 0: MACRO_SLOT_COUNT }) : t('Upload macro from file')} onClick={() => actions.importFile()}>
+            <IconUpload size={14} />  {t('From file')}
           </button>
         </footer>
       </div>

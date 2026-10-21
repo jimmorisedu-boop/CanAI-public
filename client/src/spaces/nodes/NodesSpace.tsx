@@ -65,6 +65,8 @@ import { hits } from '../../ui/hotkeys'
 import { useCompactLayout } from '../../ui/useCompactLayout'
 import { NodesCompactToolbar } from './NodesCompactToolbar'
 import { reactFlowNavigationProps, useNavigationMode } from '../../settings/navigationMode'
+import { useT } from '../../i18n/context.js'
+
 
 const nodeTypes = { gen: GenNode }
 const NEW_NODE_SIZE = { width: 240, height: 150 }
@@ -136,6 +138,7 @@ function Flow({
   catalogError,
   onRetryCatalog,
 }: FlowProps) {
+  const translate = useT()
   const compact = useCompactLayout()
   const navigationMode = useNavigationMode()
   const flowNavigation = reactFlowNavigationProps(navigationMode)
@@ -623,7 +626,7 @@ function Flow({
       }}
       title={
         graph.saveState === 'saving'
-          ? 'Saving…'
+          ? translate('Saving…')
           : graph.saveState === 'saved'
             ? 'Saved ✓'
             : 'Save macro (Ctrl+S)'
@@ -636,7 +639,7 @@ function Flow({
     <button
       className="node-add-btn icon-btn node-delete-btn"
       onClick={() => void clearAndClose()}
-      title="Delete macro and free slot"
+      title={translate('Delete macro and free slot')}
     >
       <IconTrash size={16} />
     </button>
@@ -658,7 +661,7 @@ function Flow({
       {compact ? (
         <NodesCompactToolbar
           name={graph.name}
-          placeholder={`Macro ${slot + 1}`}
+          placeholder={translate('Macro {0}', { 0: slot + 1 })}
           loaded={graph.loaded}
           attention={toolbarAttention}
           onBack={() => void close()}
@@ -670,19 +673,19 @@ function Flow({
         />
       ) : (
         <div className="nodes-toolbar">
-          <button className="node-add-btn nodes-back icon-tab" onClick={() => void close()} title="Back to canvas">
-            <IconBack size={16} /> Canvas
+          <button className="node-add-btn nodes-back icon-tab" onClick={() => void close()} title={translate('Back to canvas')}>
+            <IconBack size={16} />  {translate('Canvas')}
           </button>
           <input
             className="macro-name-input"
-            aria-label="Macro name"
-            placeholder={`Macro ${slot + 1}`}
+            aria-label={translate('Macro name')}
+            placeholder={translate('Macro {0}', { 0: slot + 1 })}
             value={graph.name}
             onChange={(e) => graph.setName(e.target.value)}
-            title="Macro name (slot button label)"
+            title={translate('Macro name (slot button label)')}
             disabled={!graph.loaded}
           />
-          <span className="nodes-toolbar-label">Add a node:</span>
+          <span className="nodes-toolbar-label">{translate('Add a node:')}</span>
           {/* Group 1: Вход, Файл, Текст */}
           {addButtons
             .filter((b) => ['input', 'media', 'note'].includes(b.kind))
@@ -741,7 +744,7 @@ function Flow({
           className="nodes-inline-notice"
           tone="error"
           title={graph.saveState === 'conflict'
-            ? 'Macro version changed'
+            ? translate('Macro version changed')
             : graph.loadError ? 'Macro did not load' : 'Macro was not saved'}
           detail={graph.saveError ?? graph.loadError ?? undefined}
           action={graph.saveState === 'conflict'
@@ -772,7 +775,7 @@ function Flow({
         <InlineNotice
           className="nodes-inline-notice"
           tone="error"
-          title="Model catalog did not load"
+          title={translate('Model catalog did not load')}
           detail={catalogError}
           action={{ label: 'Retry', onClick: onRetryCatalog }}
         />
@@ -827,7 +830,7 @@ function Flow({
           className="nodes-inline-notice connection-inline-notice"
           tone="warning"
           system
-          title="Connection was not created"
+          title={translate('Connection was not created')}
           detail={connectionError}
           onDismiss={() => setConnectionError(null)}
         />
@@ -835,17 +838,17 @@ function Flow({
 
       {addMenu && (
         <div className="add-menu" style={{ left: addMenu.screenX, top: addMenu.screenY }}>
-          <div className="add-menu-title">Add node</div>
+          <div className="add-menu-title">{translate('Add node')}</div>
           {addButtons.map((b, index) => {
             const NodeIcon = NODE_META[b.kind].icon
             // Заголовок рисуем один раз — на первой кнопке своей группы.
             const groupStart = b.group && b.group !== addButtons[index - 1]?.group
             return (
               <Fragment key={b.kind}>
-                {groupStart && <div className="add-menu-group">{b.group}</div>}
+                {groupStart && <div className="add-menu-group">{translate(b.group ?? '')}</div>}
                 <button className="add-menu-item" onClick={() => addFromMenu(b.kind)}>
                   <NodeIcon size={16} />
-                  <span className="mi-label">{b.label}</span>
+                  <span className="mi-label">{translate(b.label)}</span>
                 </button>
               </Fragment>
             )
@@ -858,11 +861,12 @@ function Flow({
           <div className="nodes-empty-card">
             <h3>{`Build a macro for slot ${slot + 1}`}</h3>
             <p>
-              Start with the <b>📥 Input</b> — it receives what you select on the board. Finish with the
-              <b>📤 Output</b> — its result appears on the board. Wires are highlighted by type:{' '}
-              <b style={{ color: PORT_COLORS.text }}>text</b>,{' '}
-              <b style={{ color: PORT_COLORS.image }}>image</b>,{' '}
-              <b style={{ color: PORT_COLORS.video }}>video</b>.
+
+              {translate('Start with the')} <b>📥 {translate('Input')}</b>  {translate('— it receives what you select on the board. Finish with the')}
+              <b>📤 Output</b>  {translate('— its result appears on the board. Wires are highlighted by type:')}{' '}
+              <b style={{ color: PORT_COLORS.text }}>{translate('text')}</b>,{' '}
+              <b style={{ color: PORT_COLORS.image }}>{translate('image')}</b>,{' '}
+              <b style={{ color: PORT_COLORS.video }}>{translate('video')}</b>.
             </p>
             <p className="nodes-empty-example">
               Example: 📥 Input → 🖼 Image → 🎬 Video → 📤 Output

@@ -29,11 +29,15 @@ export function transformLocalPackage(text) {
   const pkg = JSON.parse(text)
   if (!pkg.scripts) return text
   for (const name of Object.keys(pkg.scripts)) {
-    if (/^(?:build:tablet:cloud|test:network(?::.*)?|test:e2e)$/u.test(name)) {
+    // The desktop local snapshot intentionally excludes the separate web-demo
+    // tree. Drop its scripts and any standalone gates that would otherwise
+    // point at files absent from the exported source.
+    if (/^(?:demo:[A-Za-z0-9:_-]+|build:tablet:cloud|test:network(?::.*)?|test:e2e)$/u.test(name)) {
       delete pkg.scripts[name]
       continue
     }
     pkg.scripts[name] = pkg.scripts[name].split(/\s*&&\s*/u).map(command => {
+      if (/^npm\s+run\s+demo:[A-Za-z0-9:_-]+$/u.test(command.trim())) return ''
       let removed = false
       const filtered = command.replace(/(?:client|server|scripts)\/[\w./-]+\.(?:[cm]?[jt]sx?)/gu, filename => {
         if (isLocalEditionSourcePath(filename)) return filename

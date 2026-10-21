@@ -6,6 +6,8 @@ import { setTimelineTarget } from '../timeline/timelineBus'
 import { canvasItemFileName } from './mediaFileName'
 import { useCanvasAnchor } from './useCanvasAnchor'
 import { itemAabb } from './geometry'
+import { useT } from '../../../i18n/context.js'
+
 
 // HTML-меню над выделенным объектом (Konva-оверлей). Набор кнопок зависит от
 // типа: у картинки — редактор, скетч, кроп; у видео — правка клипа. Общие для
@@ -31,6 +33,7 @@ export function ItemToolbar({
   onSketch: (id: string) => void
   onCrop: (id: string) => void
 }) {
+  const t = useT()
   function download(): void {
     if (!item.src) return
     const a = document.createElement('a')
@@ -57,19 +60,19 @@ export function ItemToolbar({
         <>
           <button
             className="konva-tool-btn"
-            title="Open in editor (Photoshop)"
+            title={t('Open in editor (Photoshop)')}
             onClick={() => onEdit(item.id)}
           >
             <IconOpenExternal />
           </button>
           <button
             className="konva-tool-btn"
-            title="Sketch: draw over it and generate from the sketch"
+            title={t('Sketch: draw over it and generate from the sketch')}
             onClick={() => onSketch(item.id)}
           >
             <IconSketch />
           </button>
-          <button className="konva-tool-btn" title="Crop (aspect ratio or freeform)" onClick={() => onCrop(item.id)}>
+          <button className="konva-tool-btn" title={t('Crop (aspect ratio or freeform)')} onClick={() => onCrop(item.id)}>
             <IconCrop />
           </button>
         </>
@@ -77,7 +80,7 @@ export function ItemToolbar({
       {item.kind === 'video' && (
         <button
           className="konva-tool-btn"
-          title="Edit clip: crop, cuts, frame, audio (T)"
+          title={t('Edit clip: crop, cuts, frame, audio (T)')}
           onClick={() => setTimelineTarget(item.id)}
         >
           <IconTimeline />
@@ -85,7 +88,7 @@ export function ItemToolbar({
       )}
       <button
         className="konva-tool-btn"
-        title="To Archive"
+        title={t('To Archive')}
         onClick={() => archiveSelection(store, [item.id])}
       >
         <IconArchive />

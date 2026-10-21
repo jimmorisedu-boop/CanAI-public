@@ -27,7 +27,6 @@ import { startAfterMacroPreflight } from './macroLaunchPreflight'
 import { createMacroLaunchRegistry } from './macroLaunches'
 import { beginMacroRun, endMacroRun, updateMacroRun } from './macroRuns'
 import { MacroLibrary } from './MacroLibrary'
-import { pluralWithCount } from '../../ui/plural'
 import { deliverMacroResult, parkedMacroResults, registerMacroDeliverySink } from './macroDeliveries'
 import { macroShortLabel } from './macroShortLabel'
 import { planMacroSeedBatches } from './macroRunInputs'
@@ -37,6 +36,8 @@ import { notify } from './notifications'
 import { newId } from '../../ui/ids'
 import { useMacroClipboard } from './useMacroClipboard'
 import type { LibraryNotice } from './useMacroLibraryActions'
+import { useT } from '../../i18n/context.js'
+
 
 // Макросы прямо в промпт-баре (иконочный ряд, в стиле переключателя типа):
 // показываем только занятые слоты как иконки.
@@ -59,6 +60,7 @@ export function PromptMacros({
   projectId?: string
   projectSource?: ProjectSource
 }) {
+  const t = useT()
   const [macros, setMacros] = useState<Macro[]>([])
   const [runningCount, setRunningCount] = useState<Record<string, number>>({})
   const [libraryOpen, setLibraryOpen] = useState(false)
@@ -76,8 +78,8 @@ export function PromptMacros({
   const reload = useCallback(() => {
     api.listMacros()
       .then((result) => setMacros(result.macros.filter((m) => m.scope !== 'assistant')))
-      .catch((cause) => showErrorToast(cause instanceof Error ? cause.message : 'Failed to load macros'))
-  }, [])
+      .catch((cause) => showErrorToast(cause instanceof Error ? cause.message : t('Failed to load macros')))
+  }, [t])
 
   useEffect(() => {
     reload()
@@ -104,11 +106,13 @@ export function PromptMacros({
     if (waiting > 0) {
       notify({
         kind: 'success',
-        message: `Macro finished while the board was closed: ${pluralWithCount(waiting, ["result", "results", "results"])} on canvas`,
+        message: t('Macro finished while the board was closed: {0} on canvas', {
+          0: `${waiting} ${t(waiting === 1 ? 'result' : 'results')}`,
+        }),
       })
     }
     return stop
-  }, [projectId, store])
+  }, [projectId, store, t])
 
   // Прогоны живут на локальном сервере и восстанавливаются при повторном входе.
   useEffect(() => {
@@ -170,7 +174,7 @@ export function PromptMacros({
     clearStatusForAction(macro.id)
     const storedGraph = macro.graph as Partial<GraphSnapshot>
     if (!storedGraph?.nodes?.length) {
-      publishStatus(macro.id, 'error', `${macro.name}: empty macro - right click to configure`)
+      publishStatus(macro.id, 'error', t('{0}: empty macro - right click to configure', { 0: macro.name }))
       return
     }
     const graph: GraphSnapshot = {
@@ -181,7 +185,10 @@ export function PromptMacros({
       ['text', 'image', 'video', 'other'].includes(node.data.kind),
     )
     if (needsGeneration && !generationAvailable) {
-      publishStatus(macro.id, 'error', `${macro.name}: generation not available - add a fal.ai key in Settings`)
+      publishStatus(macro.id, 'error', t('{0}: generation not available - {1}', {
+        0: macro.name,
+        1: t('add a fal.ai key in Settings'),
+      }))
       return
     }
     const seedPlan = planMacroSeedBatches(graph, refs)
@@ -200,20 +207,20 @@ export function PromptMacros({
         macroCostContext(refs),
       )
       if ((perRun > 0 && total >= confirmCostAboveUsd) || unknownCost > 0) {
-        const rows: Array<[string, string]> = [["Macro", macro.name]]
-        if (runCount > 1) rows.push(["Runs for selection", String(runCount)])
+        const rows: Array<[string, string]> = [[t('Macro'), macro.name]]
+        if (runCount > 1) rows.push([t('Runs for selection'), String(runCount)])
         const running = launches.current.activeCount(macro.id)
-        if (running > 0) rows.push(["Runs already in progress", String(running)])
+        if (running > 0) rows.push([t('Runs already in progress'), String(running)])
         const ok = await askConfirm({
-          title: total > 0 ? `Run for ~$${total.toFixed(2)}?` : "Run a macro?",
+          title: total > 0 ? t('Run for ~${0}?', { 0: total.toFixed(2) }) : t('Run a macro?'),
           detail: unknownCost > 0
-            ? "For some nodes the price is unknown - the result may be higher."
+            ? t('For some nodes the price is unknown - the result may be higher.')
             : undefined,
           rows,
-          confirmLabel: total > 0 ? `Run for ~$${total.toFixed(2)}` : "Run",
+          confirmLabel: total > 0 ? t('Run for ~${0}', { 0: total.toFixed(2) }) : t('Run'),
         })
         if (!ok) {
-          publishStatus(macro.id, 'stopped', `${macro.name}: run cancelled`)
+          publishStatus(macro.id, 'stopped', t('{0}: run cancelled', { 0: macro.name }))
           return
         }
       }
@@ -239,7 +246,7 @@ export function PromptMacros({
           stop: () => launches.current.cancel(launchToken),
         })
         setRunningCount((prev) => ({ ...prev, [macro.id]: (prev[macro.id] ?? 0) + 1 }))
-        publishStatus(macro.id, 'progress', `${macro.name}: starting…`)
+        publishStatus(macro.id, 'progress', t('{0}: starting…', { 0: macro.name }))
       },
     )
     if (!preflight.started) {
@@ -385,12 +392,16 @@ export function PromptMacros({
 
       const errors = results.filter((r) => r.status === 'rejected') as PromiseRejectedResult[]
       if (launches.current.isCancelled(launchToken)) {
-        publishStatus(macro.id, 'stopped', `${macro.name}: stopped`)
+        publishStatus(macro.id, 'stopped', t('{0}: stopped', { 0: macro.name }))
       } else if (errors.length > 0) {
         if (errors.length === runs.length) {
           throw errors[0].reason
         } else {
-          publishStatus(macro.id, 'partial', `${macro.name}: partially complete (${runs.length - errors.length}/${runs.length})`)
+          publishStatus(macro.id, 'partial', t('{0}: partially complete ({1}/{2})', {
+            0: macro.name,
+            1: runs.length - errors.length,
+            2: runs.length,
+          }))
         }
       } else {
         const completion = macroCompletionStatus(macro.name, totalPlaced)
@@ -410,7 +421,7 @@ export function PromptMacros({
       publishStatus(
         macro.id,
         stopped ? 'stopped' : 'error',
-        stopped ? `${macro.name}: stopped` : `${macro.name}: ${message}`,
+        stopped ? t('{0}: stopped', { 0: macro.name }) : t('{0}: {1}', { 0: macro.name, 1: message }),
       )
     } finally {
       // этот запуск закончился — снимаем его токен (остальные прогоны того же
@@ -450,10 +461,10 @@ export function PromptMacros({
               title={m.name}
               aria-label={
                 active
-                  ? `Run macro ${m.name} again; runs in progress: ${runningCount[m.id]}`
+                  ? t('Run macro {0} again; runs in progress: {1}', { 0: m.name, 1: runningCount[m.id] })
                   : runnable
-                    ? `Macro ${m.name}`
-                    : `Draft macro ${m.name}, open editor`
+                    ? t('Macro {0}', { 0: m.name })
+                    : t('Draft macro {0}, open editor', { 0: m.name })
               }
               onClick={() => {
                 // клик по работающему макросу = ещё один ПАРАЛЛЕЛЬНЫЙ прогон
@@ -483,8 +494,8 @@ export function PromptMacros({
           type="button"
           className="macros-inline-btn more"
           // На сетевой доске порядок кнопок не меняют: свои идут первыми, общие за ними.
-          title="All macros: rename, duplicate, move slot, delete"
-          aria-label="All macros"
+          title={t('All macros: rename, duplicate, move slot, delete')}
+          aria-label={t('All macros')}
           onClick={() => setLibraryOpen(true)}
         >
           ⋯

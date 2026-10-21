@@ -12,6 +12,8 @@ import {
 } from '../ui/icons'
 import { HelpPanel } from '../help/HelpPanel'
 import { TabletFullScreen } from './TabletFullScreen'
+import { useT } from '../i18n/context.js'
+
 
 export const TABLET_GESTURES: Array<{ icon: ReactNode; title: string; note: string }> = [
   { icon: <IconCursor size={22} />, title: 'Select', note: 'Tap an object. The “Select” button in the header enables multi-select.' },
@@ -33,6 +35,7 @@ type TabletHelpTab = 'guides' | 'gestures'
 const TABLET_HELP_TABS: TabletHelpTab[] = ['guides', 'gestures']
 
 export function TabletHelp({ onClose }: { onClose(): void }) {
+  const t = useT()
   const [tab, setTab] = useState<TabletHelpTab>('guides')
   const tabRefs = useRef<Record<TabletHelpTab, HTMLButtonElement | null>>({ guides: null, gestures: null })
   const focusTab = (next: TabletHelpTab): void => {
@@ -52,13 +55,13 @@ export function TabletHelp({ onClose }: { onClose(): void }) {
   }
   return (
     <TabletFullScreen
-      title="Help"
+      title={t('Help')}
       subtitle={tab === 'guides' ? 'Shared CanAI guides' : 'Touch gestures and tablet controls'}
       onCancel={onClose}
       cancelLabel="Done"
     >
       <div className="tablet-help">
-        <div className="tablet-help-tabs" role="tablist" aria-label="Help sections" aria-orientation="horizontal">
+        <div className="tablet-help-tabs" role="tablist" aria-label={t('Help sections')} aria-orientation="horizontal">
           <button
             id="tablet-help-tab-guides"
             type="button"
@@ -71,7 +74,8 @@ export function TabletHelp({ onClose }: { onClose(): void }) {
             onKeyDown={onTabKeyDown}
             onClick={() => setTab('guides')}
           >
-            Guides
+
+            {t('Guides')}
           </button>
           <button
             id="tablet-help-tab-gestures"
@@ -85,7 +89,7 @@ export function TabletHelp({ onClose }: { onClose(): void }) {
             onKeyDown={onTabKeyDown}
             onClick={() => setTab('gestures')}
           >
-            Gestures
+            {t('Gestures')}
           </button>
         </div>
         <div
@@ -96,7 +100,7 @@ export function TabletHelp({ onClose }: { onClose(): void }) {
           hidden={tab !== 'guides'}
           className="tablet-help-guides"
         >
-          <p className="tablet-help-intro">Guides cover shared workflows. Tablet touch controls are listed under Gestures.</p>
+          <p className="tablet-help-intro">{t('Guides cover shared workflows. Tablet touch controls are listed under Gestures.')}</p>
           <HelpPanel initialTopicId="tablet-lan" showBoardActions={false} />
         </div>
         <div
@@ -107,7 +111,7 @@ export function TabletHelp({ onClose }: { onClose(): void }) {
           hidden={tab !== 'gestures'}
           className="tablet-help-gestures"
         >
-          <p className="tablet-help-intro">Touch-first controls for the board. Desktop-only actions stay in the desktop Help.</p>
+          <p className="tablet-help-intro">{t('Touch-first controls for the board. Desktop-only actions stay in the desktop Help.')}</p>
           <div className="tablet-help-list">
             {TABLET_GESTURES.map((entry) => (
               <section className="tablet-help-row" key={entry.title}>

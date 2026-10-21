@@ -1,6 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import type { SelectionRef } from './konva/selection'
 import { promptChatStore } from './promptChatStore'
+import { t } from '../../i18n/translate'
 
 import type { PromptChatAttachment, PromptChatMessage } from './promptChatTypes'
 

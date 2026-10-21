@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Open Settings</title>
+  <desc id="desc">CanAI gallery with the Settings button highlighted.</desc>
+  <rect width="960" height="540" rx="28" fill="#151515"/>
+  <rect x="44" y="42" width="872" height="456" rx="20" fill="#202020" stroke="#3b3b3b"/>
+  <rect x="70" y="74" width="820" height="54" rx="12" fill="#292929"/>
+  <text x="96" y="109" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="24" font-weight="700">CanAI</text>
+  <rect x="690" y="84" width="166" height="36" rx="10" fill="#f15a3a"/>
+  <text x="718" y="109" fill="#171717" font-family="Arial, sans-serif" font-size="18" font-weight="700">Settings</text>
+  <rect x="88" y="160" width="252" height="284" rx="14" fill="#292929"/>
+  <rect x="366" y="160" width="496" height="284" rx="14" fill="#252525"/>
+  <text x="112" y="202" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="22" font-weight="700">Boards</text>
+  <rect x="112" y="226" width="204" height="48" rx="10" fill="#343434"/>
+  <rect x="112" y="292" width="204" height="48" rx="10" fill="#343434"/>
+  <text x="396" y="210" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="26" font-weight="700">Settings</text>
+  <text x="396" y="254" fill="#a9a9a9" font-family="Arial, sans-serif" font-size="18">General</text>
+  <rect x="390" y="274" width="408" height="112" rx="12" fill="#303030" stroke="#f15a3a" stroke-width="3"/>
+  <text x="418" y="316" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="22" font-weight="700">Language</text>
+  <text x="418" y="350" fill="#a9a9a9" font-family="Arial, sans-serif" font-size="17">Choose your interface language</text>
+</svg>

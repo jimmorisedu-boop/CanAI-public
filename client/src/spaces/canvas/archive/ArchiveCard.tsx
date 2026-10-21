@@ -8,6 +8,8 @@ import {
 import type { ArchivedItem } from '../konva/types'
 import { formatBytes } from './archiveSort'
 import { screenPreviewSrc } from '../konva/screenPreview'
+import { useT } from '../../../i18n/context.js'
+
 
 // Одна карточка архива: превью, имя, строчка фактов. Клик по карточке —
 // крупный просмотр, галочка в углу — выбор для групповых действий (как в
@@ -25,6 +27,7 @@ export function ArchiveCard({
   onOpen(): void
   onToggle(additive: boolean): void
 }) {
+  const t = useT()
   const facts = [
     archiveKindLabel(entry.kind),
     archiveResolution(entry),
@@ -37,7 +40,7 @@ export function ArchiveCard({
       <button
         type="button"
         className="archive-card-thumb"
-        title="Open preview"
+        title={t('Open preview')}
         onClick={(e) => {
           // Shift/Ctrl+клик по карточке — привычный способ отбирать пачкой,
           // не целясь в маленькую галочку
@@ -60,7 +63,7 @@ export function ArchiveCard({
           </span>
         )}
       </button>
-      <label className="archive-check" title="Mark for group actions">
+      <label className="archive-check" title={t('Mark for group actions')}>
         <input type="checkbox" checked={checked} onChange={() => onToggle(true)} />
       </label>
       <div className="archive-card-meta">

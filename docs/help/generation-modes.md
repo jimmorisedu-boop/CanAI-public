@@ -27,6 +27,7 @@ The Together/Each choice applies to image generation only; video and text use th
 ## Notes
 
 - Each can create multiple paid calls. Review the quote before confirming.
+- System labels follow the selected interface language; model IDs, API values, and prompt text are preserved.
 
 ## Related topics
 

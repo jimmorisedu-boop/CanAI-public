@@ -20,6 +20,9 @@ import { quoteConfirmationRequest } from '../ui/quotePresentation.js'
 import { newId } from '../ui/ids.js'
 import { MediaPlaybackControls } from '../ui/MediaPlaybackControls.js'
 import { catalogLibraryClient } from './catalogLibraryClient.js'
+import { useT } from '../i18n/context.js'
+import { t as translate } from '../i18n/translate.js'
+
 
 export type WizardStep = 'url' | 'schema' | 'tariff' | 'inputs' | 'testing' | 'ready'
 export type WizardReferenceKind = 'image' | 'video' | 'audio'
@@ -289,7 +292,9 @@ export function tariffUnitForKind(kind: CatalogModel['kind']): 'image' | 'second
 }
 
 export function tariffUnitLabel(kind: CatalogModel['kind'], unit: 'image' | 'second'): string {
-  return unit === 'second' ? (kind === 'video' ? 'Per video second' : 'Per second') : 'Per result'
+  return unit === 'second'
+    ? translate(kind === 'video' ? 'Per video second' : 'Per second')
+    : translate('Per result')
 }
 
 export function setupPricingReady(
@@ -346,11 +351,11 @@ function wait(ms: number): Promise<void> {
 }
 
 function kindLabel(kind: WizardReferenceKind): string {
-  return { image: 'Image', video: 'Video', audio: 'Audio' }[kind]
+  return translate({ image: 'Image', video: 'Video', audio: 'Audio' }[kind])
 }
 
 function resultKindLabel(kind: CatalogModel['kind']): string {
-  return { image: 'Image', video: 'Video', audio: 'Audio', text: 'Text', other: 'Other' }[kind]
+  return translate({ image: 'Image', video: 'Video', audio: 'Audio', text: 'Text', other: 'Other' }[kind])
 }
 
 function endpointFromOfficialUrl(value: string): string {
@@ -388,20 +393,20 @@ function isPrimaryParam(spec: ParamSpec): boolean {
 
 function testFailureMessage(reported: string | undefined): string {
   const clean = reported?.trim()
-  if (!clean) return 'Model test failed: fal did not provide a reason.'
+  if (!clean) return translate('Model test failed: fal did not provide a reason.')
   if (/at least one image url is required/i.test(clean)) {
-    return 'Model test failed: fal requires at least one image. Add an image in “Prompt and references” or choose a supported alternative input.'
+    return translate('Model test failed: fal requires at least one image. Add an image in “Prompt and references” or choose a supported alternative input.')
   }
-  return `Model test failed: ${clean}`
+  return translate('Model test failed: {0}', { 0: clean })
 }
 
 function setupFailureMessage(cause: unknown): string {
   const status = cause && typeof cause === 'object' && 'status' in cause
     ? Number((cause as { status?: unknown }).status)
     : undefined
-  if (status === 404) return 'Automatic test setup is available after updating CanAI. Update the app and try again.'
-  if (status === 409) return 'The catalog changed. Prepare the test again.'
-  return cause instanceof Error ? cause.message : 'Could not prepare the model test. Try again.'
+  if (status === 404) return translate('Automatic test setup is available after updating CanAI. Update the app and try again.')
+  if (status === 409) return translate('The catalog changed. Prepare the test again.')
+  return cause instanceof Error ? cause.message : translate('Could not prepare the model test. Try again.')
 }
 
 function isSetupParamValue(value: unknown): value is string | number | boolean {
@@ -427,6 +432,7 @@ export function FalModelWizard({
   onClose(): void
   onSelect?(modelId: string): void
 }) {
+  const t = useT()
   const [state, dispatch] = useReducer(reduceWizard, undefined, initialWizardState)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -726,44 +732,44 @@ export function FalModelWizard({
     && minimumRefsSatisfied,
   )
 
-  return <div className="fal-model-wizard" role="region" aria-label="Add fal.ai model">
+  return <div className="fal-model-wizard" role="region" aria-label={t('Add fal.ai model')}>
     <div className="catalog-panel-heading">
-      <div><h4>Add fal.ai model</h4><p className="settings-note">Step {visibleStage} of 3</p></div>
-      <button type="button" className="editor-close" disabled={busy} onClick={onClose}>Close wizard</button>
+      <div><h4>{t('Add fal.ai model')}</h4><p className="settings-note">{t('Step {0} of 3', { 0: visibleStage })}</p></div>
+      <button type="button" className="editor-close" disabled={busy} onClick={onClose}>{t('Close wizard')}</button>
     </div>
-    <ol className="fal-wizard-stages" aria-label="Model setup steps">
+    <ol className="fal-wizard-stages" aria-label={t('Model setup steps')}>
       {(['Link', 'Test', 'Add'] as const).map((label, index) => {
         const stage = index + 1
         return <li key={label} data-active={visibleStage === stage} data-complete={visibleStage > stage} aria-current={visibleStage === stage ? 'step' : undefined}>
-          <span>{stage}</span><strong>{label}</strong>
+          <span>{stage}</span><strong>{t(label)}</strong>
         </li>
       })}
     </ol>
     {error && <InlineNotice tone="error" title={error} />}
     {message && state.step !== 'ready' && <InlineNotice tone="success" system title={message} />}
     {state.step === 'url' && <section className="fal-wizard-section">
-      <label className="settings-label" htmlFor="fal-model-url">Official model link</label>
+      <label className="settings-label" htmlFor="fal-model-url">{t('Official model link')}</label>
       <div className="catalog-library-row">
         <input id="fal-model-url" type="url" placeholder="https://fal.ai/models/…" value={state.url} disabled={busy}
           onChange={event => dispatch({ type: 'urlChanged', url: event.target.value })} />
-        <button type="button" className="generate" disabled={busy || !state.url.trim()} onClick={() => void run(discover)}>Prepare test</button>
+        <button type="button" className="generate" disabled={busy || !state.url.trim()} onClick={() => void run(discover)}>{t('Prepare test')}</button>
       </div>
-      <p className="settings-note">Paste the model page link. CanAI prepares an example and shows the test price. It runs only after confirmation.</p>
+      <p className="settings-note">{t('Paste the model page link. CanAI prepares an example and shows the test price. It runs only after confirmation.')}</p>
     </section>}
     {setupVisible && state.draft && <>
       <section className="fal-wizard-model-summary" aria-live="polite">
-        <div><span className="fal-wizard-kicker">Model</span><strong>{state.draft.name}</strong></div>
-        <div><span className="fal-wizard-kicker">Result</span><strong>{resultKindLabel(state.draft.kind)}</strong></div>
+        <div><span className="fal-wizard-kicker">{t('Model')}</span><strong>{state.draft.name}</strong></div>
+        <div><span className="fal-wizard-kicker">{t('Result')}</span><strong>{resultKindLabel(state.draft.kind)}</strong></div>
       </section>
-      {state.setupStatus === 'loading' && <InlineNotice tone="info" title="Preparing test…" detail="The example, parameters, and estimated price load automatically." />}
+      {state.setupStatus === 'loading' && <InlineNotice tone="info" title={t('Preparing test…')} detail={t('The example, parameters, and estimated price load automatically.')} />}
       {state.setupStatus === 'error' && <section className="fal-wizard-setup-retry">
-        <InlineNotice tone="error" title="Could not prepare test" detail="The model draft was saved. Prepare it again after updating CanAI or checking the connection." />
-        <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>Prepare again</button>
+        <InlineNotice tone="error" title={t('Could not prepare test')} detail={t('The model draft was saved. Prepare it again after updating CanAI or checking the connection.')} />
+        <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>{t('Prepare again')}</button>
       </section>}
       {state.setupStatus === 'ready' && state.setup && <>
         <div className="fal-wizard-test-overview">
           {!!displaySamples.length && <section className="fal-wizard-section fal-wizard-samples">
-            <div className="fal-wizard-section-heading"><h5>Test references</h5><span className="settings-note">{customRefsChanged ? 'Current files' : 'Prepared automatically'}</span></div>
+            <div className="fal-wizard-section-heading"><h5>{t('Test references')}</h5><span className="settings-note">{customRefsChanged ? t('Current files') : t('Prepared automatically')}</span></div>
             <div className="fal-setup-sample-grid">
               {displaySamples.map(sample => <figure className="fal-setup-sample" key={`${sample.kind}-${sample.url}`}>
                 {sample.kind === 'image' && <img src={sample.url} alt={sample.name} loading="lazy" />}
@@ -773,44 +779,44 @@ export function FalModelWizard({
               </figure>)}
             </div>
           </section>}
-          <section className="fal-wizard-section fal-wizard-pricing" aria-label="Test price">
-            <div className="fal-wizard-section-heading"><h5>Estimated test price</h5><span className="settings-note">Paid run only after confirmation</span></div>
+          <section className="fal-wizard-section fal-wizard-pricing" aria-label={t('Test price')}>
+            <div className="fal-wizard-section-heading"><h5>{t('Estimated test price')}</h5><span className="settings-note">{t('Paid run only after confirmation')}</span></div>
             {setupPricingReady(state.setup.pricing) ? <>
               <strong className="fal-wizard-price">{formatExactUsd(state.setup.pricing.amountUsd)}</strong>
-              <p className="settings-note">The final cost depends on the text, settings, and source files.</p>
+              <p className="settings-note">{t('The final cost depends on the text, settings, and source files.')}</p>
               {!!state.setup.pricing.note && <details className="settings-technical fal-wizard-details">
-                <summary>Estimate details</summary>
+                <summary>{t('Estimate details')}</summary>
                 <p className="settings-note">{state.setup.pricing.note}</p>
               </details>}
-            {!!state.setup.pricing.sourceUrl && <a className="fal-wizard-source-link" href={state.draft.endpoint ? `https://fal.ai/models/${state.draft.endpoint}` : state.setup.pricing.sourceUrl} target="_blank" rel="noreferrer">Open fal.ai pricing page</a>}
+            {!!state.setup.pricing.sourceUrl && <a className="fal-wizard-source-link" href={state.draft.endpoint ? `https://fal.ai/models/${state.draft.endpoint}` : state.setup.pricing.sourceUrl} target="_blank" rel="noreferrer">{t('Open fal.ai pricing page')}</a>}
               {!setupTariffIsReady && <>
-                <InlineNotice tone="warning" title="Price received but not saved for quoting" detail="Prepare the test again; the run is blocked until the server confirms the tariff." />
-                <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>Prepare again</button>
+                <InlineNotice tone="warning" title={t('Price received but not saved for quoting')} detail={t('Prepare the test again; the run is blocked until the server confirms the tariff.')} />
+                <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>{t('Prepare again')}</button>
               </>}
             </> : <>
-              <InlineNotice tone="warning" title="Test price is not confirmed yet" detail="Prepare again; paid runs are blocked until a price is available." />
-              <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>Prepare again</button>
+              <InlineNotice tone="warning" title={t('Test price is not confirmed yet')} detail={t('Prepare again; paid runs are blocked until a price is available.')} />
+              <button type="button" className="editor-close" disabled={busy} onClick={() => void run(retrySetup)}>{t('Prepare again')}</button>
             </>}
           </section>
         </div>
-        {customRefsChanged && <InlineNotice tone="info" title="You changed the test files" detail="The price will be recalculated before confirmation." />}
+        {customRefsChanged && <InlineNotice tone="info" title={t('You changed the test files')} detail={t('The price will be recalculated before confirmation.')} />}
         {!!state.setup.warnings.length && <div className="fal-wizard-issues">{state.setup.warnings.map(warning => <InlineNotice key={warning} tone="info" system title={warning} />)}</div>}
 
         <details className="settings-technical fal-wizard-details">
-          <summary>Technical details</summary>
+          <summary>{t('Technical details')}</summary>
           <dl className="catalog-schema-summary">
-            <div><dt>Endpoint</dt><dd><code>{state.draft.endpoint}</code></dd></div>
-            <div><dt>Schema parameters</dt><dd>{state.draft.params.length || 'none'}</dd></div>
-            <div><dt>Required references</dt><dd>{neededRefs.length || 'none'}</dd></div>
+            <div><dt>{t('Endpoint')}</dt><dd><code>{state.draft.endpoint}</code></dd></div>
+            <div><dt>{t('Schema parameters')}</dt><dd>{state.draft.params.length || 'none'}</dd></div>
+            <div><dt>{t('Required references')}</dt><dd>{neededRefs.length || 'none'}</dd></div>
           </dl>
           {state.issues.length > 0 && <div className="fal-wizard-issues">{state.issues.map(issue => <InlineNotice key={issue} tone="info" system title={issue} />)}</div>}
         </details>
 
         <details className="fal-wizard-edit">
-          <summary>Edit test</summary>
+          <summary>{t('Edit test')}</summary>
           <section className="fal-wizard-section fal-wizard-primary">
-            {promptRequired && <label className="settings-label fal-wizard-prompt">Test prompt
-              <textarea className="settings-textarea" aria-label="Test prompt" rows={4} value={prompt} disabled={busy} onChange={event => setPrompt(event.target.value)} />
+            {promptRequired && <label className="settings-label fal-wizard-prompt">{t('Test prompt')}
+              <textarea className="settings-textarea" aria-label={t('Test prompt')} rows={4} value={prompt} disabled={busy} onChange={event => setPrompt(event.target.value)} />
             </label>}
             {refSlots.length > 0 && <div className="fal-reference-grid">
               {refSlots.map((slot, index) => {
@@ -818,14 +824,14 @@ export function FalModelWizard({
                 const ref = refs[index]
                 const previewSrc = detail?.previewUrl ?? (ref && (ref.kind === 'image' || ref.kind === 'video' || ref.kind === 'audio') ? ref.src : undefined)
                 return <div className="fal-reference-card" key={`${slot.kind}-${index}`} data-required={slot.required ? 'true' : 'false'}>
-                  <div className="fal-reference-heading"><strong>{kindLabel(slot.kind)} {slot.required ? '— required' : '— optional'}</strong>
-                    {ref && <button type="button" className="editor-close" disabled={busy} onClick={() => removeReference(index)}>Remove</button>}
+                  <div className="fal-reference-heading"><strong>{kindLabel(slot.kind)} {slot.required ? t('— required') : t('— optional')}</strong>
+                    {ref && <button type="button" className="editor-close" disabled={busy} onClick={() => removeReference(index)}>{t('Remove')}</button>}
                   </div>
                   {previewSrc && slot.kind === 'image' && <img className="fal-reference-preview" src={previewSrc} alt={detail?.name ?? 'Reference preview'} />}
                   {previewSrc && slot.kind === 'video' && <WizardMediaPreview key={`video:${previewSrc}`} kind="video" className="fal-reference-preview" src={previewSrc} ariaLabel={detail?.name ?? 'Video preview'} muted />}
                   {previewSrc && slot.kind === 'audio' && <WizardMediaPreview key={`audio:${previewSrc}`} kind="audio" className="fal-reference-audio" src={previewSrc} ariaLabel={detail?.name ?? 'Audio preview'} />}
                   {ref && <div className="fal-reference-file-name" title={detail?.name}>{detail?.name ?? (ref.kind === 'text' ? ref.text : ref.src)}</div>}
-                  <label className="fal-reference-file-label">{ref ? 'Replace file' : 'Choose file'}
+                  <label className="fal-reference-file-label">{ref ? t('Replace file') : t('Choose file')}
                     <input className="fal-reference-file" type="file" accept={`${slot.kind}/*`} disabled={busy} onChange={event => {
                       const file = event.target.files?.[0]
                       event.currentTarget.value = ''
@@ -835,10 +841,10 @@ export function FalModelWizard({
                 </div>
               })}
             </div>}
-            {refSlots.length === 0 && <p className="settings-note">This model has no media references.</p>}
+            {refSlots.length === 0 && <p className="settings-note">{t('This model has no media references.')}</p>}
             {!!primaryParams.length && <div className="catalog-test-params">{primaryParams.map(spec => <ParamInput key={spec.name} spec={spec} value={params[spec.name]} onChange={value => setParams(current => ({ ...current, [spec.name]: value }))} />)}</div>}
             {(advancedParams.length > 0 || pdfParams.length > 0) && <details className="settings-technical fal-wizard-details fal-wizard-advanced">
-              <summary>Additional parameters and PDF document</summary>
+              <summary>{t('Additional parameters and PDF document')}</summary>
               {!!advancedParams.length && <div className="catalog-test-params">{advancedParams.map(spec => <ParamInput key={spec.name} spec={spec} value={params[spec.name]} onChange={value => setParams(current => ({ ...current, [spec.name]: value }))} />)}</div>}
               {!!pdfParams.length && <div className="catalog-test-params">{pdfParams.map(spec => <ParamInput key={spec.name} spec={spec} value={params[spec.name]} onChange={value => setParams(current => ({ ...current, [spec.name]: value }))} />)}</div>}
             </details>}
@@ -846,40 +852,41 @@ export function FalModelWizard({
         </details>
         {!minimumRefsSatisfied && (hasConditionalReferenceRequirement(state.draft, state.issues) || neededRefs.length > 0) && <p className="fal-wizard-validation" role="status">
           {hasConditionalReferenceRequirement(state.draft, state.issues)
-            ? 'Add an image, video, or PDF document to continue.'
-            : 'Add the required references to continue.'}
+            ? t('Add an image, video, or PDF document to continue.')
+            : t('Add the required references to continue.')}
         </p>}
-        {!promptReady && <p className="fal-wizard-validation" role="status">Add a test prompt to continue.</p>}
+        {!promptReady && <p className="fal-wizard-validation" role="status">{t('Add a test prompt to continue.')}</p>}
         <div className="fal-wizard-actions">
-          <p className="settings-note">Click “Test model”, then confirm the paid test in a separate window.</p>
-          <button type="button" className="generate fal-wizard-verify" disabled={busy || !testReady} onClick={() => void run(startTest)}>Test model</button>
+          <p className="settings-note">{t('Click “Test model”, then confirm the paid test in a separate window.')}</p>
+          <button type="button" className="generate fal-wizard-verify" disabled={busy || !testReady} onClick={() => void run(startTest)}>{t('Test model')}</button>
         </div>
       </>}
     </>}
-    {state.step === 'testing' && <InlineNotice tone="info" title="Model test is running through the fal.ai queue…" detail={state.jobId ? `Job ${state.jobId}` : undefined} />}
+    {state.step === 'testing' && <InlineNotice tone="info" title={t('Model test is running through the fal.ai queue…')} detail={state.jobId ? t('Job {0}', { 0: state.jobId }) : undefined} />}
     {state.step === 'ready' && state.draft && <section className="fal-wizard-section fal-wizard-ready">
-      <InlineNotice tone="success" title="Model test complete" detail={state.test?.actualCostUsd === null ? 'fal.ai did not report the actual cost.' : undefined} />
-      {state.test && state.result && state.test.resultKind === 'image' && state.result.url && <img className="fal-test-result-preview" src={state.result.url} alt={`Test result for ${state.draft.name}`} />}
+      <InlineNotice tone="success" title={t('Model test complete')} detail={state.test?.actualCostUsd === null ? t('fal.ai did not report the actual cost.') : undefined} />
+      {state.test && state.result && state.test.resultKind === 'image' && state.result.url && <img className="fal-test-result-preview" src={state.result.url} alt={t('Test result for {0}', { 0: state.draft.name })} />}
       {state.test && state.result && state.test.resultKind === 'video' && state.result.url && <WizardMediaPreview key={`video:${state.result.url}`} kind="video" className="fal-test-result-preview" src={state.result.url} ariaLabel={`Test result for ${state.draft.name}`} />}
       {state.test && state.result && state.test.resultKind === 'audio' && state.result.url && <WizardMediaPreview key={`audio:${state.result.url}`} kind="audio" className="fal-test-result-audio" src={state.result.url} ariaLabel={`Test result for ${state.draft.name}`} />}
       {state.test && state.result && state.test.resultKind === 'text' && state.result.text && <pre className="fal-test-result-text">{state.result.text}</pre>}
-      {!deliveredTestResult(state.test, state.result) && <InlineNotice tone="warning" title="Test result has not arrived yet" detail="You can add the model after the result arrives." />}
-      <p className="settings-note">The model appears in the local board list after you add it.</p>
+      {!deliveredTestResult(state.test, state.result) && <InlineNotice tone="warning" title={t('Test result has not arrived yet')} detail={t('You can add the model after the result arrives.')} />}
+      <p className="settings-note">{t('The model appears in the local board list after you add it.')}</p>
       <div className="fal-wizard-actions">
-        {!deliveredTestResult(state.test, state.result) && <button type="button" className="editor-close" disabled={busy} onClick={() => dispatch({ type: 'retryTest' })}>Retry test</button>}
-        <button type="button" className="generate" disabled={busy || !state.test || !deliveredTestResult(state.test, state.result)} onClick={() => void run(publish)}>Add model</button>
+        {!deliveredTestResult(state.test, state.result) && <button type="button" className="editor-close" disabled={busy} onClick={() => dispatch({ type: 'retryTest' })}>{t('Retry test')}</button>}
+        <button type="button" className="generate" disabled={busy || !state.test || !deliveredTestResult(state.test, state.result)} onClick={() => void run(publish)}>{t('Add model')}</button>
       </div>
     </section>}
   </div>
 }
 
 function ParamInput({ spec, value, onChange }: { spec: ParamSpec; value: string | number | boolean | undefined; onChange(value: string | number | boolean): void }) {
-  const label = paramLabel(spec)
+  const t = useT()
+  const label = t(paramLabel(spec))
   if (spec.widget === 'boolean') return <label className="settings-label catalog-param-boolean">
     <input type="checkbox" checked={Boolean(value)} onChange={event => onChange(event.target.checked)} />{label}
   </label>
   if (spec.widget === 'select') return <label className="settings-label">{label}<select value={String(value ?? '')} onChange={event => onChange(event.target.value)}>
-    {spec.options?.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+    {spec.options?.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}
   </select></label>
   if (spec.widget === 'number' || spec.widget === 'slider' || spec.widget === 'seed') return <label className="settings-label">{label}<input type="number" min={spec.min} max={spec.max} step={spec.step} value={Number(value ?? 0)} onChange={event => onChange(event.target.valueAsNumber)} /></label>
   return <label className="settings-label">{label}<textarea className="settings-textarea" aria-label={label} rows={2} value={String(value ?? '')} onChange={event => onChange(event.target.value)} /></label>

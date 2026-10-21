@@ -31,6 +31,8 @@ import {
   type InspectorAction,
 } from './inspectorModel'
 import { TabletArrangeControls } from './TabletArrangeControls'
+import { useT } from '../i18n/context.js'
+
 
 // Инспектор выделенного.
 //
@@ -70,6 +72,7 @@ export function TabletInspector({
   onAction(action: InspectorAction, items: CanvasItem[]): void
   onClose(): void
 }) {
+  const t = useT()
   useContentVersion(store)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const many = items.length > 1
@@ -110,7 +113,7 @@ export function TabletInspector({
   )
 
   return (
-    <aside className="tablet-inspector" aria-label="Selected">
+    <aside className="tablet-inspector" aria-label={t('Selected')}>
       <div className="tablet-inspector-head">
         <span className="tablet-inspector-thumb">
           {first.kind === 'image' && first.src
@@ -118,10 +121,10 @@ export function TabletInspector({
             : <span className="tablet-inspector-kind">{ICONS[first.kind === 'video' ? 'clip' : first.kind === 'audio' ? 'extract-audio' : 'edit-text']}</span>}
         </span>
         <div className="tablet-inspector-name">
-          <h2>{many ? `Selected: ${items.length}` : subjectTitle(first)}</h2>
-          <p>{many ? 'general actions' : subjectDetails(first, modelName)}</p>
+          <h2>{many ? t('Selected: {0}', { 0: items.length }) : subjectTitle(first)}</h2>
+          <p>{many ? t('general actions') : subjectDetails(first, modelName)}</p>
         </div>
-        <button type="button" className="ui-icon-btn" aria-label="Clear selection" onClick={onClose}>
+        <button type="button" className="ui-icon-btn" aria-label={t('Clear selection')} onClick={onClose}>
           <IconClose size={18} />
         </button>
       </div>
@@ -130,7 +133,7 @@ export function TabletInspector({
         {renderActions('Edit', grouped.edit)}
 
         {many && actions.includes('compare') && (
-          <p className="tablet-inspector-help">The first selected frame is the original; browse the others as variants.</p>
+          <p className="tablet-inspector-help">{t('The first selected frame is the original; browse the others as variants.')}</p>
         )}
 
         {renderActions('Position', grouped.arrange)}
@@ -162,7 +165,7 @@ export function TabletInspector({
             onAction('delete', items)
           }}
         >
-          <IconTrash size={18} /> {confirmDelete ? 'Delete for good?' : 'Delete'}
+          <IconTrash size={18} /> {confirmDelete ? t('Delete for good?') : t('Delete')}
         </button>
       </div>
     </aside>

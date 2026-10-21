@@ -3,9 +3,10 @@ import { api } from '../api'
 import type { TrashedProjectMeta } from '../api'
 import { IconRestore, IconTrash } from '../ui/icons'
 import { notify } from '../spaces/canvas/notifications'
-import { plural } from '../ui/plural'
 import { previewSrc } from './remoteSession'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Корзина досок.
 //
@@ -17,6 +18,7 @@ import { tabletSystemMessage } from './tabletSystemMessage'
 // планшет — рабочее место, а не пульт.
 
 export function TabletTrash() {
+  const t = useT()
   const [boards, setBoards] = useState<TrashedProjectMeta[]>([])
   const [busy, setBusy] = useState(false)
   const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -28,14 +30,14 @@ export function TabletTrash() {
   useEffect(load, [])
 
   if (boards.length === 0) {
-    return <p className="tablet-state">Trash is empty.</p>
+    return <p className="tablet-state">{t('Trash is empty.')}</p>
   }
 
   return (
     <div className="tablet-trash">
       <div className="tablet-trash-head">
         <span className="tablet-mono">
-          {boards.length} {plural(boards.length, ['board', 'boards', 'boards'])}
+          {boards.length} {t(Math.abs(boards.length) === 1 ? 'board' : 'boards')}
         </span>
         <span className="tablet-full-gap" />
         <button
@@ -51,11 +53,11 @@ export function TabletTrash() {
             setBusy(true)
             void api.emptyProjectTrash()
               .then((result) => {
-                notify({ kind: 'success', message: `Boards deleted: ${result.deleted}` })
+                notify({ kind: 'success', message: t('Boards deleted: {0}', { 0: result.deleted }) })
                 setBoards([])
               })
               .catch((error: unknown) => {
-                notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not clear') })
+                notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not clear')) })
               })
               .finally(() => {
                 setBusy(false)
@@ -63,7 +65,7 @@ export function TabletTrash() {
               })
           }}
         >
-          {confirmAll ? 'Empty all trash?' : 'Empty trash'}
+          {confirmAll ? t('Empty all trash?') : t('Empty trash')}
         </button>
       </div>
 
@@ -78,7 +80,7 @@ export function TabletTrash() {
             <div className="tablet-trash-name">
               <strong>{board.name}</strong>
               <span className="tablet-mono">
-                {board.itemCount ?? 0} {plural(board.itemCount ?? 0, ['object', 'objects', 'objects'])}
+                {board.itemCount ?? 0} {t(Math.abs(board.itemCount ?? 0) === 1 ? 'object' : 'objects')}
               </span>
             </div>
             <button
@@ -87,15 +89,15 @@ export function TabletTrash() {
               onClick={() => {
                 void api.restoreTrashedProject(board.id)
                   .then(() => {
-                    notify({ kind: 'success', message: `Board “${board.name}” restored` })
+                    notify({ kind: 'success', message: t('Board “{0}” restored', { 0: board.name }) })
                     load()
                   })
                   .catch((error: unknown) => {
-                    notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not restore') })
+                    notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not restore')) })
                   })
               }}
             >
-              <IconRestore size={18} /> Restore
+              <IconRestore size={18} />  {t('Restore')}
             </button>
             <button
               type="button"
@@ -108,16 +110,16 @@ export function TabletTrash() {
                 }
                 void api.deleteTrashedProject(board.id)
                   .then(() => {
-                    notify({ kind: 'success', message: 'Deleted permanently' })
+                    notify({ kind: 'success', message: t('Deleted permanently') })
                     setConfirmId(null)
                     load()
                   })
                   .catch((error: unknown) => {
-                    notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not delete') })
+                    notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not delete')) })
                   })
               }}
             >
-              <IconTrash size={18} /> {confirmId === board.id ? 'Are you sure?' : 'Delete'}
+              <IconTrash size={18} /> {confirmId === board.id ? t('Are you sure?') : t('Delete')}
             </button>
           </div>
         ))}

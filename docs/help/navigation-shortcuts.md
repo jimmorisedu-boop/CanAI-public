@@ -35,6 +35,7 @@ Use Ctrl+Z to undo your latest Canvas edit. Press Ctrl+Shift+Z or Ctrl+Y to redo
 - The Board map stays in the bottom-left corner. Click or drag it to navigate, and collapse it when you need more room.
 - On narrow canvases, if the left column overlaps the prompt dock, the map sits 16 px above it.
 - The Board map moves your view while keeping the current selection.
+- System labels follow the selected interface language; board names, prompts, and generated content keep their original language.
 
 ## Shortcuts
 

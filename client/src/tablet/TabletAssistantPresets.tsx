@@ -4,6 +4,8 @@ import { notify } from '../spaces/canvas/notifications'
 import type { ProjectSource } from '../types'
 import type { AssistantSelectionInfo } from '../spaces/canvas/AssistantPresets'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 const UNIVERSAL_BUSY_ID = '__canai_universal__'
 
@@ -12,6 +14,7 @@ export function TabletAssistantPresets({ projectSource = 'local', onChanged, onS
   onChanged?(): void
   onSelectionChanged?(selection: AssistantSelectionInfo): void
 }) {
+  const t = useT()
   const [presets, setPresets] = useState<AssistantPreset[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -45,14 +48,14 @@ export function TabletAssistantPresets({ projectSource = 'local', onChanged, onS
       notify({ kind: 'error', message: tabletSystemMessage(cause, 'Could not switch assistant') })
     } finally { setBusyId(null) }
   }
-  return <div className="tablet-assistant-presets" role="group" aria-label="Assistants">
-    <span className="tablet-inline-label">Assistants</span>
+  return <div className="tablet-assistant-presets" role="group" aria-label={t('Assistants')}>
+    <span className="tablet-inline-label">{t('Assistants')}</span>
     <div className="tablet-assistant-presets-row">
-      <button type="button" className={`ui-btn quiet ${loadState === 'ready' && activeId === null ? 'on' : ''}`} aria-pressed={loadState === 'ready' && activeId === null} disabled={loadState !== 'ready' || busyId === UNIVERSAL_BUSY_ID} onClick={() => void toggle(null)}>Universal</button>
+      <button type="button" className={`ui-btn quiet ${loadState === 'ready' && activeId === null ? 'on' : ''}`} aria-pressed={loadState === 'ready' && activeId === null} disabled={loadState !== 'ready' || busyId === UNIVERSAL_BUSY_ID} onClick={() => void toggle(null)}>{t('Universal')}</button>
       {presets.map((preset) => <button key={preset.id} type="button" className={`ui-btn quiet ${loadState === 'ready' && activeId === preset.id ? 'on' : ''}`} aria-pressed={loadState === 'ready' && activeId === preset.id} disabled={loadState !== 'ready' || busyId === preset.id} onClick={() => void toggle(preset)}>{preset.name}</button>)}
-      {loadState === 'loading' && <span className="tablet-inline-empty">Loading list…</span>}
-      {loadState === 'error' && <span className="tablet-inline-empty">Could not load list</span>}
-      {loadState === 'ready' && presets.length === 0 && <span className="tablet-inline-empty">You can add custom assistants on your computer</span>}
+      {loadState === 'loading' && <span className="tablet-inline-empty">{t('Loading list…')}</span>}
+      {loadState === 'error' && <span className="tablet-inline-empty">{t('Could not load list')}</span>}
+      {loadState === 'ready' && presets.length === 0 && <span className="tablet-inline-empty">{t('You can add custom assistants on your computer')}</span>}
     </div>
   </div>
 }

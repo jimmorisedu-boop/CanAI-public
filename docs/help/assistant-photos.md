@@ -34,6 +34,7 @@ Confirm the photo chip is visible before sending the Assistant message.
 
 - The original Canvas card stays in place when you attach a photo.
 - Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail.
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics
 

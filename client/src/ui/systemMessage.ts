@@ -1,4 +1,5 @@
 import { legacyParamRefusal, paramRefusalMessage } from './paramRefusal'
+import { t } from '../i18n/translate.js'
 
 /** English presentation for system errors from older servers and saved state.
  * Never run this over user content or whole response documents. */
@@ -103,10 +104,10 @@ export function systemMessage(
   // проверяем ДО разбиения по ': ': в «Размер: 4K» оно есть.
   const refusal = paramRefusalMessage(code, details) ?? (message ? legacyParamRefusal(message) : null)
   if (refusal) return refusal
-  if (!message?.trim()) return fallback
+  if (!message?.trim()) return t(fallback)
   const key = message.trim().replace(/[.!]+$/u, '').toLowerCase()
   const translated = Object.hasOwn(LEGACY_MESSAGES, key) ? LEGACY_MESSAGES[key] : undefined
-  if (translated) return translated
+  if (translated) return t(translated)
 
   // A local action may prefix an upstream error with its English context.
   const separator = message.lastIndexOf(': ')
@@ -123,8 +124,8 @@ export function systemMessage(
       ? ''
       : quoted
   }) || message
-  if (!/[А-Яа-яЁё]/u.test(systemText)) return message
-  return code && Object.hasOwn(CODE_MESSAGES, code) ? CODE_MESSAGES[code] : fallback
+  if (!/[А-Яа-яЁё]/u.test(systemText)) return t(message)
+  return code && Object.hasOwn(CODE_MESSAGES, code) ? t(CODE_MESSAGES[code]) : t(fallback)
 }
 
 /**
@@ -177,10 +178,10 @@ export function systemStatusMessage(
   status: string | undefined,
   fallback = 'Working…',
 ): string {
-  if (!status?.trim()) return fallback
+  if (!status?.trim()) return t(fallback)
   const key = status.trim().replace(/[.!]+$/u, '').toLowerCase()
   const translated = Object.hasOwn(LEGACY_STATUS_MESSAGES, key) ? LEGACY_STATUS_MESSAGES[key] : undefined
-  if (translated) return translated
-  if (/[А-Яа-яЁё]/u.test(status)) return fallback
+  if (translated) return t(translated)
+  if (/[А-Яа-яЁё]/u.test(status)) return t(fallback)
   return status
 }

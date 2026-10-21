@@ -3,6 +3,8 @@ import { computeAdaptiveTextDimensions, DEFAULT_FONT_SIZE, textPadding } from '.
 import type { CanvasStore } from './canvasStore'
 import { textOverflowsFrame } from './textOverflow'
 import type { CanvasItem } from './types'
+import { useT } from '../../../i18n/context.js'
+
 
 // Инлайн-редактирование текстового объекта: двойной клик → textarea прямо
 // поверх фигуры (мировые координаты → экранные). Ctrl+Enter/blur = сохранить,
@@ -16,6 +18,7 @@ export function TextEditOverlay({
   item: CanvasItem
   onClose: () => void
 }) {
+  const t = useT()
   const [value, setValue] = useState(item.text ?? '')
   const ref = useRef<HTMLTextAreaElement>(null)
   const cam = store.getCamera()
@@ -52,7 +55,7 @@ export function TextEditOverlay({
       <textarea
         ref={ref}
         className={`text-edit-overlay${overflowing ? ' is-overflowing' : ''}`}
-        aria-label="Canvas object text"
+        aria-label={t('Canvas object text')}
         aria-describedby={overflowing ? descriptionId : undefined}
         style={{
           left: cam.x + item.x * cam.scale,

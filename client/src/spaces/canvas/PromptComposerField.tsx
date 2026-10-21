@@ -3,6 +3,8 @@ import { IconText, IconVideo } from '../../ui/icons'
 import type { SelectionRef } from './konva/selection'
 import { shortText } from './RefChip'
 import { screenPreviewSrc } from './konva/screenPreview'
+import { useT } from '../../i18n/context.js'
+
 
 // id списка @-подсказки и его пунктов: поле ссылается на активный пункт через
 // aria-activedescendant, поэтому имена нужны обеим сторонам
@@ -51,6 +53,7 @@ export function PromptComposerField({
   onMentionHover(index: number): void
   onMentionPick(ref: SelectionRef): void
 }) {
+  const t = useT()
   const open = mention !== null && mentionList.length > 0
 
   return (
@@ -94,8 +97,8 @@ export function PromptComposerField({
       {open && mention && (
         /* список выбирают стрелками из самого поля, поэтому он не забирает
            фокус: роли и aria-activedescendant делают это слышимым */
-        <div className="mention-popup" id={MENTION_LIST_ID} role="listbox" aria-label="References for link">
-          <div className="mention-hint" role="presentation">Reference an item</div>
+        <div className="mention-popup" id={MENTION_LIST_ID} role="listbox" aria-label={t('References for link')}>
+          <div className="mention-hint" role="presentation">{t('Reference an item')}</div>
           {mentionList.map((ref, index) => (
             <button
               key={ref.shapeId}

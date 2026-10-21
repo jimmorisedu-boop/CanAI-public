@@ -21,6 +21,8 @@ import { useTimelinePlayback } from './useTimelinePlayback'
 import { useTimelineStatus } from './useTimelineStatus'
 import { useTimelineZoom } from './useTimelineZoom'
 import { useWindowKeydown } from './useWindowKeydown'
+import { useT } from '../../../i18n/context.js'
+
 
 // Оверлей правки клипа. Вся арифметика — в timelineModel и useTimelineSession,
 // здесь только сборка: плеер (превью + транспорт), плёнка и ряд монтажа.
@@ -29,6 +31,7 @@ import { useWindowKeydown } from './useWindowKeydown'
 // стоят одним столбцом под плеером.
 
 export function TimelineOverlay({ session, store }: { session: TimelineSession; store: CanvasStore }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -193,7 +196,7 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Clip editing"
+      aria-label={t('Clip editing')}
       tabIndex={-1}
     >
       <div className="tl-player">
@@ -252,7 +255,7 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
           остаётся видимым (см. .tl-back в timeline.css). */}
       {inCanvas && (
         <button type="button" className="ui-btn tl-back" aria-keyshortcuts="Escape" onClick={backToVideo}>
-          <IconBack size={14} />Return to video · Esc
+          <IconBack size={14} />{t('Return to video · Esc')}
         </button>
       )}
     </div>

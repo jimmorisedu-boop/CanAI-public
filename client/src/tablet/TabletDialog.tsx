@@ -2,6 +2,8 @@ import { useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { IconClose } from '../ui/icons'
 import { useModalFocus } from './modalFocus'
+import { useT } from '../i18n/context.js'
+
 
 // Окно поверх экрана: переименование доски, вопрос, короткая форма.
 //
@@ -21,6 +23,7 @@ export function TabletDialog({
   actions?: ReactNode
   wide?: boolean
 }) {
+  const t = useT()
   const ref = useRef<HTMLDivElement>(null)
 
   useModalFocus(ref, onClose)
@@ -32,7 +35,7 @@ export function TabletDialog({
       <div className={`tablet-modal ${wide ? 'wide' : ''}`} ref={ref} role="dialog" aria-label={title} aria-modal="true" tabIndex={-1}>
         <header className="tablet-modal-head">
           <h2>{title}</h2>
-          <button type="button" className="ui-icon-btn" aria-label="Close" onClick={onClose}>
+          <button type="button" className="ui-icon-btn" aria-label={t('Close')} onClick={onClose}>
             <IconClose size={18} />
           </button>
         </header>

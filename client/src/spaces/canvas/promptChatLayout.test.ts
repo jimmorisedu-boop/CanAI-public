@@ -17,7 +17,7 @@ test('помощник — второе окно того же промпт-ба
   assert.ok(bar >= 0, 'не найден промпт-бар')
   assert.ok(tabs > bar, 'вкладки должны быть внутри бара')
   assert.ok(shelf > tabs, 'лента помощника показывается под вкладками')
-  assert.match(actionDock, /role="group" aria-label="Mode"/)
+  assert.match(actionDock, /role="group" aria-label=\{t\('Mode'\)\}/)
   assert.match(actionDock, /aria-pressed={mode === 'make'}/)
 
   assert.ok(!canvasSpace.includes('PromptChatPanel'), 'отдельной колонки быть не должно')
@@ -33,10 +33,10 @@ test('окна взаимоисключающие: параметры генер
   assert.match(promptBar, /\{mode === 'make' && \(\s*<button\s+className="generate paid-action"/)
   assert.match(promptBar, /className="ask paid-action"[\s\S]*?<PriceBadge[\s\S]*variant="action"/)
   assert.match(promptBar, /className="generate paid-action"[\s\S]*?<PriceBadge[\s\S]*variant="action"/)
-  assert.match(promptBar, /className="paid-action-label">Send</)
+  assert.match(promptBar, /className="paid-action-label">\{t\('Send'\)\}</)
   // Подпись в Make зависит от операции: обычное «Создать» или пакетное
   // «Изменить N изображений». Семантика и числа проверяются в ActionDock.test.
-  assert.match(promptBar, /className="paid-action-label">\{createLabel\}</)
+  assert.match(promptBar, /className="paid-action-label">\{createLabel === 'Generate' \? t\('Generate'\) : createLabel\}</)
   assert.match(promptBar, /amount=\{chatEstimate\?\.costUsd \?\? null\}/)
   assert.doesNotMatch(promptBar, /chatEstimate\?\.costUsd != null && \(\s*<PriceBadge/)
   assert.doesNotMatch(promptBar, /className="ask-action-group"/)

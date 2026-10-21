@@ -3,6 +3,8 @@ import type { CanvasItem } from '../konva/types'
 import { ComparePlayer } from './ComparePlayer'
 import { useComparePlayer, useComparePlayerSpace } from './useComparePlayer'
 import { useSharedZoom, zoomTransform } from '../../../ui/useSharedZoom'
+import { useT } from '../../../i18n/context.js'
+
 
 // Панели рядом — раскладка по умолчанию, когда в сравнении есть видео: на
 // движении важнее видеть оба кадра целиком, чем совмещать их. Зум общий,
@@ -15,6 +17,7 @@ export function ComparePanelsView({
   items: CanvasItem[]
   labels: string[]
 }) {
+  const t = useT()
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
   const wrapRef = useRef<HTMLDivElement>(null)
   // колесо слушаем на стабильной обёртке (панели пересоздаются при листании),
@@ -82,7 +85,8 @@ export function ComparePanelsView({
       )}
       {videoCount === 0 && zoomed && (
         <button className="compare-zoom-reset" onClick={reset}>
-          Fit
+
+          {t('Fit')}
         </button>
       )}
     </div>

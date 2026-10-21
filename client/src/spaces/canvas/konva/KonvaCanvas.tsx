@@ -67,6 +67,7 @@ import { useCanvasCornerDockReserve } from './useCanvasCornerDockReserve'
 import { SelectionRings } from './SelectionRings'
 import { SELECTION_COLOR, SELECTION_GROUP_COLOR, selectionPadding } from './selectionRing'
 import { useNavigationMode } from '../../../settings/navigationMode'
+import { useT } from '../../../i18n/context.js'
 import { nextCameraFromWheel } from './canvasWheel'
 import { cancelActiveCanvasDrag, cancelPendingCanvasDrag, installAltCopyKeys } from './itemHelpers'
 import {
@@ -154,6 +155,7 @@ export function KonvaCanvas({
   onSketchCancel: () => void
   visible?: boolean
 }) {
+  const t = useT()
   const wrapRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<Konva.Stage>(null)
   const layerRef = useRef<Konva.Layer>(null)
@@ -240,7 +242,7 @@ export function KonvaCanvas({
         if (controller.signal.aborted) return
         notify({
           kind: 'error',
-          message: err instanceof Error ? err.message : 'Failed to import file',
+          message: err instanceof Error ? err.message : t('Failed to import file'),
           replaceKey: 'import-error',
         })
       })
@@ -908,7 +910,7 @@ export function KonvaCanvas({
         // Курсор над рядом макросов — вставит ряд. Иначе вставлять нечего, и
         // молчать нельзя: человек не знает, куда вести курсор.
         if (macroRoute !== 'row') {
-          notify({ kind: 'info', message: MACRO_PASTE_HINT, replaceKey: 'macro-paste-hint' })
+          notify({ kind: 'info', message: t(MACRO_PASTE_HINT), replaceKey: 'macro-paste-hint' })
         }
         return
       }
@@ -1052,7 +1054,7 @@ export function KonvaCanvas({
     setCropBusy(true)
     const failed = (err: unknown) => {
       console.warn('[CanAI] crop failed:', err)
-      notify({ kind: 'error', message: err instanceof Error ? err.message : 'Failed to apply crop' })
+      notify({ kind: 'error', message: err instanceof Error ? err.message : t('Failed to apply crop') })
     }
     try {
       // Режим закрывается, как только кусок вырезан; файл едет фоном на

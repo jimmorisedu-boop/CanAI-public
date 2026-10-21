@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api, type FaceModelsResponse } from '../api'
 import { faceModelsLicenses, faceModelsView, shouldPollFaceModels } from './faceModelsState'
 import { systemErrorMessage } from '../ui/systemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Модели сравнения лиц в настройках: показать состояние и дать скачать.
 // Опрос идёт ТОЛЬКО пока идёт закачка — постоянный тик ради строки, которая
@@ -10,6 +12,7 @@ import { systemErrorMessage } from '../ui/systemMessage'
 const POLL_MS = 900
 
 export function FaceModelsSection() {
+  const t = useT()
   const [state, setState] = useState<FaceModelsResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +21,7 @@ export function FaceModelsSection() {
     api.faceModelsState()
       .then((next) => { if (!cancelled) setState(next) })
       .catch((cause: unknown) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Could not read model status')
+        if (!cancelled) setError(cause instanceof Error ? cause.message : t('Could not read model status'))
       })
     return () => { cancelled = true }
   }, [])
@@ -49,7 +52,7 @@ export function FaceModelsSection() {
       .catch((cause: unknown) => {
         setState({
           state: 'failed',
-          message: cause instanceof Error ? cause.message : 'Could not start download',
+          message: cause instanceof Error ? cause.message : t('Could not start download'),
           models: state?.models ?? [],
         })
       })
@@ -59,8 +62,8 @@ export function FaceModelsSection() {
     <section className="settings-section" aria-labelledby="face-models-title">
       <div className="settings-section-heading">
         <div>
-          <h3 id="face-models-title">Face comparison</h3>
-          <p>Shows how similar a person is in the source and result in Compare.</p>
+          <h3 id="face-models-title">{t('Face comparison')}</h3>
+          <p>{t('Shows how similar a person is in the source and result in Compare.')}</p>
         </div>
         <span className="settings-connection" data-tone={view.tone} role="status">
           {view.label}
@@ -69,7 +72,7 @@ export function FaceModelsSection() {
       {view.note && <p className="settings-note">{state?.state === 'failed'
         ? systemErrorMessage(view.note, 'Could not download models')
         : view.note}</p>}
-      {licenses && <p className="settings-note">Models: {licenses}.</p>}
+      {licenses && <p className="settings-note">{t('Models:')} {licenses}.</p>}
       {view.action && (
         <div className="settings-editor-actions">
           <button type="button" className="editor-close" disabled={view.busy} onClick={start}>

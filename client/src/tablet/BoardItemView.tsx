@@ -28,6 +28,8 @@ import { tabletVideoActionsStyle } from './tabletVideoActions'
 import { tabletSystemMessage, tabletSystemStatus } from './tabletSystemMessage'
 import { MediaPlaybackControls } from '../ui/MediaPlaybackControls'
 import { cachedVideoStillDataUrl, rememberVideoStill } from '../spaces/canvas/konva/videoStillFrame'
+import { useT } from '../i18n/context.js'
+
 
 // Один объект доски. Простые теги вместо холста: картинка — <img>, видео —
 // <video playsinline>, звук — <audio>. Так браузер сам занимается декодом,
@@ -40,6 +42,7 @@ function PendingCard({ item, scale, store, readOnly }: {
   store: CanvasStore
   readOnly?: boolean
 }) {
+  const t = useT()
   const generationTasks = useSyncExternalStore(
     subscribeGenerationTasks,
     getGenerationTasks,
@@ -82,7 +85,7 @@ function PendingCard({ item, scale, store, readOnly }: {
       ? ORPHANED_LAUNCH
       : deliveryFailed ? generationTask?.error ?? 'Task not found' : undefined)
   const displayedError = visibleError
-    ? tabletSystemMessage(visibleError, 'Generation failed.')
+    ? tabletSystemMessage(visibleError, t('Generation failed.'))
     : undefined
   const displayedStage = transientStage
     ? tabletSystemStatus(transientStage)
@@ -99,7 +102,7 @@ function PendingCard({ item, scale, store, readOnly }: {
       {!failed && <span className="tablet-spinner" aria-hidden="true" />}
       <strong>{item.label}</strong>
       <span className="tablet-pending-note">
-        {failed ? displayedError ?? 'Generation failed.' : displayedStage ?? displayedConnectionLabel ?? `${seconds}  s`}
+        {failed ? displayedError ?? t('Generation failed.') : displayedStage ?? displayedConnectionLabel ?? `${seconds}  s`}
       </span>
       {!readOnly && cardRetry && <button
         type="button"
@@ -108,21 +111,22 @@ function PendingCard({ item, scale, store, readOnly }: {
         style={{ transform: `translateX(-50%) scale(${screenScale})` }}
         onClick={() => { retryCard(item.id) }}
       >
-        Retry
+
+        {t('Retry')}
       </button>}
       {!readOnly && <button
         type="button"
         className="ui-icon-btn tablet-pending-close"
         data-tablet-interactive
         style={{ transform: `scale(${screenScale})` }}
-        aria-label={failed ? 'Remove card' : 'Cancel generation'}
+        aria-label={failed ? t('Remove card') : t('Cancel generation')}
         onClick={() => {
           if (item.jobId && !failed) void cancelGeneration(item.jobId)
           // ⚠️ Убрать карточку на сетевой доске можно только с арендой — без
           // неё стор молча возвращается, и крестик не делает ничего.
           forgetCardRetry(item.id)
           void withBoardLease(store, item.id, () => store.dismissPendingById(item.id))
-            .then((admitted) => { if (!admitted) notify({ kind: 'error', message: PENDING_LEASE_REFUSED }) })
+            .then((admitted) => { if (!admitted) notify({ kind: 'error', message: t(PENDING_LEASE_REFUSED) }) })
         }}
       >
         <IconClose size={18} />
@@ -158,6 +162,7 @@ export function BoardItemView({
   upload?: TabletMediaUploader
   store: CanvasStore
 }) {
+  const t = useT()
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRecovery = useRef<ReturnType<typeof watchTabletVideo> | null>(null)
@@ -196,10 +201,10 @@ export function BoardItemView({
       className={`tablet-item ${selected ? 'selected' : ''}`}
       data-item-id={item.id}
       role="group"
-      aria-label={`${placeholder ? item.label : boardObjectLabel(item)}${selected ? ', selected' : ''}`}
+      aria-label={`${placeholder ? item.label : boardObjectLabel(item)}${selected ? `, ${t('selected')}` : ''}`}
       style={{ left: item.x, top: item.y, width: item.w, height: item.h }}
     >
-      {!placeholder && item.kind === 'image' && (item.prompt || item.modelId) && <button type="button" data-tablet-interactive className="tablet-generation-corner" aria-label="Generation settings" onClick={() => onDetails?.(item.id)} style={{ transform: `scale(${1 / Math.max(scale, .15)})` }} />}
+      {!placeholder && item.kind === 'image' && (item.prompt || item.modelId) && <button type="button" data-tablet-interactive className="tablet-generation-corner" aria-label={t('Generation settings')} onClick={() => onDetails?.(item.id)} style={{ transform: `scale(${1 / Math.max(scale, .15)})` }} />}
       <div
         className="tablet-item-inner"
         style={{ transform: `rotate(${('rotation' in item ? item.rotation : 0) ?? 0}deg)` }}
@@ -253,11 +258,11 @@ export function BoardItemView({
             {playbackOnly && selected && !selectionMode && <MediaPlaybackControls key={`${item.id}:${item.src}`} mediaRef={videoRef} />}
             {videoState === 'loading' && <div className="tablet-video-recovery tablet-video-loading" role="status">
               <span className="tablet-spinner" aria-hidden="true" />
-              <span>Loading video…</span>
+              <span>{t('Loading video…')}</span>
             </div>}
             {videoState === 'error' && <div className="tablet-video-recovery" data-tablet-interactive>
-              <span role="status">Video did not load</span>
-              <button type="button" className="ui-btn" onClick={() => videoRecovery.current?.retry()}>Retry loading</button>
+              <span role="status">{t('Video did not load')}</span>
+              <button type="button" className="ui-btn" onClick={() => videoRecovery.current?.retry()}>{t('Retry loading')}</button>
             </div>}
           </div>
         ) : item.kind === 'audio' ? (
@@ -298,22 +303,22 @@ export function BoardItemView({
           <button
             type="button"
             className="tablet-video-action"
-            aria-label={playback.playing ? 'Pause video' : 'Play video'}
-            title={playback.playing ? 'Pause' : 'Play'}
+            aria-label={playback.playing ? t('Pause video') : t('Play video')}
+            title={playback.playing ? t('Pause') : t('Play')}
             onClick={() => {
               const video = videoRef.current
               if (!video) return
               if (!video.paused && !video.ended) video.pause()
               else {
                 if (video.ended) video.currentTime = 0
-                void video.play().catch(() => notify({ kind: 'error', message: 'Could not play video' }))
+                void video.play().catch(() => notify({ kind: 'error', message: t('Could not play video') }))
               }
             }}
           >{playback.playing ? <IconPause size={20} /> : <IconRun size={20} />}</button>
           <input
             className="tablet-video-seek"
             type="range"
-            aria-label="Video position"
+            aria-label={t('Video position')}
             min={0}
             max={playback.duration || 1}
             step={0.05}
@@ -330,8 +335,8 @@ export function BoardItemView({
           <button
             type="button"
             className="tablet-video-action"
-            aria-label={item.muted ? 'Turn sound on' : 'Turn sound off'}
-            title={item.muted ? 'Turn sound on' : 'Turn sound off'}
+            aria-label={item.muted ? t('Turn sound on') : t('Turn sound off')}
+            title={item.muted ? t('Turn sound on') : t('Turn sound off')}
             onClick={() => {
               const muted = !(item.muted ?? false)
               if (videoRef.current) videoRef.current.muted = muted
@@ -343,8 +348,8 @@ export function BoardItemView({
           <button
             type="button"
             className="tablet-video-action"
-            aria-label="Capture frame"
-            title="Capture frame"
+            aria-label={t('Capture frame')}
+            title={t('Capture frame')}
             onClick={() => void captureVideoFrameAt(store, item, videoRef.current?.currentTime ?? 0, videoRef.current, upload)}
           >
             <IconCamera size={20} />

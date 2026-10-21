@@ -1,5 +1,7 @@
 import { OperationState } from '../ui/OperationState'
 import type { GalleryFailure } from './galleryAvailability'
+import { useT } from '../i18n/context.js'
+
 
 export function GalleryFailureState({
   failure,
@@ -10,17 +12,18 @@ export function GalleryFailureState({
   retrying: boolean
   onRetry: () => void
 }) {
+  const t = useT()
   const serviceUnavailable = failure.kind === 'service-unavailable'
   return (
     <OperationState
-      title={serviceUnavailable ? 'CanAI is temporarily unavailable' : 'Could not load boards'}
+      title={serviceUnavailable ? t('CanAI is temporarily unavailable') : t('Could not load boards')}
       detail={
         serviceUnavailable
-          ? 'Start CanAI again with “Start CanAI.bat”, then click “Retry”.'
+          ? t('Start CanAI again with “Start CanAI.bat”, then click “Retry”.')
           : failure.message
       }
       action={{
-        label: retrying ? 'Checking…' : 'Retry',
+        label: retrying ? t('Checking…') : t('Retry'),
         onClick: onRetry,
         disabled: retrying,
       }}

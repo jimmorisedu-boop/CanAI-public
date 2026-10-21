@@ -7,6 +7,8 @@ import { InlineNotice } from './InlineNotice.js'
 import { LocalRecoveryNotice } from './LocalRecoveryNotice.js'
 import { PriceBadge } from './PriceBadge.js'
 import { PromptNotices } from '../spaces/canvas/PromptNotices.js'
+import { LanguageProvider } from '../i18n/context.js'
+import { createLanguageStore } from '../i18n/language.js'
 import type { ProjectSource, ServerStatus } from '../types.js'
 
 const missingFalStatus = {
@@ -116,6 +118,22 @@ test('price badge показывает uncapped fal-metered как оценку'
   )
   assert.match(estimate, /≈ \$2\.00/u)
   assert.doesNotMatch(estimate, /up to/u)
+})
+
+test('price badge переводит известный системный заголовок и сохраняет пояснение', () => {
+  const store = createLanguageStore({ getItem: () => null, setItem: () => {} })
+  store.set('ru')
+  const html = renderToStaticMarkup(
+    <LanguageProvider store={store}>
+      <PriceBadge
+        amount={0.28}
+        variant="action"
+        title="Estimated generation price. Оплата по фактическому расходу fal."
+      />
+    </LanguageProvider>,
+  )
+  assert.match(html, /Приблизительная цена генерации\. Оплата по фактическому расходу fal\./u)
+  assert.match(html, /\$0\.28/u)
 })
 
 test('окно чата использует тот же notice-контракт для загрузки, памяти и ошибок', () => {

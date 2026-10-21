@@ -2,6 +2,8 @@ import React, { useEffect, useRef, type ReactNode } from 'react'
 import { IconClose } from './icons'
 import { scheduleAutoDismiss } from './noticeTiming'
 import { systemMessage } from './systemMessage'
+import { useT } from '../i18n/context.js'
+
 
 export type NoticeTone = 'info' | 'success' | 'warning' | 'error'
 
@@ -29,6 +31,7 @@ export function InlineNotice({
   className?: string
   children?: ReactNode
 }) {
+  const t = useT()
   const dismissRef = useRef(onDismiss)
   const dismissible = Boolean(onDismiss)
   const translateSystem = system ?? tone === 'error'
@@ -72,7 +75,7 @@ export function InlineNotice({
         </div>
       )}
       {onDismiss && (
-        <button className="inline-notice-dismiss" aria-label="Close message" onClick={onDismiss}>
+        <button className="inline-notice-dismiss" aria-label={t('Close message')} onClick={onDismiss}>
           <IconClose size={14} />
         </button>
       )}

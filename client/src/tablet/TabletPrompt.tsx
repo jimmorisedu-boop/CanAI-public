@@ -62,6 +62,8 @@ import type { AgentPanelController } from '../spaces/canvas/agents/agentPanelCon
 import { AgentLaunchComposer } from '../spaces/canvas/agents/AgentLaunchComposer'
 import type { AgentPresentationCapability } from '../spaces/canvas/agents/agentCapabilities'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Док создания: нижняя полка планшета.
 //
@@ -150,6 +152,7 @@ export function TabletPrompt({
   flushBoardBeforeCapture?: () => Promise<{ revision: number }>
   preparationAvailable?: boolean
 }) {
+  const t = useT()
   const promptChatProjectId = projectKey({ source: projectSource, id: projectId })
   const assistantSelection = useTabletAssistantSelection({
     projectSource,
@@ -492,6 +495,16 @@ export function TabletPrompt({
 
   const multiImageBatch = kind === 'image' && actionBatchPreview.admission.imageCount > 1
   const createLabel = actionDockCreateLabel(kind, batchMode, actionBatchPreview.admission.imageCount)
+  const autoModelLabel = autoOptionLabel({
+    selected: isAutoModelId(modelId),
+    modelName: (displayRequest?.baseModel ?? dockPreview.selection.baseModel)?.name ?? null,
+    catalogReady: models.length > 0,
+  })
+  const localizedAutoModelLabel = autoModelLabel === 'Auto'
+    ? t('Auto')
+    : autoModelLabel === 'Auto · no model'
+      ? t('Auto · no model')
+      : `${t('Auto')} · ${autoModelLabel.slice('Auto · '.length)}`
 
   const pricingNote = displayModel?.pricingNote
   // Почему модель не берёт выбранный набор, видно до нажатия — тем же
@@ -506,7 +519,7 @@ export function TabletPrompt({
   }, [modelRefusal])
   const shownErrorRaw = error ?? (modelRefusal !== dismissedModelRefusal ? modelRefusal : null)
   const shownError = shownErrorRaw
-    ? tabletSystemMessage(shownErrorRaw, 'Could not prepare the request.')
+    ? tabletSystemMessage(shownErrorRaw, t('Could not prepare the request.'))
     : null
   const draftCatalog = useMemo(() => draftModelCatalog(models, defaults), [models, defaults])
 
@@ -600,7 +613,7 @@ export function TabletPrompt({
         } catch (err) {
           setHelperPreparing(false)
           helperAbortRef.current = null
-          throw new Error(err instanceof Error ? err.message : 'Could not prepare references.')
+          throw new Error(err instanceof Error ? err.message : t('Could not prepare references.'))
         }
 
         const instruction = helperInstruction(
@@ -630,12 +643,12 @@ export function TabletPrompt({
             return false
           }
           if (runResult.status === 'error') {
-            throw new Error(`The assistant did not prepare a request — nothing was started: ${runResult.error}`)
+            throw new Error(`${t('The assistant did not prepare a request — nothing was started:')} ${runResult.error}`)
           }
 
           const problem = preparedPromptProblem(runResult.prompt, batchMode, sampleRefs.length)
           if (problem) {
-            throw new Error(`The assistant did not prepare a request — nothing was started: ${problem}`)
+            throw new Error(`${t('The assistant did not prepare a request — nothing was started:')} ${problem}`)
           }
 
           return applyPreparedPrompt(batchToRun, runResult.prompt)
@@ -683,7 +696,7 @@ export function TabletPrompt({
     } catch (err) {
       // Отказ живёт в панели, а не во всплывашке на две секунды: человек
       // смотрит сюда и должен узнать причину, а не гадать о молчании.
-      setError(tabletSystemMessage(err, 'The assistant did not respond'))
+      setError(tabletSystemMessage(err, t('The assistant did not respond')))
     } finally {
       askingRef.current = false
     }
@@ -694,7 +707,7 @@ export function TabletPrompt({
       ref={promptRef}
       data-tablet-prompt-dropzone={readOnly ? undefined : ''}
       className={`tablet-prompt ${expanded ? 'expanded' : 'collapsed'} ${keyboardOpen ? 'viewport-keyboard-open' : ''} ${largeEditor ? 'large-editor' : ''} ${readingAssistant ? 'reading-assistant' : ''}`}
-      aria-label="Creating"
+      aria-label={t('Creating')}
       style={{ '--tablet-prompt-visible-height': `${Math.max(320, visibleHeight)}px`, '--tablet-panel-max-height': `${heightBudget.panel}px`, '--tablet-area-max-height': `${heightBudget.area}px`, '--tablet-assistant-height': `${assistantHeight}px` } as CSSProperties}
 
     >
@@ -730,8 +743,8 @@ export function TabletPrompt({
           <button
             type="button"
             className="ui-btn quiet tablet-prompt-height-handle"
-            aria-label={tab === 'assistant' ? 'Resize assistant panel' : tab === 'agents' ? 'Resize agents panel' : 'Resize prompt field'}
-            title="Drag up to read more text"
+            aria-label={tab === 'assistant' ? t('Resize assistant panel') : tab === 'agents' ? 'Resize agents panel' : 'Resize prompt field'}
+            title={t('Drag up to read more text')}
             {...(tab === 'assistant' ? assistantSizing.handle : fieldSizing.handle)}
           ><span aria-hidden="true" /></button>
         </div>
@@ -755,14 +768,14 @@ export function TabletPrompt({
         )}
         {tab === 'assistant' && <select
           className="ui-field tablet-assistant-model"
-          aria-label="Model for this conversation"
+          aria-label={t('Model for this conversation')}
           value={assistantModelId}
           title={chat.active ? undefined : modelSelectHint(chat.loadState)}
           disabled={!chat.active || readOnly || changingAssistantModel || Boolean(activeAnswer)}
           onChange={(event) => {
             setChangingAssistantModel(true)
             void promptChatStore.setModel(promptChatProjectId, event.target.value)
-              .catch((error) => notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not change model') }))
+              .catch((error) => notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not change model')) }))
               .finally(() => setChangingAssistantModel(false))
           }}
         >
@@ -776,27 +789,27 @@ export function TabletPrompt({
             type="button"
             role="switch"
             className="ui-btn quiet tablet-board-memory-toggle"
-            aria-label="Board memory"
+            aria-label={t('Board memory')}
             aria-checked={chat.boardMemoryEnabled}
             aria-busy={chat.boardMemorySaving}
             disabled={readOnly || !chat.boardMemoryControlSupported || chat.loadState !== 'ready' || chat.boardMemorySaving}
             title={chat.boardMemoryControlSupported
-              ? 'Affects only automatic context and model selection. History and explicit references are kept.'
-              : 'The Host did not confirm board memory support.'}
+              ? t('Affects only automatic context and model selection. History and explicit references are kept.')
+              : t('The Host did not confirm board memory support.')}
             onPointerDown={(event) => event.preventDefault()}
             onClick={() => {
               void promptChatStore.setBoardMemoryEnabled(promptChatProjectId, !chat.boardMemoryEnabled)
-                .catch((error) => notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not save board memory') }))
+                .catch((error) => notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not save board memory')) }))
             }}
           >
-            <span className="tablet-board-memory-label" aria-hidden="true">Board memory</span>
-            <span className="tablet-board-memory-state" aria-hidden="true">{chat.boardMemoryEnabled ? 'On' : 'Off'}</span>
+            <span className="tablet-board-memory-label" aria-hidden="true">{t('Board memory')}</span>
+            <span className="tablet-board-memory-state" aria-hidden="true">{chat.boardMemoryEnabled ? t('On') : t('Off')}</span>
           </button>
         )}
         <button
           type="button"
           className="ui-btn quiet icon-only tablet-prompt-disclosure"
-          aria-label={expanded ? 'Collapse prompt panel' : 'Expand prompt panel'}
+          aria-label={expanded ? t('Collapse prompt panel') : t('Expand prompt panel')}
           aria-expanded={expanded}
           aria-controls="tablet-prompt-scroll"
           onPointerDown={(event) => event.preventDefault()}
@@ -808,7 +821,7 @@ export function TabletPrompt({
           type="button"
           className={`ui-btn quiet icon-only tablet-prompt-keyboard ${tab === 'agents' ? 'tablet-prompt-keyboard-hidden' : ''}`}
           ref={keyboardButtonRef}
-          aria-label={typingArmed ? 'Hide keyboard' : 'Show keyboard'}
+          aria-label={typingArmed ? t('Hide keyboard') : t('Show keyboard')}
           aria-pressed={typingArmed}
           disabled={readOnly || tab === 'agents'}
           onPointerDown={(event) => event.preventDefault()}
@@ -819,7 +832,7 @@ export function TabletPrompt({
 
       <div className="tablet-prompt-scroll" id="tablet-prompt-scroll" ref={assistantAreaRef}>
         {tab === 'agents' ? (
-          <div className="tablet-agents-pane" role="region" aria-label="Agents">
+          <div className="tablet-agents-pane" role="region" aria-label={t('Agents')}>
             {agentController && (agentCapability?.canLaunch || agentCapability?.canObserve) ? (
               <AgentLaunchComposer
                 controller={agentController}
@@ -833,16 +846,16 @@ export function TabletPrompt({
             ) : (
               <InlineNotice
                 tone="info"
-                title="Agents are unavailable with this connection"
+                title={t('Agents are unavailable with this connection')}
                 detail={agentCapability?.reason ?? 'The server did not advertise agent controls for this board.'}
               />
             )}
           </div>
         ) : (
         <>
-        {previousPrompt !== null && tab === 'prompt' && <button type="button" className="ui-btn quiet" onClick={() => { setPrompt(previousPrompt); setPreviousPrompt(null) }}>Restore draft text</button>}
+        {previousPrompt !== null && tab === 'prompt' && <button type="button" className="ui-btn quiet" onClick={() => { setPrompt(previousPrompt); setPreviousPrompt(null) }}>{t('Restore draft text')}</button>}
         {tab === 'assistant' && (
-            <div id="tablet-panel-assistant" role="region" aria-label="Discuss">
+            <div id="tablet-panel-assistant" role="region" aria-label={t('Discuss')}>
             <div className="tablet-assistant-bar">
               <TabletAssistantPresets
                 projectSource={projectSource}
@@ -876,13 +889,13 @@ export function TabletPrompt({
               className="ui-field tablet-assistant-select"
               value={assistantSelection.activeId ?? '__canai_universal__'}
               disabled={readOnly || assistantSelection.loadState !== 'ready'}
-              aria-label="Assistant"
+              aria-label={t('Assistant')}
               onChange={(e) => {
                 const val = e.target.value
                 void assistantSelection.select(val === '__canai_universal__' ? null : val)
               }}
             >
-              <option value="__canai_universal__">Assistant: Universal</option>
+              <option value="__canai_universal__">{t('Assistant: Universal')}</option>
               {assistantSelection.presets.map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {preset.name}
@@ -905,7 +918,7 @@ export function TabletPrompt({
                 <button
                   type="button"
                   className="tablet-ref-drop"
-                  aria-label="Remove reference"
+                  aria-label={t('Remove reference')}
                   onClick={() => setManualRefs((current) => current.filter((manual) => manual.shapeId !== ref.shapeId))}
                 >
                   <IconClose size={11} />
@@ -938,17 +951,17 @@ export function TabletPrompt({
           />
         )}
 
-        {readingAssistant && <button type="button" className="tablet-assistant-divider" aria-label="Resize response and input areas" title="Drag to change input height" {...assistantSplit.handle}><span /></button>}
-        <div className={`tablet-composer ${tab === 'prompt' && multiImageBatch ? 'tablet-composer-batch' : ''}`} id="tablet-panel-prompt" role="region" aria-label="Make">
+        {readingAssistant && <button type="button" className="tablet-assistant-divider" aria-label={t('Resize response and input areas')} title={t('Drag to change input height')} {...assistantSplit.handle}><span /></button>}
+        <div className={`tablet-composer ${tab === 'prompt' && multiImageBatch ? 'tablet-composer-batch' : ''}`} id="tablet-panel-prompt" role="region" aria-label={t('Make')}>
           <div className="tablet-input-shell">
           <textarea
             ref={textareaRef}
             className="ui-field tablet-input"
-            aria-label={tab === 'assistant' ? 'Question for assistant' : 'Prompt'}
+            aria-label={tab === 'assistant' ? t('Question for assistant') : t('Prompt')}
             value={prompt}
             placeholder={
               readOnly
-                ? 'Board is open on another device'
+                ? t('Board is open on another device')
                 : tab === 'assistant' ? 'Ask assistant…' : 'What should we create?'
             }
             rows={composerLayout.rows}
@@ -965,7 +978,7 @@ export function TabletPrompt({
             <button
               type="button"
               className={`ui-btn quiet icon-only tablet-input-expand ${largeEditor ? 'on' : ''}`}
-              aria-label={largeEditor ? 'Collapse editor' : 'Expand editor'}
+              aria-label={largeEditor ? t('Collapse editor') : t('Expand editor')}
               aria-pressed={largeEditor}
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => {
@@ -992,7 +1005,8 @@ export function TabletPrompt({
               className="ui-btn tablet-create"
               onClick={() => promptChatStore.cancel(promptChatProjectId, activeAnswer)}
             >
-              Stop
+
+              {t('Stop')}
             </button>
           ) : (
             <button
@@ -1008,11 +1022,11 @@ export function TabletPrompt({
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => void ask()}
             >
-              <span className="tablet-action-label paid-action-label">Ask</span>
+              <span className="tablet-action-label paid-action-label">{t('Ask')}</span>
               <PriceBadge
                 amount={chatEstimate?.costUsd ?? null}
                 precision={3}
-                title="Approximate response cost"
+                title={t('Approximate response cost')}
                 variant="action"
               />
             </button>
@@ -1025,7 +1039,8 @@ export function TabletPrompt({
               helperAbortRef.current?.abort()
             }}
           >
-            Stop
+
+            {t('Stop')}
           </button>
         ) : (
           <button
@@ -1036,7 +1051,7 @@ export function TabletPrompt({
             onPointerDown={(event) => event.preventDefault()}
             onClick={() => void submit()}
           >
-            <span className="tablet-action-label paid-action-label">{createLabel}</span>
+            <span className="tablet-action-label paid-action-label">{createLabel === 'Generate' ? t('Generate') : createLabel}</span>
             {displayedPrice != null && (
               <PriceBadge
                 amount={displayedPrice}
@@ -1055,7 +1070,7 @@ export function TabletPrompt({
           <TabletPromptOptionRows
           controls={(
             <>
-              <div className="ui-toggle tablet-kinds" role="radiogroup" aria-label="What are we creating">
+              <div className="ui-toggle tablet-kinds" role="radiogroup" aria-label={t('What are we creating')}>
                 {KINDS.map((entry) => (
                   <button
                     key={entry.id}
@@ -1078,7 +1093,7 @@ export function TabletPrompt({
               </div>
 
               {kind === 'image' && (
-                <div className="ui-toggle tablet-count" role="group" aria-label="Number of variants">
+                <div className="ui-toggle tablet-count" role="group" aria-label={t('Number of variants')}>
                   {[1, 2, 3, 4].map((value) => (
                     <button
                       key={value}
@@ -1107,7 +1122,7 @@ export function TabletPrompt({
           ref={settingsPopRef}
           className={`tablet-settings-pop ${settingsPlacement === 'viewport-top' ? 'viewport-top' : ''}`}
           role="dialog"
-          aria-label="Model and parameters"
+          aria-label={t('Model and parameters')}
           style={{
             ...(settingsTop == null ? {} : { '--tablet-settings-top': `${settingsTop}px` }),
             ...(settingsMaxHeight == null ? {} : { '--tablet-settings-max-height': `${settingsMaxHeight}px` }),
@@ -1115,11 +1130,11 @@ export function TabletPrompt({
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="tablet-settings-pop-head">
-            <strong>Model and parameters</strong>
+            <strong>{t('Model and parameters')}</strong>
             <button
               type="button"
               className="ui-btn quiet icon-only tablet-settings-pop-close"
-              aria-label="Close model and parameters"
+              aria-label={t('Close model and parameters')}
               onPointerDown={(event) => event.preventDefault()}
               onClick={() => setSettingsVisibility(false)}
             >
@@ -1127,23 +1142,19 @@ export function TabletPrompt({
             </button>
           </div>
           <label className="tablet-field">
-            <span>Model</span>
+            <span>{t('Model')}</span>
             <select
               className="ui-field tablet-model-select"
               value={isAutoModelId(modelId) ? AUTO_MODEL_ID : modelId ?? ''}
-              aria-label="Model"
+              aria-label={t('Model')}
               onChange={(event) => chooseModel(event.target.value)}
             >
               <option value={AUTO_MODEL_ID}>
-                {autoOptionLabel({
-                  selected: isAutoModelId(modelId),
-                  modelName: (displayRequest?.baseModel ?? dockPreview.selection.baseModel)?.name ?? null,
-                  catalogReady: models.length > 0,
-                })}
+                {localizedAutoModelLabel}
               </option>
-              {modelId && !isAutoModelId(modelId) && !pickable.some(model => model.id === modelId) && <option value={modelId} disabled>{models.find(model => model.id === modelId)?.name ?? modelId} · saved choice</option>}
+              {modelId && !isAutoModelId(modelId) && !pickable.some(model => model.id === modelId) && <option value={modelId} disabled>{models.find(model => model.id === modelId)?.name ?? modelId}{t(' · saved choice')}</option>}
               {pickable.map((model) => (
-                <option key={model.id} value={model.id} disabled={Boolean(executorCompatibilityError(model))}>{model.name}{executorCompatibilityError(model) ? ' · update CanAI' : ''}</option>
+                <option key={model.id} value={model.id} disabled={Boolean(executorCompatibilityError(model))}>{model.name}{executorCompatibilityError(model) ? t(' · update CanAI') : ''}</option>
               ))}
             </select>
           </label>

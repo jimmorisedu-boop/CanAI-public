@@ -71,7 +71,7 @@ test('холст спрашивает, чей ход, после своего р
   assert.match(block, /overMacroRow: macroRowHovered\(\)/)
   assert.match(block, /if \(macroRoute !== 'canvas'\) \{/)
   assert.match(block, /macroRoute === 'objects' && canvasPasteArbiter\.settle\(false\)/, 'своя копия объектов вставляется')
-  assert.match(block, /if \(macroRoute !== 'row'\) \{\s*notify\(\{ kind: 'info', message: MACRO_PASTE_HINT/, 'молчать нельзя')
+  assert.match(block, /if \(macroRoute !== 'row'\) \{\s*notify\(\{ kind: 'info', message: t\(MACRO_PASTE_HINT\)/, 'молчать нельзя')
   // Прежний ранний выход возвращать нельзя: он стоял до решения и отменял вставку своей копии.
   assert.ok(!canvas.slice(0, decide).includes('isMacroText('), 'макрос не разбирается до решения холста')
 
@@ -136,6 +136,7 @@ function canvasPaste(state: { text: string; overMacroRow?: boolean; ownCopy?: 'o
     canvasPasteArbiter: arbiter,
     notify: (toast: { message: string }) => { log.push(toast.message === MACRO_PASTE_HINT ? 'подсказка' : toast.message) },
     MACRO_PASTE_HINT,
+    t: (message: string) => message,
     text: state.text,
     choice,
     e: event,

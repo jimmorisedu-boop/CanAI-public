@@ -42,6 +42,8 @@ import type {
   PromptChatMessage,
   PromptChatSuggestion,
 } from './promptChatTypes'
+import { useT, type Translate } from '../../i18n/context.js'
+
 
 function usePromptChatSnapshot(projectId: string) {
   const subscribe = useCallback(
@@ -55,12 +57,12 @@ function usePromptChatSnapshot(projectId: string) {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-function statusLabel(message: PromptChatMessage, elapsed: number): string {
-  if (message.status === 'submitting') return "Sending..."
-  if (message.status === 'queued') return "Queued…"
-  if (message.status === 'running') return `Writing prompt… · ${elapsed}s`
-  if (message.status === 'cancelled') return "Stopped"
-  if (message.status === 'error') return systemErrorMessage(message.error, "Failed to get response")
+function statusLabel(message: PromptChatMessage, elapsed: number, translate: Translate): string {
+  if (message.status === 'submitting') return translate('Sending...')
+  if (message.status === 'queued') return translate('Queued…')
+  if (message.status === 'running') return translate('Writing prompt… · {0}s', { 0: elapsed })
+  if (message.status === 'cancelled') return translate('Stopped')
+  if (message.status === 'error') return systemErrorMessage(message.error, translate('Failed to get response'))
   return ''
 }
 
@@ -84,7 +86,7 @@ function useElapsed(active: boolean, createdAt: number): number {
 function parseInlineFormatting(text: string): ReactNode[] {
   const tokens = text.split(/(\*\*|__|\*|_|`)/g)
   const result: ReactNode[] = []
-  
+
   let isBold = false
   let isItalic = false
   let isCode = false
@@ -147,6 +149,7 @@ function renderMarkdown(
   store: CanvasStore,
   refs: SelectionRef[],
   onError: (message: string) => void,
+  translate: Translate,
   onCanvasAction?: () => void,
 ): ReactNode {
   const parts = text.split(/```/g)
@@ -156,13 +159,13 @@ function renderMarkdown(
     try {
       await navigator.clipboard.writeText(content)
     } catch {
-      onError("Failed to copy")
+      onError(translate('Failed to copy'))
     }
   }
 
   const fillCode = (content: string) => {
     if (!requestGenerationComposerFill({ prompt: content, refs })) {
-      onError("Generation input is currently unavailable")
+      onError(translate('Generation input is currently unavailable'))
     }
   }
 
@@ -185,13 +188,13 @@ function renderMarkdown(
               и без класса кнопка рисовалась браузерным прямоугольником. */}
           <div className="chat-code-block-actions">
             <button className="ui-btn quiet prompt-chat-action icon-tab" onClick={() => fillCode(trimmedCode)}>
-              <IconEdit size={14} /> Use prompt
+              <IconEdit size={14} /> {translate('Use prompt')}
             </button>
             <button className="ui-btn quiet prompt-chat-action icon-tab" onClick={() => void copyCode(trimmedCode)}>
-              <IconCopy size={14} /> Copy
+              <IconCopy size={14} /> {translate('Copy')}
             </button>
             <button className="ui-btn quiet prompt-chat-action icon-tab" onClick={() => { store.placeText(trimmedCode); onCanvasAction?.() }}>
-              <IconToCanvas size={14} /> Add to canvas
+              <IconToCanvas size={14} /> {translate('Add to canvas')}
             </button>
           </div>
         </div>
@@ -261,17 +264,18 @@ function PromptResult({
   onError(message: string): void
   onCanvasAction?(): void
 }) {
+  const t = useT()
   async function copy(): Promise<void> {
     try {
       await navigator.clipboard.writeText(suggestion.prompt)
     } catch {
-      onError("Failed to copy prompt")
+      onError(t('Failed to copy prompt'))
     }
   }
 
   function fill(): void {
     if (!requestGenerationComposerFill({ prompt: suggestion.prompt, refs })) {
-      onError("Generation input is currently unavailable")
+      onError(t('Generation input is currently unavailable'))
     }
   }
 
@@ -281,17 +285,17 @@ function PromptResult({
       <p>{suggestion.prompt}</p>
       <div className="prompt-chat-result-actions">
         <button className="prompt-chat-action icon-tab primary" onClick={fill}>
-          <IconEdit size={16} /> Use prompt
+          <IconEdit size={16} />  {t('Use prompt')}
         </button>
         <button className="prompt-chat-action icon-tab" onClick={() => void copy()}>
-          <IconCopy size={16} /> Copy
+          <IconCopy size={16} />  {t('Copy')}
         </button>
         <button
           className="prompt-chat-action icon-tab"
           onClick={() => { store.placeText(suggestion.prompt); onCanvasAction?.() }}
-          title="Add as text to canvas"
+          title={t('Add as text to canvas')}
         >
-          <IconToCanvas size={16} /> Add to canvas
+          <IconToCanvas size={16} />  {t('Add to canvas')}
         </button>
       </div>
     </section>
@@ -325,6 +329,7 @@ function AssistantMessage({
   onError(message: string): void
   onCanvasAction?(): void
 }) {
+  const t = useT()
   const active =
     message.status === 'submitting' ||
     message.status === 'queued' ||
@@ -334,7 +339,7 @@ function AssistantMessage({
 
   return (
     <div className={`prompt-chat-message assistant ${message.status ?? ''}`}>
-      {message.reply && <div className="prompt-chat-reply">{renderMarkdown(message.reply, store, refs, onError, onCanvasAction)}</div>}
+      {message.reply && <div className="prompt-chat-reply">{renderMarkdown(message.reply, store, refs, onError, t, onCanvasAction)}</div>}
 
       {/* Панель запуска на холсте: статус запуска или кнопка пакетной генерации */}
       {message.prompts && message.prompts.length > 0 && (
@@ -342,16 +347,16 @@ function AssistantMessage({
           {isDispatched ? (
             <div className="prompt-chat-dispatched-row">
               <span className="prompt-chat-dispatched-badge">
-                <IconGenerate size={14} /> Generation started on canvas ({dispatchedSlots!.length})
+                <IconGenerate size={14} /> {t('Generation started on canvas ({0})', { 0: dispatchedSlots!.length })}
               </span>
               {onFocusSlots && (
                 <button
                   type="button"
                   className="ui-btn quiet prompt-chat-focus-btn"
                   onClick={() => { onFocusSlots(dispatchedSlots!); onCanvasAction?.() }}
-                  title="Show generated results on the canvas"
+                  title={t('Show generated results on the canvas')}
                 >
-                  <IconExact size={14} /> Show on canvas
+                  <IconExact size={14} />  {t('Show on canvas')}
                 </button>
               )}
             </div>
@@ -359,12 +364,12 @@ function AssistantMessage({
             <div className="prompt-chat-batch-pending-row">
               <span className="prompt-chat-batch-title">
                 {message.prompts.length > 1
-                  ? `Prepared ${message.prompts.length} variants`
-                  : "Ready to generate on canvas"}
+                  ? t('Prepared {0} variants', { 0: message.prompts.length })
+                  : t('Ready to generate on canvas')}
                 {preferredModelLabel && (
                   <span
                     className="prompt-chat-board-memory-tag"
-                    title={`Assistant uses ${preferredModelLabel} (the main model on this board)`}
+                    title={t('Assistant uses {0} (the main model on this board)', { 0: preferredModelLabel })}
                   >
                     ★ {preferredModelLabel}
                   </span>
@@ -374,12 +379,12 @@ function AssistantMessage({
                 type="button"
                 className="ui-btn primary prompt-chat-batch-btn"
                 onClick={() => onGenerate(message.prompts!)}
-                title="Generate on canvas and focus the results"
+                title={t('Generate on canvas and focus the results')}
               >
                 <IconGenerate size={14} />
                 {message.prompts.length > 1
-                  ? `Generate all (${message.prompts.length})`
-                  : "Generate on canvas"}
+                  ? t('Generate all ({0})', { 0: message.prompts.length })
+                  : t('Generate on canvas')}
               </button>
             </div>
           ) : null}
@@ -400,17 +405,17 @@ function AssistantMessage({
       {active && (
         <div className="prompt-chat-progress" role="status">
           <span className="prompt-chat-spinner" aria-hidden="true" />
-          <span>{statusLabel(message, elapsed)}</span>
+          <span>{statusLabel(message, elapsed, t)}</span>
         </div>
       )}
       {(message.status === 'error' || message.status === 'cancelled') && (
         <div className={`prompt-chat-message-state ${message.status}`} role="alert">
-          <span>{statusLabel(message, elapsed)}</span>
+          <span>{statusLabel(message, elapsed, t)}</span>
           <button
             className="prompt-chat-inline-action icon-tab"
             onClick={() => onRetry(message)}
           >
-            <IconRefresh size={14} /> Retry
+            <IconRefresh size={14} />  {t('Retry')}
           </button>
         </div>
       )}
@@ -459,6 +464,7 @@ export function AssistantShelfResizeGrip({ height, onHeightChange }: {
   height: number
   onHeightChange(height: number): void
 }) {
+  const t = useT()
   const resizeCleanup = useRef<(() => void) | null>(null)
   useEffect(() => () => resizeCleanup.current?.(), [])
   const viewportHeight = typeof window === 'undefined' ? 720 : window.innerHeight
@@ -494,7 +500,7 @@ export function AssistantShelfResizeGrip({ height, onHeightChange }: {
     <div
       className="prompt-bar-grip"
       role="separator"
-      aria-label="Change assistant window height"
+      aria-label={t('Change assistant window height')}
       aria-orientation="horizontal"
       aria-valuenow={Math.round(height)}
       aria-valuemin={SHELF_MIN_HEIGHT}
@@ -553,6 +559,7 @@ export function AssistantShelf({
   onFocusSlots?(slotIds: string[]): void
   onCanvasAction?(): void
 }) {
+  const t = useT()
   const snapshot = usePromptChatSnapshot(projectId)
   const [localError, setLocalError] = useState<string | null>(null)
   const [loadingOlder, setLoadingOlder] = useState(false)
@@ -660,7 +667,7 @@ export function AssistantShelf({
     if (action.kind === 'manual') {
       // Объекта на доске уже нет — кладём ручным чипом по ссылке, как с полки.
       requestAddPromptAsset(action.ref)
-      showToast("The object is not on the board - added a reference via the link")
+      showToast(t('The object is not on the board - added a reference via the link'))
     }
   }
 
@@ -722,13 +729,13 @@ export function AssistantShelf({
     <section
       className={`assistant-shelf ${collapsed ? 'is-collapsed' : ''}`}
       style={{ height, display: hidden ? 'none' : 'flex' }}
-      aria-label="Assistant"
+      aria-label={t('Assistant')}
       aria-hidden={hidden}
     >
       <header className="assistant-shelf-head">
         <button
           className="icon-btn"
-          aria-label="Chats"
+          aria-label={t('Chats')}
           aria-expanded={snapshot.drawerOpen}
           onClick={() => promptChatStore.setDrawerOpen(projectId, !snapshot.drawerOpen)}
         >
@@ -738,7 +745,7 @@ export function AssistantShelf({
           {snapshot.active?.meta.title || "New chat"}
         </strong>
         <select
-          aria-label="Chat model"
+          aria-label={t('Chat model')}
           title={snapshot.active ? undefined : modelSelectHint(snapshot.loadState)}
           value={snapshot.active?.meta.selectedModelId ?? ''}
           disabled={!snapshot.active}
@@ -761,7 +768,7 @@ export function AssistantShelf({
         </select>
         <button
           className="icon-btn"
-          aria-label="New chat"
+          aria-label={t('New chat')}
           onClick={() => {
             setLocalError(null)
             void promptChatStore.createConversation(projectId).catch((error) => {
@@ -809,14 +816,14 @@ export function AssistantShelf({
         <InlineNotice
           className="prompt-chat-inline-notice"
           tone="info"
-          title="Loading chat..."
+          title={t('Loading chat...')}
         />
       )}
       {snapshot.loadState === 'error' && (
         <InlineNotice
           className="prompt-chat-inline-notice"
           tone="error"
-          title="Chat didn't load"
+          title={t('Chat didn\'t load')}
           detail={snapshot.localError || undefined}
           action={{
             label: "Retry",
@@ -828,7 +835,7 @@ export function AssistantShelf({
         <InlineNotice
           className="prompt-chat-inline-notice"
           tone="warning"
-          title="Chat memory is out of date"
+          title={t('Chat memory is out of date')}
           detail={memoryWarning}
           action={{
             label: rebuildingContext ? "Updating..." : "Retry",
@@ -860,20 +867,20 @@ export function AssistantShelf({
             disabled={loadingOlder}
             onClick={() => void loadOlder()}
           >
-            {loadingOlder ? "Loading…" : "Show earlier messages"}
+            {loadingOlder ? t('Loading…') : t('Show earlier messages')}
           </button>
         )}
         {snapshot.loadState === 'ready' && messages.length === 0 && (
           <div className="prompt-chat-empty">
-            <strong>Where do we start?</strong>
-            <p>Discuss an idea, write a prompt, or create something on the board.</p>
+            <strong>{t('Where do we start?')}</strong>
+            <p>{t('Discuss an idea, write a prompt, or create something on the board.')}</p>
           </div>
         )}
         {messages.map((message, messageIndex) => {
           const isSystem = message.role === 'user' && message.text.startsWith('▶')
           return message.role === 'user' ? (
             <div key={message.id} className={`prompt-chat-message user ${isSystem ? 'system-action' : ''}`}>
-              {isSystem ? <p>{message.text}</p> : renderMarkdown(message.text, store, [], setLocalError)}
+              {isSystem ? <p>{message.text}</p> : renderMarkdown(message.text, store, [], setLocalError, t)}
               {message.attachments && message.attachments.length > 0 && (
                 <PromptChatReferenceHistory
                   refs={message.attachments.map(selectionFromAttachment)}
@@ -928,7 +935,7 @@ export function AssistantShelf({
         <InlineNotice
           className="prompt-chat-inline-notice prompt-chat-local-notice"
           tone="error"
-          title="Action failed"
+          title={t('Action failed')}
           detail={localError || snapshot.localError || undefined}
           onDismiss={localError ? () => setLocalError(null) : undefined}
         />

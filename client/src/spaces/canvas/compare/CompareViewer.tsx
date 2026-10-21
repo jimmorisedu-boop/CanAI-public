@@ -19,6 +19,8 @@ import type { DetectedFace } from './faceMath'
 import { resetFaceSessions } from './faceSimilarity'
 import { CompareOverlayView, type OverlayMode } from './CompareOverlayView'
 import { ComparePanelsView } from './ComparePanelsView'
+import { useT } from '../../../i18n/context.js'
+
 
 // Просмотрщик сравнения — обычный HTML-оверлей поверх холста (не Konva:
 // штора это одна строка CSS, разница — mix-blend-mode, видео играет само).
@@ -99,6 +101,7 @@ export function CompareViewer({
   store: CanvasStore
   session: CompareViewing
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useModalFocus(dialogRef, closeCompare)
   const models = useCatalog()
@@ -291,7 +294,7 @@ export function CompareViewer({
       if (faces.length === 0) return
       setPicking({ side, src: item.src, faces, natural })
     } catch {
-      notify({ kind: 'error', message: 'Failed to show faces in the frame' })
+      notify({ kind: 'error', message: t('Failed to show faces in the frame') })
     }
   }
 
@@ -308,13 +311,13 @@ export function CompareViewer({
         await new Promise((resolve) => setTimeout(resolve, 700))
         state = await api.faceModelsState()
       }
-      if (state.state !== 'ready') throw new Error(state.message || 'Models did not download')
+      if (state.state !== 'ready') throw new Error(state.message || t('Models did not download'))
       resetFaceSessions()
       setFaceAttempt((value) => value + 1)
     } catch (error) {
       notify({
         kind: 'error',
-        message: error instanceof Error ? error.message : 'Failed to enable face comparison',
+        message: error instanceof Error ? error.message : t('Failed to enable face comparison'),
       })
     } finally {
       setPreparing(false)
@@ -353,8 +356,8 @@ export function CompareViewer({
     if (moved === 0) return
     notify({
       kind: 'info',
-      message: 'Sent to Archive',
-      action: { label: 'Cancel', run: () => store.undo() },
+      message: t('Sent to Archive'),
+      action: { label: t('Cancel'), run: () => store.undo() },
     })
     if (candidates.length <= 1) closeCompare()
     else setCursor((prev) => wrapCursor(prev, candidates.length - 1))
@@ -362,10 +365,10 @@ export function CompareViewer({
 
   if (!baseline || candidates.length === 0) {
     return (
-      <div ref={dialogRef} tabIndex={-1} className="compare-overlay" role="dialog" aria-modal="true" aria-label="Comparison">
+      <div ref={dialogRef} tabIndex={-1} className="compare-overlay" role="dialog" aria-modal="true" aria-label={t('Comparison')}>
         <div className="compare-empty">
-          Comparison objects are no longer available.
-          <button className="chip-btn" onClick={closeCompare}>Close</button>
+          {t('Comparison objects are no longer available.')}
+          <button className="chip-btn" onClick={closeCompare}>{t('Close')}</button>
         </div>
       </div>
     )
@@ -385,7 +388,7 @@ export function CompareViewer({
       className={`compare-overlay ${layout === 'side-by-side' ? 'is-panels' : ''} ${kinds.includes('video') ? 'has-player' : ''} ${controlsResting ? 'is-resting' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label="Comparison"
+      aria-label={t('Comparison')}
     >
       <header className="compare-head">
         {/* Кто есть кто — одним блоком, строка под строкой: роль слева, имя
@@ -393,12 +396,12 @@ export function CompareViewer({
             экране, поэтому при подглядке видно, на что именно смотришь. */}
         <div className="compare-head-main">
           <div className={`compare-role-row ${layout === 'overlay' && overlayMode === 'toggle' && shownIsBaseline ? 'on' : ''}`}>
-            <span className="compare-role">Source</span>
+            <span className="compare-role">{t('Source')}</span>
             <span className="compare-role-name" title={baselineName}>{baselineName}</span>
-            {session.pulledIn && <span className="compare-role-note">by lineage</span>}
+            {session.pulledIn && <span className="compare-role-note">{t('by lineage')}</span>}
           </div>
           <div className={`compare-role-row ${layout === 'overlay' && overlayMode === 'toggle' && !shownIsBaseline ? 'on' : ''}`}>
-            <span className="compare-role">Candidate</span>
+            <span className="compare-role">{t('Candidate')}</span>
             <span className="compare-role-name" title={candidateName}>{candidateName}</span>
             {candidates.length > 1 && (
               <span className="compare-role-note">
@@ -408,7 +411,7 @@ export function CompareViewer({
             {/* метка видна сразу и не исчезает — цифра ставится вслепую,
                 и без этого непонятно, сработало ли вообще */}
             {current.mark != null && (
-              <span className="compare-mark" title="Group-export label">
+              <span className="compare-mark" title={t('Group-export label')}>
                 {current.mark}
               </span>
             )}
@@ -419,7 +422,7 @@ export function CompareViewer({
               фона у неё нет, тон несёт точка. */}
           {faceState.kind !== 'off' && (
             <div className="compare-role-row">
-              <span className="compare-role">Similarity</span>
+              <span className="compare-role">{t('Similarity')}</span>
               <FaceSimilarityChip
                 state={preparing ? { kind: 'busy' } : faceState}
                 threshold={threshold}
@@ -437,7 +440,7 @@ export function CompareViewer({
             faces={picking.faces}
             natural={picking.natural}
             selected={picking.side === 'a' ? faceIndexA : faceIndexB}
-            title={picking.side === 'a' ? 'Source' : 'Candidate'}
+            title={picking.side === 'a' ? t('Source') : t('Candidate')}
             onPick={(index) => {
               if (picking.side === 'a') setFaceIndexA(index)
               else setFaceIndexB(index)
@@ -451,7 +454,7 @@ export function CompareViewer({
             наложение и есть штора). У фото её нет вовсе — только наложение
             (решение пользователя 11.09.2026). */}
         {hasVideo && (
-          <div className="compare-modes" role="group" aria-label="Layout">
+          <div className="compare-modes" role="group" aria-label={t('Layout')}>
             {([
               ['side-by-side', 'Side by side'],
               ['overlay', 'Curtain'],
@@ -471,7 +474,7 @@ export function CompareViewer({
         {/* режимы меняют, КАК показан один и тот же кадр, — отдельной панели
             под каждым из них нет, поэтому переключатели, а не вкладки */}
         {layout === 'overlay' && !hasVideo && (
-          <div className="compare-modes" role="group" aria-label="How to view">
+          <div className="compare-modes" role="group" aria-label={t('How to view')}>
             {([
               ['wipe', 'Curtain'],
               ['toggle', 'Switching'],
@@ -491,8 +494,8 @@ export function CompareViewer({
 
         {/* Выход подписан, а не спрятан в подсказке: из полноэкранного режима
             над холстом надо видеть, как выйти, — так же, как из таймлайна. */}
-        <button type="button" className="compare-close" aria-label="Close comparison (Esc)" onClick={closeCompare}>
-          <IconClose size={14} />Esc — exit
+        <button type="button" className="compare-close" aria-label={t('Close comparison (Esc)')} onClick={closeCompare}>
+          <IconClose size={14} />{t('Esc — exit')}
         </button>
       </header>
 
@@ -512,7 +515,7 @@ export function CompareViewer({
 
       {candidates.length > 1 && (
         <div className="compare-strip">
-          <button className="icon-btn" aria-label="Previous" onClick={() => setCursor((p) => wrapCursor(p - 1, candidates.length))}>
+          <button className="icon-btn" aria-label={t('Previous')} onClick={() => setCursor((p) => wrapCursor(p - 1, candidates.length))}>
             <IconPrev size={16} />
           </button>
           {candidates.map((item, index) => (
@@ -526,7 +529,7 @@ export function CompareViewer({
               {item.mark != null && <span className="compare-thumb-mark">{item.mark}</span>}
             </button>
           ))}
-          <button className="icon-btn" aria-label="Next" onClick={() => setCursor((p) => wrapCursor(p + 1, candidates.length))}>
+          <button className="icon-btn" aria-label={t('Next')} onClick={() => setCursor((p) => wrapCursor(p + 1, candidates.length))}>
             <IconNext size={16} />
           </button>
         </div>
@@ -537,33 +540,33 @@ export function CompareViewer({
       <footer className="compare-hint">
         <span className="compare-hint-item">
           {layout !== 'overlay' || hasVideo ? (
-            <><kbd>Space</kbd><span>play</span></>
+            <><kbd>Space</kbd><span>{t('play')}</span></>
           ) : overlayMode === 'toggle' ? (
-            <><kbd>Space</kbd><span>source</span></>
+            <><kbd>Space</kbd><span>{t('source')}</span></>
           ) : overlayMode === 'diff' ? (
-            <span>black — match</span>
+            <span>{t('black — match')}</span>
           ) : (
-            <span>move the mouse</span>
+            <span>{t('move the mouse')}</span>
           )}
         </span>
         {hasVideo && (
           <>
             <i className="compare-hint-separator" aria-hidden="true" />
-            <span className="compare-hint-item"><kbd>A D</kbd><span>frame</span><kbd>Shift</kbd><span>×10</span></span>
+            <span className="compare-hint-item"><kbd>{t('A D')}</kbd><span>{t('frame')}</span><kbd>{t('Shift')}</kbd><span>×10</span></span>
           </>
         )}
         <i className="compare-hint-separator" aria-hidden="true" />
-        <span className="compare-hint-item"><kbd>Double-click</kbd><span>100%</span></span>
+            <span className="compare-hint-item"><kbd>{t('Double-click')}</kbd><span>100%</span></span>
         {candidates.length > 1 && (
           <>
             <i className="compare-hint-separator" aria-hidden="true" />
-            <span className="compare-hint-item"><kbd>← →</kbd><span>scroll</span></span>
+            <span className="compare-hint-item"><kbd>← →</kbd><span>{t('scroll')}</span></span>
           </>
         )}
         <i className="compare-hint-separator" aria-hidden="true" />
-        <span className="compare-hint-item"><kbd>1–9</kbd><span>label</span></span>
+        <span className="compare-hint-item"><kbd>1–9</kbd><span>{t('label')}</span></span>
         <i className="compare-hint-separator" aria-hidden="true" />
-        <span className="compare-hint-item"><kbd>Esc</kbd></span>
+        <span className="compare-hint-item"><kbd>{t('Esc')}</kbd></span>
       </footer>
     </div>
   )

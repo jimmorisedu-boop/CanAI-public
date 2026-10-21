@@ -6,11 +6,14 @@ import { useContentVersion } from '../konva/useStore'
 import { ArchivePanel } from './ArchivePanel'
 import { isArchiveHover, onArchiveHover, onOpenArchive } from './archiveBus'
 import { createArchiveTarget, registerSaveForLaterOnboardingTarget, showOnboardingTarget } from '../onboardingTargets'
+import { useT } from '../../../i18n/context.js'
+
 
 // Плитка «Архив» — правый нижний угол холста. Принцип тот же: перетащил
 // объект(ы) с холста на плитку — материал уехал сюда (с холста исчез, но
 // не потерян). Клик по плитке открывает список.
 export function ArchiveBar({ store }: { store: CanvasStore }) {
+  const t = useT()
   useContentVersion(store)
   const [open, setOpen] = useState(false)
   const [over, setOver] = useState(isArchiveHover())
@@ -21,15 +24,15 @@ export function ArchiveBar({ store }: { store: CanvasStore }) {
   useEffect(() => registerSaveForLaterOnboardingTarget(createArchiveTarget({
     focus: () => archiveRef.current?.focus({ preventScroll: true }),
     pulse: () => showOnboardingTarget(archiveRef.current, {
-      message: 'Archive removes objects from the canvas, while Assets keep them handy.',
+      message: t('Archive removes objects from the canvas, while Assets keep them handy.'),
     }),
-  })), [])
+  })), [t])
 
   const count = store.getArchive().length
 
   return (
     <div className="archive-bar" data-canvas-safe-edge="right">
-      <div className="asset-bar-title">Archive</div>
+      <div className="asset-bar-title">{t('Archive')}</div>
       <button
         ref={archiveRef}
         type="button"
@@ -37,10 +40,10 @@ export function ArchiveBar({ store }: { store: CanvasStore }) {
         data-archive-dropzone=""
         title={
           count
-            ? `In Archive ${pluralWithCount(count, OBJECTS)} — click to open the list. Drag a selection here to remove it from the canvas.`
-            : 'Drag selected objects here to move them off the canvas into Archive. Click to open the list.'
+            ? t('In Archive {0} — click to open the list. Drag a selection here to remove it from the canvas.', { 0: pluralWithCount(count, OBJECTS) })
+            : t('Drag selected objects here to move them off the canvas into Archive. Click to open the list.')
         }
-        aria-label={count ? `Archive: ${pluralWithCount(count, OBJECTS)}` : 'Archive'}
+        aria-label={count ? t('Archive: {0}', { 0: pluralWithCount(count, OBJECTS) }) : t('Archive')}
         onClick={() => setOpen(true)}
         onContextMenu={(e) => {
           e.preventDefault()

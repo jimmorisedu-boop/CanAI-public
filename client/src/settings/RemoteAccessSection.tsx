@@ -3,6 +3,8 @@ import { api } from '../api'
 import type { RemoteAccessInfo } from '../types'
 import { copyText } from '../ui/ids'
 import { systemErrorMessage } from '../ui/systemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Одна строка для PowerShell: разрешить входящие ровно на планшетный порт.
 // Не «выключить брандмауэр» — выключать его целиком ради одной программы
@@ -29,6 +31,7 @@ function addressLines(info: RemoteAccessInfo): Array<{ url: string; name?: strin
 }
 
 export function RemoteAccessSection() {
+  const t = useT()
   const [info, setInfo] = useState<RemoteAccessInfo | null>(null)
   const [pin, setPin] = useState('')
   const [busy, setBusy] = useState(false)
@@ -58,24 +61,20 @@ export function RemoteAccessSection() {
     <section className="settings-section" aria-labelledby="remote-settings-title">
       <div className="settings-section-heading">
         <div>
-          <h3 id="remote-settings-title">Tablet on my network</h3>
-          <p>
-            Opens your boards on a tablet on the same network: view them, start
-            generations, and continue work started here. The fal key, Settings,
-            and external editor are unavailable on the tablet.
-          </p>
+          <h3 id="remote-settings-title">{t('Tablet on my network')}</h3>
+          <p>{t('Opens your boards on a tablet on the same network: view them, start generations, and continue work started here. The fal key, Settings, and external editor are unavailable on the tablet.')}</p>
         </div>
         <span
           className="settings-connection"
           data-tone={info?.enabled ? 'ok' : 'idle'}
           role="status"
         >
-          {info?.enabled ? 'on' : 'off'}
+          {info?.enabled ? t('on') : t('off')}
         </span>
       </div>
 
       <label className="settings-label" htmlFor="remote-pin">
-        {info?.pinSet ? 'New access code' : 'Access code (4–12 digits)'}
+        {info?.pinSet ? t('New access code') : t('Access code (4–12 digits)')}
       </label>
       <div className="settings-key-row">
         <input
@@ -83,7 +82,7 @@ export function RemoteAccessSection() {
           inputMode="numeric"
           autoComplete="off"
           value={pin}
-          placeholder={info?.pinSet ? 'Set — enter a new one to replace it' : 'For example, 4821'}
+          placeholder={info?.pinSet ? t('Set — enter a new one to replace it') : t('For example, 4821')}
           disabled={busy}
           onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 12))}
         />
@@ -97,7 +96,8 @@ export function RemoteAccessSection() {
             return next
           })}
         >
-          Save code
+
+          {t('Save code')}
         </button>
       </div>
 
@@ -108,11 +108,11 @@ export function RemoteAccessSection() {
           disabled={busy || !info?.pinSet}
           onClick={() => void run(() => api.setRemoteEnabled(!info?.enabled))}
         >
-          {info?.enabled ? 'Turn off access' : 'Turn on access'}
+          {info?.enabled ? t('Turn off access') : t('Turn on access')}
         </button>
         {info && info.devices.length > 0 && (
           <button type="button" className="ui-btn" disabled={busy} onClick={() => void run(() => api.revokeRemoteDevices())}>
-            Disconnect devices ({info.devices.length})
+            {t('Disconnect devices ({0})', { 0: info.devices.length })}
           </button>
         )}
       </div>
@@ -123,8 +123,7 @@ export function RemoteAccessSection() {
         addresses.length > 0 ? (
           <div className="settings-note">
             <p>
-              On the tablet, open {addresses.length > 1 ? 'one of the addresses' : 'the address'} and enter the code.
-              Then choose “Share” → “Add to Home Screen” to add the app icon.
+              {t('On the tablet, open {0} and enter the code. Then choose “Share” → “Add to Home Screen” to add the app icon.', { 0: addresses.length > 1 ? t('one of the addresses') : t('the address') })}
             </p>
             <ul className="settings-address-list">
               {addresses.map((entry) => (
@@ -143,9 +142,7 @@ export function RemoteAccessSection() {
               // человек ищет причину в планшете, которой там нет.
               <div className="settings-firewall-note">
                 <p>
-                  <strong>Can’t open the address on the tablet?</strong> Windows Firewall probably
-                  blocks incoming connections. Open PowerShell as administrator and run this one
-                  line; it allows only this port:
+                  <strong>{t('Can’t open the address on the tablet?')}</strong> {t('Windows Firewall probably blocks incoming connections. Open PowerShell as administrator and run this one line; it allows only this port:')}
                 </p>
                 <code className="settings-firewall-cmd">{FIREWALL_RULE}</code>
                 <button
@@ -153,24 +150,23 @@ export function RemoteAccessSection() {
                   className="ui-btn quiet"
                   onClick={() => { void copyText(FIREWALL_RULE) }}
                 >
-                  Copy command
+
+                  {t('Copy command')}
                 </button>
               </div>
             )}
             {addresses.length > 1 && (
               <p>
-                There are several addresses because the computer has several network connections.
-                Use the one for your Wi-Fi; the tablet cannot reach virtual adapters or tunnels.
-                The first is most likely; try the next if it does not open.
+                {t('There are several addresses because the computer has several network connections. Use the one for your Wi-Fi; the tablet cannot reach virtual adapters or tunnels. The first is most likely; try the next if it does not open.')}
               </p>
             )}
           </div>
         ) : (
-          <p className="settings-note">No local network address found. Check that this computer is connected to Wi-Fi.</p>
+          <p className="settings-note">{t('No local network address found. Check that this computer is connected to Wi-Fi.')}</p>
         )
       )}
       {info && !info.enabled && info.pinSet && (
-        <p className="settings-note">Code set. Turn on access when the tablet is on the same network.</p>
+        <p className="settings-note">{t('Code set. Turn on access when the tablet is on the same network.')}</p>
       )}
       {info?.server.error && <p className="settings-note" role="alert">{systemErrorMessage(info.server.error, 'The local server reported an error')}</p>}
     </section>

@@ -11,6 +11,8 @@ import { formatUsdMicros } from './agentBudgetModel'
 import { generationReviewReadiness } from './agentReviewModel'
 import type { AgentGenerationCatalog } from './agentGenerationModel'
 import { systemErrorMessage, systemStatusMessage } from '../../../ui/systemMessage'
+import { useT, type Translate } from '../../../i18n/context.js'
+
 
 const stateLabel: Record<string, string> = {
   queued: 'Queued', running: 'Running', awaiting_review: 'Waiting for a decision',
@@ -46,10 +48,10 @@ function reviewParamLabel(key: string): string {
   return key
 }
 
-function reviewParams(spec: AgentGenerationReviewSpec): string {
+function reviewParams(spec: AgentGenerationReviewSpec, translate: Translate): string {
   const params = Object.entries(spec.params ?? {})
-  if (params.length === 0) return 'Automatic model settings'
-  return params.map(([key, value]) => `${reviewParamLabel(key)}: ${typeof value === 'string' ? value : JSON.stringify(value)}`).join(' · ')
+  if (params.length === 0) return translate('Automatic model settings')
+  return params.map(([key, value]) => `${translate(reviewParamLabel(key))}: ${typeof value === 'string' ? value : JSON.stringify(value)}`).join(' · ')
 }
 
 function GenerationReviewSpec({
@@ -61,18 +63,19 @@ function GenerationReviewSpec({
   artifacts: AgentTaskSnapshot['artifacts']
   generationCatalog?: AgentGenerationCatalog | null
 }) {
+  const t = useT()
   const modelLabel = generationCatalog?.models.find((model) => model.id === spec.modelId)?.name
     ?? 'Result model'
   return (
-    <div className="agent-generation-review" aria-label="Result parameters">
-      <div className="agent-generation-review-head"><strong>Result</strong><span>one call</span></div>
+    <div className="agent-generation-review" aria-label={t('Result parameters')}>
+      <div className="agent-generation-review-head"><strong>{t('Result')}</strong><span>{t('one call')}</span></div>
       <dl className="agent-generation-review-facts">
-        <div><dt>Type</dt><dd>{generationKindLabel[spec.kind]}</dd></div>
-        <div><dt>Model</dt><dd>{modelLabel}</dd></div>
-        <div><dt>Estimate</dt><dd>{spec.estimateMicros === undefined ? 'Calculating…' : formatUsdMicros(spec.estimateMicros)}</dd></div>
+        <div><dt>{t('Type')}</dt><dd>{t(generationKindLabel[spec.kind])}</dd></div>
+        <div><dt>{t('Model')}</dt><dd>{modelLabel}</dd></div>
+        <div><dt>{t('Estimate')}</dt><dd>{spec.estimateMicros === undefined ? t('Calculating…') : formatUsdMicros(spec.estimateMicros)}</dd></div>
       </dl>
-      <div className="agent-generation-review-field"><strong>Text</strong><p>{spec.prompt?.trim() || 'Text is still being prepared'}</p></div>
-      <div className="agent-generation-review-field"><strong>Selected files</strong>
+      <div className="agent-generation-review-field"><strong>{t('Text')}</strong><p>{spec.prompt?.trim() || t('Text is still being prepared')}</p></div>
+      <div className="agent-generation-review-field"><strong>{t('Selected files')}</strong>
         {spec.refs.length > 0 ? (
           <ol>
             {spec.refs.map((ref, index) => {
@@ -80,9 +83,9 @@ function GenerationReviewSpec({
               return <li key={`${ref.artifactId}:${index}`}>{artifact?.caption ?? `File ${index + 1}`}</li>
             })}
           </ol>
-        ) : <p>No</p>}
+        ) : <p>{t('No')}</p>}
       </div>
-      <div className="agent-generation-review-field"><strong>Parameters</strong><p>{reviewParams(spec)}</p></div>
+      <div className="agent-generation-review-field"><strong>{t('Parameters')}</strong><p>{reviewParams(spec, t)}</p></div>
     </div>
   )
 }
@@ -120,6 +123,7 @@ export function AgentTaskDetail({
   onSubmitReview(decision: AgentDecisionPayload['decision'], comment: string, consent?: boolean): void
   onCommand(action: AgentAction): void
 }) {
+  const t = useT()
   const [approveArmed, setApproveArmed] = useState(false)
   // Второй клик снимает прицел сам, как в архиве, — долго «взведённой» кнопка не остаётся.
   useEffect(() => {
@@ -136,14 +140,14 @@ export function AgentTaskDetail({
   // На десктопе согласие not required: сервер сам игнорирует его.
   const isPaidApprove = Boolean(selectedReview?.generationSpec) && !hasResultMaterial
   const reviewApproveLabel = hasResultMaterial
-    ? 'Add to canvas'
+    ? t('Add to canvas')
     : selectedReview?.generationSpec
-      ? 'Create'
-      : 'Approve'
+      ? t('Create')
+      : t('Approve')
   const reviewQuestion = selectedReview?.generationSpec && !hasResultMaterial
-    ? 'Create a result from this description?'
+    ? t('Create a result from this description?')
     : hasResultMaterial
-      ? 'Add the selected result to the canvas?'
+      ? t('Add the selected result to the canvas?')
       : selectedReview?.question
   const progressLabel = selectedTask.progress
     ? systemStatusMessage(selectedTask.progress.label, 'Working…')
@@ -152,56 +156,56 @@ export function AgentTaskDetail({
     <section className="agent-panel-section agent-task-detail" aria-labelledby="agent-detail-title">
       <div className="agent-panel-section-head">
         <span id="agent-detail-title">{selectedTaskLabel}</span>
-        <span className={`agent-task-state ${taskTone(selectedTask.state)}`}>{stateLabel[selectedTask.state] ?? 'Updating status'}</span>
+        <span className={`agent-task-state ${taskTone(selectedTask.state)}`}>{t(stateLabel[selectedTask.state] ?? 'Updating status')}</span>
       </div>
       <p className="agent-task-instruction">{selectedTask.instruction}</p>
       {selectedTask.redacted && (
         <InlineNotice
           tone="info"
-          title="Task summary"
-          detail="Personal inputs, profile, and checkpoints are hidden from non-owner participants by the server."
+          title={t('Task summary')}
+          detail={t('Personal inputs, profile, and checkpoints are hidden from non-owner participants by the server.')}
         />
       )}
       <dl className="agent-task-facts">
-        <div><dt>Stage</dt><dd>{isAgentTaskTerminal(selectedTask.state)
-          ? (stateLabel[selectedTask.state] ?? 'Completed')
-          : progressLabel ?? (selectedReview ? agentStageLabel(selectedReview.stageId) : 'Stage not reported yet')}</dd></div>
-        <div><dt>Inputs</dt><dd>{selectedTask.inputs.length}</dd></div>
-        <div><dt>Materials</dt><dd>{output.materialCount}</dd></div>
-        <div><dt>On canvas</dt><dd>{output.placedCount}</dd></div>
-        {output.pendingPlacementCount > 0 && <div><dt>Waiting for canvas</dt><dd>{output.pendingPlacementCount}</dd></div>}
+        <div><dt>{t('Stage')}</dt><dd>{isAgentTaskTerminal(selectedTask.state)
+          ? t(stateLabel[selectedTask.state] ?? 'Completed')
+          : progressLabel ? t(progressLabel) : (selectedReview ? t(agentStageLabel(selectedReview.stageId)) : t('Stage not reported yet'))}</dd></div>
+        <div><dt>{t('Inputs')}</dt><dd>{selectedTask.inputs.length}</dd></div>
+        <div><dt>{t('Materials')}</dt><dd>{output.materialCount}</dd></div>
+        <div><dt>{t('On canvas')}</dt><dd>{output.placedCount}</dd></div>
+        {output.pendingPlacementCount > 0 && <div><dt>{t('Waiting for canvas')}</dt><dd>{output.pendingPlacementCount}</dd></div>}
       </dl>
       {selectedBudget && (
-        <div className={`agent-task-budget ${selectedBudget.status === 'blocked' || selectedBudget.status === 'uncertain' || selectedBudget.status === 'overspent' || selectedBudget.status === 'exhausted' ? 'warning' : ''}`} aria-label="Agent spending">
-          <div className="agent-task-budget-head"><strong>Agent spending</strong><span>{budgetStateLabel[selectedBudget.status] ?? 'Status is updating'}</span></div>
+        <div className={`agent-task-budget ${selectedBudget.status === 'blocked' || selectedBudget.status === 'uncertain' || selectedBudget.status === 'overspent' || selectedBudget.status === 'exhausted' ? 'warning' : ''}`} aria-label={t('Agent spending')}>
+          <div className="agent-task-budget-head"><strong>{t('Agent spending')}</strong><span>{t(budgetStateLabel[selectedBudget.status] ?? 'Status is updating')}</span></div>
           <dl className="agent-task-budget-facts">
-            {(selectedBudget.estimateMicros !== undefined || selectedBudget.limitMicros !== undefined) && <div><dt>{selectedBudget.estimateMicros !== undefined ? 'Estimated total budget' : 'Total budget limit'}</dt><dd>{formatUsdMicros(selectedBudget.estimateMicros ?? selectedBudget.limitMicros)}</dd></div>}
+            {(selectedBudget.estimateMicros !== undefined || selectedBudget.limitMicros !== undefined) && <div><dt>{selectedBudget.estimateMicros !== undefined ? t('Estimated total budget') : t('Total budget limit')}</dt><dd>{formatUsdMicros(selectedBudget.estimateMicros ?? selectedBudget.limitMicros)}</dd></div>}
             {selectedBudget.calls !== undefined && selectedBudget.maxCalls !== undefined && (
-              <div><dt>Calls</dt><dd>{selectedBudget.calls} / {selectedBudget.maxCalls}</dd></div>
+              <div><dt>{t('Calls')}</dt><dd>{selectedBudget.calls} / {selectedBudget.maxCalls}</dd></div>
             )}
             {selectedBudget.pins && selectedBudget.pins.length > 0 && (
               <div>
-                <dt>Pinned models</dt>
+                <dt>{t('Pinned models')}</dt>
                 <dd>
-                  {selectedBudget.pins.map((pin) => `${pin.kind === 'image' ? 'Image' : pin.kind === 'video' ? 'Video' : 'Audio'}: ${pin.modelId}`).join(' · ')}
+                  {selectedBudget.pins.map((pin) => `${pin.kind === 'image' ? t('Image') : pin.kind === 'video' ? 'Video' : 'Audio'}: ${pin.modelId}`).join(' · ')}
                 </dd>
               </div>
             )}
-            {selectedBudget.reservedMicros !== undefined && <div><dt>Reserved</dt><dd>{formatUsdMicros(selectedBudget.reservedMicros)}</dd></div>}
-            {selectedBudget.chargedMicros !== undefined && <div><dt>Actual</dt><dd>{formatUsdMicros(selectedBudget.chargedMicros)}</dd></div>}
-            {selectedBudget.remainingMicros !== undefined && <div><dt>Remaining</dt><dd>{formatUsdMicros(selectedBudget.remainingMicros)}</dd></div>}
+            {selectedBudget.reservedMicros !== undefined && <div><dt>{t('Reserved')}</dt><dd>{formatUsdMicros(selectedBudget.reservedMicros)}</dd></div>}
+            {selectedBudget.chargedMicros !== undefined && <div><dt>{t('Actual')}</dt><dd>{formatUsdMicros(selectedBudget.chargedMicros)}</dd></div>}
+            {selectedBudget.remainingMicros !== undefined && <div><dt>{t('Remaining')}</dt><dd>{formatUsdMicros(selectedBudget.remainingMicros)}</dd></div>}
           </dl>
-          {selectedBudget.overshootMicros !== undefined && selectedBudget.overshootMicros > 0 && <p className="agent-task-budget-note">The last call exceeded the estimated limit by {formatUsdMicros(selectedBudget.overshootMicros)}; new paid calls are blocked until a new explicit task is submitted.</p>}
+          {selectedBudget.overshootMicros !== undefined && selectedBudget.overshootMicros > 0 && <p className="agent-task-budget-note">The last call exceeded the estimated limit by {formatUsdMicros(selectedBudget.overshootMicros)}{t('; new paid calls are blocked until a new explicit task is submitted.')}</p>}
           {selectedBudget.message && <p className="agent-task-budget-note">{systemErrorMessage(selectedBudget.message, 'Budget status is unavailable')}</p>}
         </div>
       )}
       {displayProgress && selectedTask.progress && (
-        <div className="agent-task-progress" aria-label={`Progress: ${progressLabel ?? 'Working…'}`}>
+        <div className="agent-task-progress" aria-label={t('Progress: {0}', { 0: progressLabel ?? 'Working…' })}>
           <div className="agent-task-progress-head">
-            <span>{progressLabel ?? 'Working…'}</span>
+            <span>{progressLabel ? t(progressLabel) : t('Working…')}</span>
             <span>{typeof selectedTask.progress.completed === 'number' && typeof selectedTask.progress.total === 'number' && selectedTask.progress.total > 0
               ? `${Math.round((selectedTask.progress.completed / selectedTask.progress.total) * 100)}%`
-              : agentStatusLabel(selectedTask.progress.status, stateLabel)}</span>
+              : t(agentStatusLabel(selectedTask.progress.status, stateLabel))}</span>
           </div>
           {typeof selectedTask.progress.completed === 'number' && typeof selectedTask.progress.total === 'number' && selectedTask.progress.total > 0 && (
             <div className="agent-task-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={selectedTask.progress.total} aria-valuenow={Math.min(selectedTask.progress.completed, selectedTask.progress.total)}>
@@ -212,46 +216,46 @@ export function AgentTaskDetail({
       )}
       <div className="agent-task-actions">
         {selectedTask.state === 'paused' ? (
-          <button type="button" className="ui-btn" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('resume')}><IconRun size={13} /> Resume</button>
+          <button type="button" className="ui-btn" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('resume')}><IconRun size={13} /> {t('Resume')}</button>
         ) : isAgentTaskActive(selectedTask.state) && (
-          <button type="button" className="ui-btn" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('pause')}><IconPause size={13} /> Pause</button>
+          <button type="button" className="ui-btn" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('pause')}><IconPause size={13} />  {t('Pause')}</button>
         )}
         {isAgentTaskActive(selectedTask.state) && (
-          <button type="button" className="ui-btn danger" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('cancel')}><IconStop size={13} /> Stop</button>
+          <button type="button" className="ui-btn danger" disabled={!canControl || Boolean(selectedTask.optimisticAction)} onClick={() => onCommand('cancel')}><IconStop size={13} />  {t('Stop')}</button>
         )}
         {selectedTask.canvasItems.length > 0 && (
-          <button type="button" className="ui-btn quiet" onClick={() => store.revealItems(selectedTask.canvasItems.map((item) => item.itemId))}>Go to result</button>
+          <button type="button" className="ui-btn quiet" onClick={() => store.revealItems(selectedTask.canvasItems.map((item) => item.itemId))}>{t('Go to result')}</button>
         )}
       </div>
       {selectedReview && (
         <div className="agent-review-card">
-          <strong>{selectedReview.title}{reviewBusy && <span className="agent-task-pending"> · waiting for approval</span>}</strong>
+          <strong>{selectedReview.title}{reviewBusy && <span className="agent-task-pending"> · {t('waiting for approval')}</span>}</strong>
           <p>{reviewQuestion}</p>
           <AgentReviewMaterials materials={selectedReview.materials} artifacts={selectedTask.artifacts} />
           {selectedReview.generationSpec && <GenerationReviewSpec spec={selectedReview.generationSpec} artifacts={selectedTask.artifacts} generationCatalog={generationCatalog} />}
-          {!reviewReadiness.ready && selectedReview.decisions.includes('approved') && <InlineNotice tone="warning" system title="Exact run details are required" detail={reviewReadiness.reason ?? 'The parameters for this attempt have not been approved yet.'} />}
-          {selectedReview.extraQuestions && selectedReview.extraQuestions.length > 0 && <InlineNotice tone="info" title="Additional questions" detail="Only a decision comment is available for these questions." />}
+          {!reviewReadiness.ready && selectedReview.decisions.includes('approved') && <InlineNotice tone="warning" system title={t('Exact run details are required')} detail={reviewReadiness.reason ?? 'The parameters for this attempt have not been approved yet.'} />}
+          {selectedReview.extraQuestions && selectedReview.extraQuestions.length > 0 && <InlineNotice tone="info" title={t('Additional questions')} detail={t('Only a decision comment is available for these questions.')} />}
           <textarea
-            aria-label="Decision comment"
+            aria-label={t('Decision comment')}
             value={reviewComment}
             onChange={(event) => { if (reviewKey) onReviewCommentChange(event.target.value) }}
-            placeholder="A comment is required to request changes or reject"
+            placeholder={t('A comment is required to request changes or reject')}
             rows={2}
           />
           <div className="agent-review-actions">
             {selectedReview.decisions.includes('approved') && (
               approveArmed && isPaidApprove ? (
                 <>
-                  <button type="button" className="ui-btn quiet" onClick={() => setApproveArmed(false)}>Change my mind</button>
-                  <button type="button" className="ui-btn primary armed" disabled={!canReview || reviewBusy} onClick={() => onSubmitReview('approved', reviewComment, true)}><IconDone size={13} /> Approve run</button>
-                  <span className="agent-consent-note">This will start a paid generation. Click again to continue.</span>
+                  <button type="button" className="ui-btn quiet" onClick={() => setApproveArmed(false)}>{t('Change my mind')}</button>
+                  <button type="button" className="ui-btn primary armed" disabled={!canReview || reviewBusy} onClick={() => onSubmitReview('approved', reviewComment, true)}><IconDone size={13} />  {t('Approve run')}</button>
+                  <span className="agent-consent-note">{t('This will start a paid generation. Click again to continue.')}</span>
                 </>
               ) : (
                 <button type="button" className="ui-btn primary" disabled={!canReview || reviewBusy || !reviewReadiness.ready} onClick={() => isPaidApprove ? setApproveArmed(true) : onSubmitReview('approved', reviewComment)}><IconDone size={13} /> {reviewApproveLabel}</button>
               )
             )}
-            {selectedReview.decisions.includes('changes-requested') && <button type="button" className="ui-btn" disabled={!canReview || reviewBusy || !reviewComment.trim()} onClick={() => onSubmitReview('changes-requested', reviewComment)}>Request changes</button>}
-            {selectedReview.decisions.includes('rejected') && <button type="button" className="ui-btn danger" disabled={!canReview || reviewBusy || !reviewComment.trim()} onClick={() => onSubmitReview('rejected', reviewComment)}>Reject</button>}
+            {selectedReview.decisions.includes('changes-requested') && <button type="button" className="ui-btn" disabled={!canReview || reviewBusy || !reviewComment.trim()} onClick={() => onSubmitReview('changes-requested', reviewComment)}>{t('Request changes')}</button>}
+            {selectedReview.decisions.includes('rejected') && <button type="button" className="ui-btn danger" disabled={!canReview || reviewBusy || !reviewComment.trim()} onClick={() => onSubmitReview('rejected', reviewComment)}>{t('Reject')}</button>}
           </div>
         </div>
       )}

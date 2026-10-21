@@ -11,6 +11,9 @@ import { isMarkDigit } from '../konva/markInput'
 import { faceBoxFraction } from './faceMath'
 import { handleCompareFrameKey } from './compareFrameStep'
 
+const identityTranslate = (message: string, params?: Record<string, unknown>) =>
+  params ? message.replace(/\{(\d+)\}/gu, (token, key: string) => Object.hasOwn(params, key) ? String(params[key]) : token) : message
+
 // Execute production component and focus manager hooks. Only React lifecycle,
 // DOM layout and media rendering are simulated; no API or face model is loaded.
 class Element {
@@ -106,6 +109,7 @@ function fixture(kind = 'video', empty = false, candidateIds = ['candidate']) {
     './compareLabels':{panelLabel,panelSubLabel},
     './FaceSimilarityChip':{useFaceSimilarity:()=>({kind:'off'})},
     './faceMath':{DEFAULT_FACE_THRESHOLD:0.5,faceBoxFraction},
+    '../../../i18n/context.js':{useT:()=>identityTranslate},
   }
   const viewer = load('client/src/spaces/canvas/compare/CompareViewer.tsx',mocks)
   const facePicker = load('client/src/spaces/canvas/compare/FacePickOverlay.tsx',mocks)

@@ -15,6 +15,8 @@ import { DiagnosticsSection } from './DiagnosticsSection'
 import { navigationModeStore, type NavigationMode } from './navigationMode'
 import { BehaviorSettingsSection } from './BehaviorSettingsSection'
 import { AgentsSettingsSection } from './AgentsSettingsSection'
+import { LanguageSettingsSection } from './LanguageSettingsSection'
+import { useT } from '../i18n/context.js'
 import type { CanAIIcon } from '../ui/icons'
 import {
   IconClose,
@@ -62,6 +64,7 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
   section?: SettingsSectionId
   onClose: () => void
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useDialogFocus(dialogRef, onClose)
   const [editorPath, setEditorPath] = useState('')
@@ -178,13 +181,13 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="settings-header">
-          <h2 id="settings-title">Settings</h2>
-          <button type="button" className="settings-close" aria-label="Close settings" onClick={onClose}>
+          <h2 id="settings-title">{t('Settings')}</h2>
+          <button type="button" className="settings-close" aria-label={t('Close settings')} onClick={onClose}>
             <IconClose aria-hidden="true" />
           </button>
         </header>
         <div className="settings-layout">
-          <nav className="settings-nav" aria-label="Settings sections">
+          <nav className="settings-nav" aria-label={t('Settings sections')}>
             {SETTINGS_SECTIONS.map((entry) => {
               const Icon = SECTION_ICONS[entry.id]
               return (
@@ -193,11 +196,11 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
                   type="button"
                   className={`settings-nav-item ${section === entry.id ? 'on' : ''}`}
                   aria-current={section === entry.id ? 'true' : undefined}
-                  title={entry.summary}
+                  title={t(entry.summary)}
                   onClick={() => setSection(entry.id)}
                 >
                   <Icon size={18} />
-                  <span>{entry.label}</span>
+                  <span>{t(entry.label)}</span>
                 </button>
               )
             })}
@@ -212,6 +215,7 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
           <div className="settings-primary">
             {section === 'general' && (
               <>
+            <LanguageSettingsSection />
             <NavigationSettingsSection
               mode={navigationMode}
               disabled={!loaded || saving}
@@ -253,8 +257,8 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
           <section className="settings-section" aria-labelledby="editor-settings-title">
             <div className="settings-section-heading">
               <div>
-                <h3 id="editor-settings-title">Image editor</h3>
-                <p>Open images in Photoshop, Krita, GIMP, or another program.</p>
+                <h3 id="editor-settings-title">{t('Image editor')}</h3>
+                <p>{t('Open images in Photoshop, Krita, GIMP, or another program.')}</p>
               </div>
             </div>
             <div className="settings-editor-summary">
@@ -264,17 +268,17 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
                   <button type="button" className="editor-close" disabled={!loaded || saving} onClick={() => {
                     setEditorStatus(null)
                     void api.browseEditor().then(({ path }) => setEditorPath(path)).catch((cause) => setEditorStatus(cause instanceof Error ? cause.message : 'Could not choose program'))
-                  }}>{pathHint.browse}</button>
+                  }}>{t(pathHint.browse)}</button>
                 )}
                 <button type="button" className="editor-close" disabled={!loaded || !editorPath.trim() || saving} onClick={() => {
                   setEditorStatus('Checking…')
                   void api.testEditor(editorPath).then(({ message }) => setEditorStatus(message)).catch((cause) => setEditorStatus(cause instanceof Error ? cause.message : 'Could not open program'))
-                }}>Check</button>
+                }}>{t('Check')}</button>
               </div>
             </div>
             {editorStatus && <p className="settings-note" role="status">{systemErrorMessage(editorStatus)}</p>}
             <p className="settings-note">
-              Select an image and press <b>F2</b>. A new version appears on the canvas after saving.
+              {t('Select an image and press {0}. A new version appears on the canvas after saving.', { 0: 'F2' })}
             </p>
           </section>
         <details
@@ -290,9 +294,9 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
               setTechnicalOpen((open) => !open)
             }}
           >
-            Technical details
+            {t('Technical details')}
           </summary>
-          <label className="settings-label" htmlFor="editor-path">Full path to program</label>
+          <label className="settings-label" htmlFor="editor-path">{t('Full path to program')}</label>
           <input
             id="editor-path"
             type="text"
@@ -304,7 +308,7 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
               if (e.key === 'Enter') void save()
             }}
           />
-          {pathHint.note && <p className="settings-note">{pathHint.note}</p>}
+          {pathHint.note && <p className="settings-note">{t(pathHint.note)}</p>}
         </details>
               </>
             )}
@@ -336,12 +340,12 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
 
         <footer className="settings-actions">
           {section === 'generation' || section === 'agents' ? (
-            <button type="button" className="generate" onClick={onClose}>Done</button>
+            <button type="button" className="generate" onClick={onClose}>{t('Done')}</button>
           ) : (
             <>
-              <button type="button" className="editor-close" onClick={onClose}>Cancel</button>
+              <button type="button" className="editor-close" onClick={onClose}>{t('Cancel')}</button>
               <button type="button" className="generate" disabled={!loaded || saving} onClick={() => void save()}>
-                {!loaded ? 'Loading…' : saving ? 'Saving…' : 'Save'}
+                {!loaded ? t('Loading…') : saving ? t('Saving…') : t('Save')}
               </button>
             </>
           )}

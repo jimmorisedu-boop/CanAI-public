@@ -9,6 +9,8 @@ import {
   type CatalogKindFilter,
   type CatalogLifecycleFilter,
 } from './modelCatalogViewModel.js'
+import { useT } from '../i18n/context.js'
+
 
 const kindLabels = { image: 'Image', video: 'Video', audio: 'Audio', text: 'Assistant', other: 'Other' }
 const lifecycleLabels = { active: 'Active', archived: 'Archived', disabled: 'Disabled' }
@@ -31,6 +33,7 @@ export function ModelCatalogList({
   onLibrary(next: CatalogLibraryView): void
   onAdd(): void
 }) {
+  const t = useT()
   const [filters, setFilters] = useState<CatalogFilters>({ query: '', kind: 'all', lifecycle: 'all' })
   const [plan, setPlan] = useState<LifecyclePlan | null>(null)
   const [defaultReplacements, setDefaultReplacements] = useState<Partial<CatalogDefaults>>({})
@@ -61,7 +64,7 @@ export function ModelCatalogList({
       macroReplacements: macros,
     })
     onLibrary(next); setPlan(null); setDefaultReplacements({}); setMacroReplacements({})
-    setMessage(current.target === 'active' ? 'Model returned to catalog.' : current.target === 'archived' ? 'Model moved to archive.' : 'Model disabled; dependencies moved.')
+    setMessage(current.target === 'active' ? t('Model returned to catalog.') : current.target === 'archived' ? t('Model moved to archive.') : t('Model disabled; dependencies moved.'))
   }
 
   async function requestLifecycle(modelId: string, target: ModelLifecycle): Promise<void> {
@@ -74,7 +77,7 @@ export function ModelCatalogList({
         setPlan(nextPlan); setDefaultReplacements({}); setMacroReplacements({})
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not change model state')
+      setError(cause instanceof Error ? cause.message : t('Could not change model state'))
     } finally { setBusy(false) }
   }
 
@@ -85,9 +88,9 @@ export function ModelCatalogList({
     catch (cause) {
       if (cause instanceof CatalogConflictError) {
         try { await refreshAfterConflict(plan.modelId, plan.target) }
-        catch (refreshError) { setError(refreshError instanceof Error ? refreshError.message : 'Could not refresh plan') }
-        setError('The catalog changed in another window. The plan was refreshed; check replacements.')
-      } else setError(cause instanceof Error ? cause.message : 'Could not apply plan')
+        catch (refreshError) { setError(refreshError instanceof Error ? refreshError.message : t('Could not refresh plan')) }
+        setError(t('The catalog changed in another window. The plan was refreshed; check replacements.'))
+      } else setError(cause instanceof Error ? cause.message : t('Could not apply plan'))
     } finally { setBusy(false) }
   }
 
@@ -98,54 +101,54 @@ export function ModelCatalogList({
 
   return <section className="settings-section catalog-library" aria-labelledby="catalog-library-title">
     <div className="settings-section-heading catalog-panel-heading"><div>
-      <h3 id="catalog-library-title">Local model library</h3>
-      <p>Archive hides a model from new choices while saved boards keep working. Disabling blocks new runs.</p>
-    </div><button type="button" className="generate" disabled={disabled || busy} onClick={onAdd}>Add model</button></div>
+      <h3 id="catalog-library-title">{t('Local model library')}</h3>
+      <p>{t('Archive hides a model from new choices while saved boards keep working. Disabling blocks new runs.')}</p>
+    </div><button type="button" className="generate" disabled={disabled || busy} onClick={onAdd}>{t('Add model')}</button></div>
     {error && <InlineNotice tone="error" title={error} />}
     {message && <InlineNotice tone="success" title={message} />}
     <div className="catalog-filters">
-      <label className="settings-label catalog-search">Search<input type="search" value={filters.query} placeholder="Name or endpoint" onChange={event => patchFilters({ query: event.target.value })} /></label>
-      <label className="settings-label">Type<select value={filters.kind} onChange={event => patchFilters({ kind: event.target.value as CatalogKindFilter })}>
-        <option value="all">All types</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option><option value="text">Assistant</option>
+      <label className="settings-label catalog-search">{t('Search')}<input type="search" value={filters.query} placeholder={t('Name or endpoint')} onChange={event => patchFilters({ query: event.target.value })} /></label>
+      <label className="settings-label">{t('Type')}<select value={filters.kind} onChange={event => patchFilters({ kind: event.target.value as CatalogKindFilter })}>
+        <option value="all">{t('All types')}</option><option value="image">{t('Image')}</option><option value="video">{t('Video')}</option><option value="audio">{t('Audio')}</option><option value="text">{t('Assistant')}</option>
       </select></label>
-      <label className="settings-label">Status<select value={filters.lifecycle} onChange={event => patchFilters({ lifecycle: event.target.value as CatalogLifecycleFilter })}>
-        <option value="all">All statuses</option><option value="active">Active</option><option value="archived">Archived</option><option value="disabled">Disabled</option>
+      <label className="settings-label">{t('Status')}<select value={filters.lifecycle} onChange={event => patchFilters({ lifecycle: event.target.value as CatalogLifecycleFilter })}>
+        <option value="all">{t('All statuses')}</option><option value="active">{t('Active')}</option><option value="archived">{t('Archived')}</option><option value="disabled">{t('Disabled')}</option>
       </select></label>
     </div>
     <div className="catalog-model-list" aria-live="polite">
       {rows.map(row => <article key={row.id} className="catalog-model-card" data-selected={selectedId === row.id || undefined}>
         <div className="catalog-model-main">
-          <div className="catalog-model-title"><h4>{row.name}</h4><span className="catalog-badge" data-lifecycle={row.lifecycle}>{lifecycleLabels[row.lifecycle]}</span></div>
+          <div className="catalog-model-title"><h4>{row.name}</h4><span className="catalog-badge" data-lifecycle={row.lifecycle}>{t(lifecycleLabels[row.lifecycle])}</span></div>
           <code>{row.endpoint ?? row.id}</code>
           <div className="catalog-model-meta">
-            <span>{kindLabels[row.kind]}</span><span>{row.priceSummary}</span><span>{row.refs ? 'With references' : 'No references'}</span><span>{row.origin === 'local' ? 'Added locally' : 'Built-in'}</span>
+            <span>{t(kindLabels[row.kind])}</span><span>{row.priceSummary}</span><span>{row.refs ? t('With references') : t('No references')}</span><span>{row.origin === 'local' ? t('Added locally') : t('Built-in')}</span>
           </div>
-          {!!row.defaultSlots.length && <div className="catalog-default-badges">{row.defaultSlots.map(slot => <span key={slot}>Default: {slotLabels[slot]}</span>)}</div>}
+      {!!row.defaultSlots.length && <div className="catalog-default-badges">{row.defaultSlots.map(slot => <span key={slot}>{t('Default: {0}', { 0: t(slotLabels[slot]) })}</span>)}</div>}
         </div>
         <div className="catalog-model-actions">
           {row.lifecycle === 'active' ? <>
-            <button type="button" className="editor-close" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'archived') }}>Archive</button>
-            <button type="button" className="editor-close danger-text" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'disabled') }}>Disable</button>
-          </> : <button type="button" className="editor-close" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'active') }}>Restore</button>}
+            <button type="button" className="editor-close" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'archived') }}>{t('Archive')}</button>
+            <button type="button" className="editor-close danger-text" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'disabled') }}>{t('Disable')}</button>
+          </> : <button type="button" className="editor-close" disabled={disabled || busy} onClick={() => { onSelect?.(row.id); void requestLifecycle(row.id, 'active') }}>{t('Restore')}</button>}
         </div>
       </article>)}
-      {!rows.length && <p className="settings-note">No models match these filters.</p>}
+      {!rows.length && <p className="settings-note">{t('No models match these filters.')}</p>}
     </div>
-    {plan && <div className="catalog-impact" role="region" aria-label="Model replacement plan">
-      <h4>{plan.target === 'disabled' ? 'Move dependencies before disabling' : 'Change default models before archiving'}</h4>
-      {plan.affectedDefaults.map(slot => <label className="settings-label" key={slot}>Default · {slotLabels[slot]}
+    {plan && <div className="catalog-impact" role="region" aria-label={t('Model replacement plan')}>
+      <h4>{plan.target === 'disabled' ? t('Move dependencies before disabling') : t('Change default models before archiving')}</h4>
+      {plan.affectedDefaults.map(slot => <label className="settings-label" key={slot}>{t('Default · {0}', { 0: t(slotLabels[slot]) })}
         <select value={defaultReplacements[slot] ?? ''} onChange={event => setDefaultReplacements(current => ({ ...current, [slot]: event.target.value }))}>
-          <option value="">Choose replacement</option>{plan.replacementModels.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
+          <option value="">{t('Choose replacement')}</option>{plan.replacementModels.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
         </select>
       </label>)}
-      {plan.macros.map(macro => <label className="settings-label" key={macro.id}>Macro “{macro.name}” · {macro.nodeIds.length} nodes
+      {plan.macros.map(macro => <label className="settings-label" key={macro.id}>{t('Macro “{0}” · {1} {2}', { 0: macro.name, 1: macro.nodeIds.length, 2: t('nodes') })}
         <select value={macroReplacements[macro.id] ?? ''} onChange={event => setMacroReplacements(current => ({ ...current, [macro.id]: event.target.value }))}>
-          <option value="">Choose replacement</option>{plan.replacementModels.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
+          <option value="">{t('Choose replacement')}</option>{plan.replacementModels.map(model => <option key={model.id} value={model.id}>{model.name}</option>)}
         </select>
       </label>)}
       <div className="catalog-library-row">
-        <button type="button" className="generate" disabled={busy || !planComplete} onClick={() => void submitPlan()}>Apply plan</button>
-        <button type="button" className="editor-close" disabled={busy} onClick={() => setPlan(null)}>Cancel</button>
+        <button type="button" className="generate" disabled={busy || !planComplete} onClick={() => void submitPlan()}>{t('Apply plan')}</button>
+        <button type="button" className="editor-close" disabled={busy} onClick={() => setPlan(null)}>{t('Cancel')}</button>
       </div>
     </div>}
   </section>

@@ -5,6 +5,8 @@ import { TabletVideoPlayer } from './TabletVideoPlayer'
 import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import type { TabletMediaUploader } from './runtime'
 import { askConfirm } from '../ui/confirmBus'
+import { useT } from '../i18n/context.js'
+
 
 /**
  * Крупный просмотр материала с доски.
@@ -24,6 +26,7 @@ export function TabletMediaViewer({
   store?: CanvasStore
   upload?: TabletMediaUploader
 }) {
+  const t = useT()
   const [view, setView] = useState<'fit' | 'actual'>('fit')
   const stageRef = useRef<HTMLDivElement>(null)
   const selection = useRef({ count: 0, busy: false })
@@ -31,7 +34,7 @@ export function TabletMediaViewer({
   const onSelection = useCallback((count: number, busy: boolean) => { selection.current = { count, busy }; setAddingFrames(busy) }, [])
   const requestClose = async () => {
     if (selection.current.busy) return
-    if (selection.current.count && !await askConfirm({ title: 'Close frame selection?', detail: `Frames selected: ${selection.current.count}.. They are not on the canvas yet.`, confirmLabel: 'Close without adding', cancelLabel: 'Back to frames' })) return
+    if (selection.current.count && !await askConfirm({ title: t('Close frame selection?'), detail: t('Frames selected: {0}.. They are not on the canvas yet.', { 0: selection.current.count }), confirmLabel: t('Close without adding'), cancelLabel: t('Back to frames') })) return
     onClose()
   }
 
@@ -69,27 +72,28 @@ export function TabletMediaViewer({
     }
   }, [view])
 
-  const title = item.name || (item.kind === 'image' ? 'Image' : 'Video')
+  const title = item.name || (item.kind === 'image' ? t('Image') : t('Video'))
   const dimensions = item.naturalWidth && item.naturalHeight
     ? `${item.naturalWidth} × ${item.naturalHeight}`
     : `${Math.round(item.w)} × ${Math.round(item.h)}`
 
   return (
     <TabletFullScreen
-      title="Large preview"
-      subtitle={`${title} · ${dimensions}  · object size does not change`}
+      title={t('Large preview')}
+      subtitle={t('{0} · {1}  · object size does not change', { 0: title, 1: dimensions })}
       onCancel={() => void requestClose()}
-      cancelLabel="Close"
+      cancelLabel={t('Close')}
       tone="dark"
       center={item.kind === 'image' &&
-        <div className="tablet-media-viewer-controls" role="group" aria-label="Preview scale">
+        <div className="tablet-media-viewer-controls" role="group" aria-label={t('Preview scale')}>
           <button
             type="button"
             className={`ui-btn quiet ${view === 'fit' ? 'on' : ''}`}
             aria-pressed={view === 'fit'}
             onClick={() => setView('fit')}
           >
-            Fit
+
+            {t('Fit')}
           </button>
           <button
             type="button"
@@ -101,13 +105,13 @@ export function TabletMediaViewer({
           </button>
         </div>
       }
-      primary={<button type="button" className="ui-btn primary" disabled={addingFrames} onClick={() => void requestClose()}>{addingFrames ? 'Adding frames…' : 'Done'}</button>}
-      footer={<span className="tablet-media-viewer-note">{item.kind === 'video' ? 'Selected frames are added next to the video. Cancel removes the whole set in one step.' : 'Preview does not change the object position, size, or board history.'}</span>}
+      primary={<button type="button" className="ui-btn primary" disabled={addingFrames} onClick={() => void requestClose()}>{addingFrames ? t('Adding frames…') : t('Done')}</button>}
+      footer={<span className="tablet-media-viewer-note">{item.kind === 'video' ? t('Selected frames are added next to the video. Cancel removes the whole set in one step.') : t('Preview does not change the object position, size, or board history.')}</span>}
     >
       <div
         ref={stageRef}
         className={`tablet-media-viewer-stage ${view === 'actual' ? 'actual' : 'fit'}`}
-        aria-label={`${title},, large preview`}
+        aria-label={t('{0},, large preview', { 0: title })}
         onDoubleClick={() => { if (item.kind === 'image') setView((current) => current === 'fit' ? 'actual' : 'fit') }}
       >
         {item.kind === 'image' ? (

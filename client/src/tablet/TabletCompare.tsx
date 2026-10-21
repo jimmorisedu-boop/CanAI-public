@@ -10,13 +10,14 @@ import { DEFAULT_FACE_THRESHOLD } from '../spaces/canvas/compare/faceMath'
 import { FaceSimilarityChip, useFaceSimilarity } from '../spaces/canvas/compare/FaceSimilarityChip'
 import { api } from '../api'
 import { notify } from '../spaces/canvas/notifications'
-import { plural } from '../ui/plural'
 import { TabletFullScreen } from './TabletFullScreen'
 import { previewSrc } from './remoteSession'
 import { useBoardHistory } from './boardHistory'
 import { useComparePlayer } from '../spaces/canvas/compare/useComparePlayer'
 import { isActiveModal } from './modalFocus'
 import { MediaPlaybackControls } from '../ui/MediaPlaybackControls'
+import { useT } from '../i18n/context.js'
+
 
 // Сравнение исходника с кандидатами.
 //
@@ -38,6 +39,7 @@ export function TabletCompare({
   candidateIds: string[]
   onClose(): void
 }) {
+  const t = useT()
   const history = useBoardHistory()
   useContentVersion(store)
   const { models } = useCatalogModels()
@@ -77,8 +79,8 @@ export function TabletCompare({
     store.archiveItems([candidate.id])
     notify({
       kind: 'success',
-      message: 'Candidate moved to archive',
-      action: { label: 'Undo', run: history.undo },
+      message: t('Candidate moved to archive'),
+      action: { label: t('Undo'), run: history.undo },
     })
     if (candidates.length <= 1) onClose()
   }
@@ -90,8 +92,8 @@ export function TabletCompare({
       const moved = store.archiveItems(losers)
       notify({
         kind: 'success',
-        message: `Archive: ${moved} ${plural(moved, ['candidate', 'candidate', 'candidates'])}`,
-        action: { label: 'Undo', run: history.undo },
+        message: t('Archive: {0} {1}', { 0: moved, 1: t(Math.abs(moved) === 1 ? 'candidate' : 'candidates') }),
+        action: { label: t('Undo'), run: history.undo },
       })
     }
     store.setSelection([candidate.id])
@@ -100,12 +102,12 @@ export function TabletCompare({
 
   return (
     <TabletFullScreen
-      title="Compare"
+      title={t('Compare')}
       onCancel={onClose}
-      cancelLabel="Close"
+      cancelLabel={t('Close')}
       tone="dark"
       center={layout === 'overlay' ? (
-        <div className="ui-toggle" role="group" aria-label="Overlay mode">
+        <div className="ui-toggle" role="group" aria-label={t('Overlay mode')}>
           {([['wipe', 'Wipe'], ['switch', 'Switch'], ['diff', 'Difference']] as const).map(([value, label]) => (
             <button
               key={value}
@@ -114,18 +116,18 @@ export function TabletCompare({
               aria-pressed={mode === value}
               onClick={() => setMode(value)}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
       ) : undefined}
       primary={
         <div className="tablet-compare-nav">
-          <span className="tablet-mono">{candidates.length > 0 ? `${wrapCursor(cursor, candidates.length) + 1}  of ${candidates.length}` : '—'}</span>
-          <button type="button" className="ui-icon-btn" aria-label="Previous" disabled={candidates.length < 2} onClick={() => setCursor((value) => value - 1)}>
+          <span className="tablet-mono">{candidates.length > 0 ? t('{0}  of {1}', { 0: wrapCursor(cursor, candidates.length) + 1, 1: candidates.length }) : t('—')}</span>
+          <button type="button" className="ui-icon-btn" aria-label={t('Previous')} disabled={candidates.length < 2} onClick={() => setCursor((value) => value - 1)}>
             <IconPrev size={18} />
           </button>
-          <button type="button" className="ui-icon-btn" aria-label="Next" disabled={candidates.length < 2} onClick={() => setCursor((value) => value + 1)}>
+          <button type="button" className="ui-icon-btn" aria-label={t('Next')} disabled={candidates.length < 2} onClick={() => setCursor((value) => value + 1)}>
             <IconNext size={18} />
           </button>
         </div>
@@ -133,11 +135,11 @@ export function TabletCompare({
       footer={
         <>
           <span className="tablet-hint">{kinds.includes('video')
-            ? 'A / D — previous / next frame · Shift — 10 frames'
-            : 'Hold the frame to show the original'}</span>
+            ? t('A / D — previous / next frame · Shift — 10 frames')
+            : t('Hold the frame to show the original')}</span>
           <span className="tablet-full-gap" />
-          <button type="button" className="ui-btn" disabled={!candidate} onClick={archiveLoser}>Archive candidate</button>
-          <button type="button" className="ui-btn primary" disabled={!candidate} onClick={keepThis}>Keep this one</button>
+          <button type="button" className="ui-btn" disabled={!candidate} onClick={archiveLoser}>{t('Archive candidate')}</button>
+          <button type="button" className="ui-btn primary" disabled={!candidate} onClick={keepThis}>{t('Keep this one')}</button>
         </>
       }
     >

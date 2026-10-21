@@ -24,6 +24,10 @@ Choose Delete permanently only when you are sure the board and its data are no l
 
 ![Restore or delete from Trash: Delete permanently](../../client/public/help/archive-trash-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; board names, prompts, and generated content keep their original language.
+
 ## Related topics
 
 - [Keep a board tidy](./library.md)

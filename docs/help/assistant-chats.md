@@ -24,6 +24,10 @@ Choose a model from Assistant's Chat model menu. Move a chat to Trash; restore i
 
 ![Manage Assistant chats: Restore and choose a model](../../client/public/help/assistant-chats-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
+
 ## Related topics
 
 - [Use Assistant actions](./assistant-basics.md)

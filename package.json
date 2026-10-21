@@ -1,7 +1,7 @@
 {
   "name": "canai",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "LicenseRef-CanAI-Community-1.0",
   "description": "CanAI — local AI content studio with an infinite canvas, editor, and node workflows powered by fal.ai",
   "scripts": {
@@ -13,7 +13,7 @@
     "docs:help": "node scripts/generate-help-docs.mjs build",
     "check:help": "node scripts/check-help.mjs",
     "pretest": "npm --prefix client exec -- tsx --test client/src/projects/activeProject.test.ts client/src/spaces/canvas/generationAvailability.test.ts client/src/spaces/canvas/konva/canvasMutations.test.ts && npm --prefix server exec -- tsx --test server/src/generationGate.test.ts",
-    "test": "node --test scripts/project-workspace.test.mjs scripts/generate-third-party.test.mjs scripts/generate-help-docs.test.mjs scripts/make-dist.test.mjs scripts/migrate-data.test.mjs scripts/update-secret-backup.test.mjs scripts/smoke-distribution.test.mjs scripts/local-edition.test.mjs scripts/local-edition-runtime.test.mjs scripts/local-edition-client.test.mjs scripts/local-edition-server.test.mjs scripts/public-release.test.mjs scripts/prepare-public-release-finalization.test.mjs scripts/prepare-public-release.test.mjs scripts/prepare-public-release-windows.test.mjs scripts/scan-secrets.test.mjs scripts/install-gitleaks.test.mjs scripts/check-help.test.mjs && npm --prefix server test && npm --prefix client test",
+    "test": "npm run test:i18n-codemod && node --test scripts/project-workspace.test.mjs scripts/generate-third-party.test.mjs scripts/generate-help-docs.test.mjs scripts/make-dist.test.mjs scripts/migrate-data.test.mjs scripts/update-secret-backup.test.mjs scripts/smoke-distribution.test.mjs scripts/local-edition.test.mjs scripts/local-edition-runtime.test.mjs scripts/local-edition-client.test.mjs scripts/local-edition-server.test.mjs scripts/public-release.test.mjs scripts/prepare-public-release-finalization.test.mjs scripts/prepare-public-release.test.mjs scripts/prepare-public-release-windows.test.mjs scripts/scan-secrets.test.mjs scripts/install-gitleaks.test.mjs scripts/check-help.test.mjs && npm --prefix server test && npm --prefix client test",
     "check:firefox": "node scripts/firefox-canvas-check.mjs",
     "licenses": "node scripts/generate-third-party.mjs",
     "release:public:export": "node scripts/export-public-source.mjs",
@@ -21,7 +21,8 @@
     "release:public:check": "node scripts/public-release.mjs check",
     "release:prepare": "node scripts/prepare-public-release.mjs",
     "test:public-release": "node --test scripts/project-workspace.test.mjs scripts/local-edition.test.mjs scripts/local-edition-runtime.test.mjs scripts/local-edition-client.test.mjs scripts/local-edition-server.test.mjs scripts/public-release.test.mjs scripts/prepare-public-release-finalization.test.mjs scripts/prepare-public-release.test.mjs scripts/prepare-public-release-windows.test.mjs scripts/scan-secrets.test.mjs scripts/install-gitleaks.test.mjs",
-    "test:public-release:syntax": "node --check scripts/project-workspace.mjs && node --check scripts/export-public-source.mjs && node --check scripts/prepare-public-release.mjs && node --check scripts/prepare-public-release-guards.mjs && node --check scripts/prepare-public-release-git.mjs && node --check scripts/prepare-public-release-steps.mjs && node --check scripts/prepare-public-release-artifacts.mjs && node --check scripts/public-release.mjs && node --check scripts/scan-secrets.mjs && node --check scripts/install-gitleaks.mjs"
+    "test:public-release:syntax": "node --check scripts/project-workspace.mjs && node --check scripts/export-public-source.mjs && node --check scripts/prepare-public-release.mjs && node --check scripts/prepare-public-release-guards.mjs && node --check scripts/prepare-public-release-git.mjs && node --check scripts/prepare-public-release-steps.mjs && node --check scripts/prepare-public-release-artifacts.mjs && node --check scripts/public-release.mjs && node --check scripts/scan-secrets.mjs && node --check scripts/install-gitleaks.mjs",
+    "test:i18n-codemod": "node --test scripts/i18n-codemod.test.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.5"

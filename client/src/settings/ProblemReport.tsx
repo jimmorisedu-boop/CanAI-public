@@ -5,8 +5,11 @@ import { dumpLogText } from '../diag/log'
 import { downloadTextFile } from '../diag/logFile'
 import { InlineNotice } from '../ui/InlineNotice'
 import { problemReportFileName, problemReportView, type ProblemReportOutcome } from './problemReportModel'
+import { useT } from '../i18n/context.js'
+
 
 export function ProblemReport({ serverBuildLine }: { serverBuildLine: string }) {
+  const t = useT()
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
   const [outcome, setOutcome] = useState<ProblemReportOutcome | null>(null)
@@ -28,7 +31,7 @@ export function ProblemReport({ serverBuildLine }: { serverBuildLine: string }) 
       downloadTextFile(name, JSON.stringify(report, null, 2), 'application/json;charset=utf-8')
       setOutcome({ kind: 'saved', name })
     } catch (error) {
-      setOutcome({ kind: 'failed', message: error instanceof Error ? error.message : 'Could not build report' })
+      setOutcome({ kind: 'failed', message: error instanceof Error ? error.message : t('Could not build report') })
     } finally {
       busy.current = false
       setSaving(false)
@@ -38,14 +41,14 @@ export function ProblemReport({ serverBuildLine }: { serverBuildLine: string }) 
 
   return <section className="settings-section problem-report" aria-labelledby="problem-report-title">
     <div className="settings-section-heading"><div>
-      <h3 id="problem-report-title">Report a problem</h3>
-      <p>Describe what happened and roughly when. Save a report with app and server logs to share with support. Keys, passwords, and images are excluded.</p>
+      <h3 id="problem-report-title">{t('Report a problem')}</h3>
+      <p>{t('Describe what happened and roughly when. Save a report with app and server logs to share with support. Keys, passwords, and images are excluded.')}</p>
     </div></div>
     <textarea className="ui-field problem-report-text" aria-labelledby="problem-report-title" rows={3} maxLength={4000}
-      placeholder="Example: around 14:20, a generated image disappeared from the “Untitled” board"
+      placeholder={t('Example: around 14:20, a generated image disappeared from the “Untitled” board')}
       value={description} onChange={event => setDescription(event.target.value)} />
     <div className="diag-actions"><button type="button" className="ui-btn" disabled={saving} onClick={() => { void saveFile() }}>
-      {saving ? 'Saving…' : 'Save report as file'}
+      {saving ? t('Saving…') : t('Save report as file')}
     </button></div>
     {view && <InlineNotice tone={view.tone} title={view.title} detail={view.detail} onDismiss={() => setOutcome(null)} />}
   </section>

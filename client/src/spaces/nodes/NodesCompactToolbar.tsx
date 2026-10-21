@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { OverflowMenu } from '../../ui/OverflowMenu'
 import { IconBack } from '../../ui/icons'
+import { useT } from '../../i18n/context.js'
+
 
 export function NodesCompactToolbar({
   name,
@@ -27,34 +29,35 @@ export function NodesCompactToolbar({
   saveAction: ReactNode
   deleteAction?: ReactNode
 }) {
+  const t = useT()
   return (
     <div className="nodes-toolbar nodes-toolbar-compact">
       <button
         type="button"
         className="node-add-btn nodes-back icon-tab"
         onClick={onBack}
-        title="Back to canvas"
+        title={t('Back to canvas')}
       >
-        <IconBack size={16} /> Canvas
+        <IconBack size={16} />  {t('Canvas')}
       </button>
       <input
         className="macro-name-input"
-        aria-label="Macro name"
+        aria-label={t('Macro name')}
         placeholder={placeholder}
         value={name}
         onChange={(event) => onNameChange(event.target.value)}
-        title="Macro name (slot button label)"
+        title={t('Macro name (slot button label)')}
         disabled={!loaded}
       />
       <OverflowMenu
-        label="More"
+        label={t('More')}
         panelLabel="Macro actions"
         attention={attention}
         compact
         defaultOpen={defaultMenuOpen}
       >
-        <section className="nodes-compact-add" aria-label="Add node">
-          <span className="nodes-toolbar-label">Add node</span>
+        <section className="nodes-compact-add" aria-label={t('Add node')}>
+          <span className="nodes-toolbar-label">{t('Add node')}</span>
           {addActions}
         </section>
         {validationAction}

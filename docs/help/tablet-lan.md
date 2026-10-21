@@ -28,6 +28,7 @@ Sign out on the tablet to revoke that device’s session. Turn access off on the
 
 - LAN access exposes the local app to devices on that network. It does not include This edition administration.
 - When Tablet access is off, tablet sign-in is blocked even at its localhost address. The desktop app remains available.
+- The tablet uses the same device language preference; board content and access settings remain unchanged.
 
 ## Related topics
 

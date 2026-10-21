@@ -1,5 +1,7 @@
 import type { SelectionRef } from './konva/selection'
 import { RefChip } from './RefChip'
+import { useT } from '../../i18n/context.js'
+
 
 // Миниатюры референсов под сообщением. Клик по любой возвращает её в работу:
 // объект выделяется на доске и тем самым становится референсом промпта
@@ -12,6 +14,7 @@ export function PromptChatReferenceHistory({
   refs: SelectionRef[]
   onPick?: (ref: SelectionRef, additive: boolean) => void
 }) {
+  const t = useT()
   if (refs.length === 0) return null
 
   return (
@@ -23,8 +26,8 @@ export function PromptChatReferenceHistory({
           className="prompt-chat-ref-pick"
           // Без обработчика ведём себя как раньше — просто картинка.
           disabled={!onPick}
-          title="Return to references and select on the board (Ctrl - add to selection)"
-          aria-label={`Return to references: ${ref.label}`}
+          title={t('Return to references and select on the board (Ctrl - add to selection)')}
+          aria-label={t('Return to references: {0}', { 0: ref.label })}
           onClick={(event) => onPick?.(ref, event.ctrlKey || event.metaKey || event.shiftKey)}
         >
           <RefChip refItem={ref} onRemove={() => {}} readOnly />

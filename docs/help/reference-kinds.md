@@ -27,6 +27,7 @@ Text cards are appended as context for image/video prompts and wrapped as contex
 ## Notes
 
 - The model menu shows the compatible modality. CanAI does not silently drop an unsupported reference.
+- System labels follow the selected interface language; reference text and labels remain as entered.
 
 ## Related topics
 

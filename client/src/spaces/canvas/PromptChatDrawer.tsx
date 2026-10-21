@@ -22,6 +22,8 @@ import {
   shouldShowConversationSearch,
 } from './promptChatViewModel'
 import type { PromptChatSummary } from './promptChatTypes'
+import { useT } from '../../i18n/context.js'
+
 
 export interface PromptChatDrawerProps {
   open: boolean
@@ -61,6 +63,7 @@ export function PromptChatDrawer({
   onRestore,
   onPermanentDelete,
 }: PromptChatDrawerProps) {
+  const t = useT()
   const drawerRef = useRef<HTMLElement>(null)
   const [query, setQuery] = useState('')
   const [menuId, setMenuId] = useState<string | null>(null)
@@ -166,12 +169,12 @@ export function PromptChatDrawer({
         className="prompt-chat-drawer"
         role="dialog"
         aria-modal="false"
-        aria-label="Chats"
+        aria-label={t('Chats')}
         onKeyDown={handleKeyDown}
       >
         <header className="prompt-chat-drawer-head">
-          <strong>Chats</strong>
-          <button className="icon-btn" aria-label="Close chats" onClick={onClose}>
+          <strong>{t('Chats')}</strong>
+          <button className="icon-btn" aria-label={t('Close chats')} onClick={onClose}>
             <IconClose size={16} />
           </button>
         </header>
@@ -185,15 +188,15 @@ export function PromptChatDrawer({
           }}
         >
           <IconPlus size={16} />
-          <span>New chat</span>
+          <span>{t('New chat')}</span>
         </button>
 
         {shouldShowConversationSearch(conversations) && (
           <label className="prompt-chat-search">
             <IconSearch size={15} aria-hidden="true" />
             <input
-              aria-label="Search by title"
-              placeholder="Find chat"
+              aria-label={t('Search by title')}
+              placeholder={t('Find chat')}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -213,7 +216,7 @@ export function PromptChatDrawer({
                 {editing ? (
                   <input
                     className="prompt-chat-rename"
-                    aria-label={`New chat name “${item.title}”`}
+                    aria-label={t('New chat name “{0}”', { 0: item.title })}
                     autoFocus
                     value={renameValue}
                     onChange={(event) => setRenameValue(event.target.value)}
@@ -256,7 +259,7 @@ export function PromptChatDrawer({
                 )}
                 <button
                   className="prompt-chat-row-menu icon-btn"
-                  aria-label={`Chat actions “${item.title}”`}
+                  aria-label={t('Chat actions “{0}”', { 0: item.title })}
                   aria-expanded={menuId === item.id}
                   onClick={() => setMenuId(menuId === item.id ? null : item.id)}
                 >
@@ -265,10 +268,10 @@ export function PromptChatDrawer({
                 {menuId === item.id && (
                   <div className="prompt-chat-row-actions" role="menu">
                     <button role="menuitem" onClick={() => startRename(item)}>
-                      <IconEdit size={14} /> Rename
+                      <IconEdit size={14} />  {t('Rename')}
                     </button>
                     <button role="menuitem" className="danger" onClick={() => void moveToTrash(item)}>
-                      <IconTrash size={14} /> Delete
+                      <IconTrash size={14} />  {t('Delete')}
                     </button>
                   </div>
                 )}
@@ -279,20 +282,20 @@ export function PromptChatDrawer({
 
         {trash.length > 0 && (
           <details className="prompt-chat-deleted">
-            <summary>Trash · {trash.length}</summary>
+            <summary>{t('Trash · {0}', { 0: trash.length })}</summary>
             {trash.map((item) => (
               <article key={item.id}>
                 <span title={item.title}>{item.title}</span>
                 <button
                   className="icon-btn"
-                  aria-label={`Restore chat “${item.title}”`}
+                  aria-label={t('Restore chat “{0}”', { 0: item.title })}
                   onClick={() => onRestore(item.id)}
                 >
                   <IconRefresh size={14} />
                 </button>
                 <button
                   className="icon-btn danger"
-                  aria-label={`Delete the “${item.title}” chat permanently`}
+                  aria-label={t('Delete the “{0}” chat permanently', { 0: item.title })}
                   onClick={() => setPermanent(item)}
                 >
                   <IconTrash size={14} />
@@ -304,24 +307,24 @@ export function PromptChatDrawer({
 
         {undo && (
           <div className="prompt-chat-undo" role="status">
-            <span>Chat deleted</span>
+            <span>{t('Chat deleted')}</span>
             <button onClick={() => {
               void onRestore(undo.id)
               setUndo(null)
-            }}>Cancel</button>
+            }}>{t('Cancel')}</button>
           </div>
         )}
 
         {permanent && (
-          <section className="prompt-chat-permanent" role="alertdialog" aria-label="Permanent removal">
-            <strong>Delete "{permanent.title}»?</strong>
-            <p>History and its references cannot be restored.</p>
+          <section className="prompt-chat-permanent" role="alertdialog" aria-label={t('Permanent removal')}>
+            <strong>{t('Delete "{0}"?', { 0: permanent.title })}</strong>
+            <p>{t('History and its references cannot be restored.')}</p>
             <div>
-              <button onClick={() => setPermanent(null)}>Cancel</button>
+              <button onClick={() => setPermanent(null)}>{t('Cancel')}</button>
               <button className="danger" onClick={() => {
                 void onPermanentDelete(permanent.id)
                 setPermanent(null)
-              }}>Delete permanently</button>
+              }}>{t('Delete permanently')}</button>
             </div>
           </section>
         )}

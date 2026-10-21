@@ -32,6 +32,7 @@ Use Enable cropping for a crop pass, Capture frame to canvas for the current fra
 - Crop follows the video image. Move its frame or drag a corner; precise values appear beside the preview on wide screens.
 - More contains segment actions, captured frames, audio extraction, and Find cuts. The ? control shows editing shortcuts.
 - In Clip editing, More offers Delete segment or Restore segment. Join at a listed time removes a cut without hiding the video.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Shortcuts
 

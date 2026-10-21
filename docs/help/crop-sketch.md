@@ -27,6 +27,7 @@ Press Esc or choose Cancel to leave the original card unchanged.
 ## Notes
 
 - Crop Apply updates the image in place and remains undoable.
+- System labels follow the selected interface language; edit operations preserve the source content.
 
 ## Related topics
 

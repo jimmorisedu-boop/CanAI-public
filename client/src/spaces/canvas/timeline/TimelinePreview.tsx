@@ -6,6 +6,8 @@ import { TimelineButton } from './TimelineButton'
 import { TimelineCropFrame } from './TimelineCropFrame'
 import type { TimelineSession } from './useTimelineSession'
 import { systemErrorMessage } from '../../../ui/systemMessage'
+import { useT } from '../../../i18n/context.js'
+
 
 // Превью правки клипа: видео вписано в окно, поверх него — стеклянные плашки
 // (имя клипа, «вписать кадр», выход, пропорции кадрирования) и полка кадров.
@@ -40,6 +42,7 @@ export function TimelinePreview({
   /** Полка кадров: оверлей внутри превью. */
   children?: ReactNode
 }) {
+  const t = useT()
   const { facts } = session
   return (
     <div className="tl-preview">
@@ -75,7 +78,7 @@ export function TimelinePreview({
         <div className="tl-preview-actions">
           <TimelineButton
             glass
-            label="Fit frame to window"
+            label={t('Fit frame to window')}
             keys="0"
             shortcut="0"
             placement="bottom-end"
@@ -87,13 +90,13 @@ export function TimelinePreview({
           {/* Выход — обычная кнопка канона с подписью, та же, что в сравнении:
               из полноэкранного режима выход должен быть виден словами. */}
           <button type="button" className="timeline-close" onClick={session.close} aria-keyshortcuts="Escape">
-            <IconClose size={14} />Esc — exit
+            <IconClose size={14} />{t('Esc — exit')}
           </button>
         </div>
       </div>
 
       {session.crop && (
-        <div className="tl-glass tl-presets" role="group" aria-label="Crop aspect ratio">
+        <div className="tl-glass tl-presets" role="group" aria-label={t('Crop aspect ratio')}>
           {RATIO_PRESETS.map((preset) => (
             <button
               key={preset.label}

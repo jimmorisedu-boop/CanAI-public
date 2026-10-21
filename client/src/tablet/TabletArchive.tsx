@@ -7,10 +7,11 @@ import { ARCHIVE_SORTS, filterArchive, formatBytes, sortArchive, type ArchiveSor
 import { useArchiveSizes } from '../spaces/canvas/archive/archiveSizes'
 import { downloadArchiveZip } from '../spaces/canvas/archive/archiveDownload'
 import { notify } from '../spaces/canvas/notifications'
-import { plural } from '../ui/plural'
 import { TabletFullScreen } from './TabletFullScreen'
 import { previewSrc } from './remoteSession'
 import { useBoardHistory } from './boardHistory'
+import { useT } from '../i18n/context.js'
+
 
 // Архив доски.
 //
@@ -22,6 +23,7 @@ import { useBoardHistory } from './boardHistory'
 // способов выбрать несколько просто нет.
 
 export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(): void }) {
+  const t = useT()
   const history = useBoardHistory()
   useContentVersion(store)
   const [query, setQuery] = useState('')
@@ -51,10 +53,10 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
 
   return (
     <TabletFullScreen
-      title="Board archive"
-      subtitle={<span className="tablet-mono">{entries.length} {plural(entries.length, ['object', 'objects', 'objects'])}</span>}
+      title={t('Board archive')}
+      subtitle={<span className="tablet-mono">{entries.length} {t(Math.abs(entries.length) === 1 ? 'object' : 'objects')}</span>}
       onCancel={onClose}
-      cancelLabel="Close"
+      cancelLabel={t('Close')}
       center={entries.length > 0 ? (
         <div className="tablet-archive-controls">
           <label className="tablet-search">
@@ -62,12 +64,12 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
             <input
               className="ui-field"
               value={query}
-              placeholder="Search"
-              aria-label="Search archive"
+              placeholder={t('Search')}
+              aria-label={t('Search archive')}
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
-          <div className="ui-toggle" role="group" aria-label="Sort">
+          <div className="ui-toggle" role="group" aria-label={t('Sort')}>
             {ARCHIVE_SORTS.map((option) => (
               <button
                 key={option.value}
@@ -85,10 +87,10 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
       footer={entries.length > 0 ? (
         <>
           {acting.length === 0 ? (
-            <span className="tablet-mono">Tap the objects you want to work with</span>
+            <span className="tablet-mono">{t('Tap the objects you want to work with')}</span>
           ) : (
             <>
-              <span className="tablet-mono">selected: {acting.length}</span>
+              <span className="tablet-mono">{t('selected: {0}', { 0: acting.length })}</span>
               <span className="tablet-full-gap" />
               <button
                 type="button"
@@ -100,12 +102,12 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
                   setPicked(new Set())
                   notify({
                     kind: 'success',
-                    message: `To canvas: ${returned.length} ${plural(returned.length, ['object', 'objects', 'objects'])}`,
-                    action: { label: 'Undo', run: history.undo },
+                    message: t('To canvas: {0} {1}', { 0: returned.length, 1: t(Math.abs(returned.length) === 1 ? 'object' : 'objects') }),
+                    action: { label: t('Undo'), run: history.undo },
                   })
                 }}
               >
-                <IconRestore size={18} /> Return to canvas
+                <IconRestore size={18} />  {t('Return to canvas')}
               </button>
               <button
                 type="button"
@@ -115,12 +117,12 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
                   setBusy(true)
                   void downloadArchiveZip(acting)
                     .then((result) => {
-                      if (result.failed > 0) notify({ kind: 'error', message: `Could not download: ${result.failed}` })
+                      if (result.failed > 0) notify({ kind: 'error', message: t('Could not download: {0}', { 0: result.failed }) })
                     })
                     .finally(() => setBusy(false))
                 }}
               >
-                <IconDownload size={18} /> Download
+                <IconDownload size={18} />  {t('Download')}
               </button>
               <button
                 type="button"
@@ -140,21 +142,21 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
                   setConfirmWipe(false)
                   notify({
                     kind: 'success',
-                    message: `Deleted permanently: ${removed}`,
-                    action: { label: 'Undo', run: history.undo },
+                    message: t('Deleted permanently: {0}', { 0: removed }),
+                    action: { label: t('Undo'), run: history.undo },
                   })
                 }}
               >
-                <IconTrash size={18} /> {confirmWipe ? 'Delete for good?' : 'Delete permanently'}
+                <IconTrash size={18} /> {confirmWipe ? t('Delete for good?') : t('Delete permanently')}
               </button>
             </>
           )}
         </>
       ) : (
         <>
-          <span className="tablet-mono">Archived materials will appear here.</span>
+          <span className="tablet-mono">{t('Archived materials will appear here.')}</span>
           <span className="tablet-full-gap" />
-          <button type="button" className="ui-btn primary" onClick={onClose}>Back to board</button>
+          <button type="button" className="ui-btn primary" onClick={onClose}>{t('Back to board')}</button>
         </>
       )}
     >
@@ -175,11 +177,12 @@ export function TabletArchive({ store, onClose }: { store: CanvasStore; onClose(
 }
 
 export function TabletArchiveEmptyMessage({ hasEntries }: { hasEntries: boolean }) {
+  const t = useT()
   return (
     <p className="tablet-archive-empty">
       {hasEntries
-        ? 'Nothing found.'
-        : 'The archive is empty. Use “Archive” in an object’s actions to send it here.'}
+        ? t('Nothing found.')
+        : t('The archive is empty. Use “Archive” in an object’s actions to send it here.')}
     </p>
   )
 }
@@ -195,6 +198,7 @@ function ArchiveCard({
   picked: boolean
   onToggle(): void
 }) {
+  const t = useT()
   return (
     <button
       type="button"
@@ -205,9 +209,9 @@ function ArchiveCard({
       <span className="tablet-archive-thumb">
         {entry.kind === 'image' && entry.src
           ? <img src={previewSrc(entry.src)} alt="" decoding="async" />
-          : <span className="tablet-archive-kind">{entry.kind === 'video' ? 'video' : entry.kind === 'audio' ? 'sound' : 'text'}</span>}
+          : <span className="tablet-archive-kind">{entry.kind === 'video' ? t('video') : entry.kind === 'audio' ? t('sound') : t('text')}</span>}
       </span>
-      <span className="tablet-archive-name">{entry.name || entry.text?.slice(0, 30) || 'object'}</span>
+      <span className="tablet-archive-name">{entry.name || entry.text?.slice(0, 30) || t('object')}</span>
       <span className="tablet-archive-meta">{size ? formatBytes(size) : ''}</span>
       <span className={`tablet-archive-pick ${picked ? 'on' : ''}`} aria-hidden="true" />
     </button>

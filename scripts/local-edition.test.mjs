@@ -37,6 +37,27 @@ test('root scripts retain local tests and drop excluded Cloud-only commands', ()
   assert.equal(transformLocalPackage(local), local)
 })
 
+test('local export removes web-demo scripts and standalone demo gates', () => {
+  const source = JSON.stringify({ scripts: {
+    'demo:build': 'npm --prefix client exec -- vite --config ./web-demo/vite.config.ts build',
+    'demo:dev': 'npm --prefix client exec -- vite --config ./web-demo/vite.config.ts',
+    'demo:preview': 'npm --prefix client exec -- vite --config ./web-demo/vite.config.ts preview',
+    'demo:check': 'npm --prefix client exec -- tsc -p ./web-demo/tsconfig.json --noEmit && npm --prefix client exec -- tsc -p ./web-demo/tsconfig.worker.json --noEmit',
+    'demo:test': 'npm --prefix client exec -- tsx --test web-demo/runtime/worker.smoke.test.ts',
+    check: 'npm run check:help && npm run demo:check && npm --prefix server run check && npm --prefix client run check',
+    test: 'node --test scripts/tool.test.mjs && npm run demo:test && npm --prefix server test',
+    build: 'npm --prefix client run build',
+  } })
+  const scripts = JSON.parse(transformLocalPackage(source)).scripts
+  for (const name of ['demo:build', 'demo:dev', 'demo:preview', 'demo:check', 'demo:test']) {
+    assert.equal(scripts[name], undefined, name)
+  }
+  assert.equal(scripts.check, 'npm run check:help && npm --prefix server run check && npm --prefix client run check')
+  assert.equal(scripts.test, 'node --test scripts/tool.test.mjs && npm --prefix server test')
+  assert.equal(scripts.build, 'npm --prefix client run build')
+  assert.equal(transformLocalPackage(JSON.stringify({ scripts })), JSON.stringify({ scripts }, null, 2) + '\n')
+})
+
 test('a locally named source cannot smuggle a Cloud endpoint through an override', () => {
   assert.throws(() => assertLocalEditionRuntime('client/src/api.ts', Buffer.from("fetch('/api/cloud-account/login')")), /Cloud endpoint/u)
   assert.throws(() => assertLocalEditionRuntime('server/src/routes.ts', Buffer.from("fetch('/v3/boards/socket')")), /Cloud endpoint/u)

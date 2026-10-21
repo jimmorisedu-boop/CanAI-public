@@ -8,12 +8,12 @@ import { useCatalogModels } from '../spaces/canvas/genOptions'
 import { assetToRef } from '../spaces/canvas/konva/assetRef'
 import { requestAddPromptAsset } from '../spaces/canvas/promptAssetBus'
 import { notify } from '../spaces/canvas/notifications'
-import { plural } from '../ui/plural'
 import { setTimelineTarget } from '../spaces/canvas/timeline/timelineBus'
 import { viewportBounds } from './boardGestures'
 import { actionNeedsMutationLease, type InspectorAction } from './inspectorModel'
 import type { TabletEditor } from './TabletOverlays'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
 
 export function boardExportItems(items: CanvasItem[]): CanvasItem[] {
   return items.filter((item) => item.kind !== 'link')
@@ -40,6 +40,7 @@ export function useBoardActions({
   setBusyNote(note: string | null): void
   onUndo(): void
 }) {
+  const t = useT()
   const { models } = useCatalogModels()
 
   const modelNameOf = useCallback(
@@ -66,52 +67,56 @@ export function useBoardActions({
   }, [])
 
   const exportMarked = useCallback(async (boardName: string) => {
-    setBusyNote('Building archive…')
+    setBusyNote(t('Building archive…'))
     try {
       const result = await downloadMarkedAsZip(store.getItems(), projectId)
       setBusyNote(null)
       if (result.ok === 0) {
-        notify({ kind: 'error', message: 'Could not build archive' })
+        notify({ kind: 'error', message: t('Could not build archive') })
         return
       }
       notify({
         kind: 'success',
-        message: `In archive ${result.ok} ${plural(result.ok, ['file', 'files', 'files'])}  of ${boardName}`,
+        message: t('In archive {0} {1}  of {2}', {
+          0: result.ok,
+          1: t(Math.abs(result.ok) === 1 ? 'file' : 'files'),
+          2: boardName,
+        }),
       })
     } catch (error) {
       setBusyNote(null)
-      notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not build archive') })
+      notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not build archive')) })
     }
-  }, [store, projectId, setBusyNote])
+  }, [store, projectId, setBusyNote, t])
 
   const exportBoard = useCallback(async (boardName: string, selectedOnly = false) => {
     const items = boardExportItems(store.getItems().filter((item) => !selectedOnly || store.getSelectedIds().has(item.id)))
     if (items.length === 0) {
-      notify({ kind: 'info', message: 'There is nothing to export on the board yet' })
+      notify({ kind: 'info', message: t('There is nothing to export on the board yet') })
       return
     }
-    setBusyNote('Collecting files…')
+    setBusyNote(t('Collecting files…'))
     try {
       const result = await downloadItems(items)
       if (result.cancelled) return
       if (result.failed > 0) {
-        notify({ kind: 'error', message: `Could not download: ${result.failed}` })
+        notify({ kind: 'error', message: t('Could not download: {0}', { 0: result.failed }) })
       } else {
-        notify({ kind: 'success', message: `Export “${boardName}” ready` })
+        notify({ kind: 'success', message: t('Export “{0}” ready', { 0: boardName }) })
       }
     } catch (error) {
-      notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not export board') })
+      notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not export board')) })
     } finally {
       setBusyNote(null)
     }
-  }, [store, setBusyNote])
+  }, [store, setBusyNote, t])
 
   const run = useCallback((action: InspectorAction, items: CanvasItem[]) => {
     const ids = items.map((item) => item.id)
     const first = items[0]
     if (!first) return
     if (actionNeedsMutationLease(action) && !store.canMutateItems(ids)) {
-      notify({ kind: 'info', message: 'Another participant is editing this object' })
+      notify({ kind: 'info', message: t('Another participant is editing this object') })
       return
     }
 
@@ -157,7 +162,7 @@ export function useBoardActions({
           width: first.naturalWidth,
           height: first.naturalHeight,
         })
-        notify({ kind: 'success', message: 'Added to assets' })
+        notify({ kind: 'success', message: t('Added to assets') })
         return
       }
       case 'front':
@@ -167,17 +172,17 @@ export function useBoardActions({
         runWithBoardLease(store, ids, () => store.sendToBack(ids))
         return
       case 'download':
-        setBusyNote('Preparing files…')
+        setBusyNote(t('Preparing files…'))
         void downloadItems(items)
           .then((result) => {
             setBusyNote(null)
             if (result.failed > 0) {
-              notify({ kind: 'error', message: `Could not download: ${result.failed}` })
+              notify({ kind: 'error', message: t('Could not download: {0}', { 0: result.failed }) })
             }
           })
           .catch((error: unknown) => {
             setBusyNote(null)
-            notify({ kind: 'error', message: tabletSystemMessage(error, 'Could not download') })
+            notify({ kind: 'error', message: tabletSystemMessage(error, t('Could not download')) })
           })
         return
       case 'archive':
@@ -187,8 +192,8 @@ export function useBoardActions({
           const moved = store.archiveItems(ids)
           notify({
             kind: 'success',
-            message: `Archive: ${moved} ${plural(moved, ['object', 'objects', 'objects'])}`,
-            action: { label: 'Undo', run: onUndo },
+            message: t('Archive: {0} {1}', { 0: moved, 1: t(Math.abs(moved) === 1 ? 'object' : 'objects') }),
+            action: { label: t('Undo'), run: onUndo },
           })
         })
         return
@@ -197,13 +202,13 @@ export function useBoardActions({
           store.removeItems(ids)
           notify({
             kind: 'success',
-            message: `Deleted: ${ids.length} ${plural(ids.length, ['object', 'objects', 'objects'])}`,
-            action: { label: 'Undo', run: onUndo },
+            message: t('Deleted: {0} {1}', { 0: ids.length, 1: t(Math.abs(ids.length) === 1 ? 'object' : 'objects') }),
+            action: { label: t('Undo'), run: onUndo },
           })
         })
         return
     }
-  }, [store, setEditor, setBusyNote, onUndo])
+  }, [store, setEditor, setBusyNote, onUndo, t])
 
   return { run, addTextInView, useAssetAsReference, exportMarked, exportBoard, modelNameOf, api }
 }

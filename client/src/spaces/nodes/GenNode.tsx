@@ -30,6 +30,8 @@ import { effModelSuffix, effModelTitle } from '../../ui/effModelHint'
 import { handleNodePortKeyDown } from './nodeHandleKeyboard'
 import { executorCompatibilityError } from '../../../../packages/model-catalog/version'
 import { MediaPlaybackControls } from '../../ui/MediaPlaybackControls'
+import { useT } from '../../i18n/context.js'
+
 
 const HEADER_H = 34
 const ROW_H = 26
@@ -49,6 +51,7 @@ function ModelPicker({
   hasVideoRefs: boolean
   hasAudioRefs: boolean
 }) {
+  const t = useT()
   const { updateNode } = useNodeActions()
   const models = useModels()
   const modelDefaults = useModelDefaults()
@@ -92,10 +95,10 @@ function ModelPicker({
           updateNodeData(id, { model: preset.id, params: settleNodeSeed(preset, seedDefaults(preset.params)) })
         }}
       >
-        {data.model && !selectedPreset && <option value={data.model} disabled>{models.find(m => m.id === data.model)?.name ?? data.model} — unavailable</option>}
+        {data.model && !selectedPreset && <option value={data.model} disabled>{models.find(m => m.id === data.model)?.name ?? data.model}  {t('— unavailable')}</option>}
         {presets.map((p) => (
           <option key={p.id} value={p.id} disabled={Boolean(executorCompatibilityError(p))}>
-            {p.name}{executorCompatibilityError(p) ? ' · update CanAI' : ''}
+            {p.name}{executorCompatibilityError(p) ? t(' · update CanAI') : ''}
           </option>
         ))}
       </select>
@@ -166,6 +169,7 @@ function statusLabel(data: GenNodeData): string | null {
 }
 
 export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
+  const translate = useT()
   const { setNodes, setEdges } = useReactFlow()
   const { updateNode, scope } = useNodeActions()
   const updateNodeData = updateNode
@@ -225,11 +229,11 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
         status: 'done',
       })
     } catch (err) {
-      showErrorToast(err instanceof Error ? err.message : 'Could not load file')
+      showErrorToast(err instanceof Error ? err.message : translate('Could not load file'))
     } finally {
       setUploading(false)
     }
-  }, [id, updateNodeData])
+  }, [id, translate, updateNodeData])
 
   const handleClearFile = useCallback(() => {
     updateNodeData(id, {
@@ -365,15 +369,15 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
       <div
         className="gen-node-header"
         onDoubleClick={() => updateNodeData(id, { collapsed: !data.collapsed })}
-        title="Double-click to collapse/expand"
+        title={translate('Double-click to collapse/expand')}
       >
         <span className="gen-node-icon">
           <meta.icon size={16} />
         </span>
         <span className="gen-node-title">
-          {nodeTitle}
+          {translate(nodeTitle)}
         </span>
-        <button className="gen-node-del icon-btn" title="Delete node" onClick={remove}>
+        <button className="gen-node-del icon-btn" title={translate('Delete node')} onClick={remove}>
           <IconClose size={15} />
         </button>
       </div>
@@ -387,7 +391,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
             position={Position.Left}
             role="button"
             tabIndex={0}
-            aria-label={`Input “${port.label}” node “${nodeTitle}”`}
+            aria-label={translate('Input “{0}” node “{1}”', { 0: port.label, 1: nodeTitle })}
             onKeyDown={handleNodePortKeyDown}
             style={{ '--port-color': PORT_COLORS[port.type] } as React.CSSProperties}
           />
@@ -398,7 +402,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
       {!data.collapsed && unknownKind && (
         <div className="gen-node-body" style={{ marginTop: inputsHeight - HEADER_H }}>
           <InlineNotice className="node-inline-notice" tone="warning">
-            {'This node is from an older app version and no longer works. Delete it with the cross; the rest of the macro is intact.'}
+            {translate('This node is from an older app version and no longer works. Delete it with the cross; the rest of the macro is intact.')}
           </InlineNotice>
         </div>
       )}
@@ -409,11 +413,11 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
             <InlineNotice className="node-inline-notice" tone="info">
               {isInput ? (
                 isAssistantInput ? (
-                  'The message and attached references from the assistant arrive at this input.'
+                  translate('The message and attached references from the assistant arrive at this input.')
                 ) : (
                   <>
                     <div className="node-input-source-row">
-                      <span className="node-assets-pick-label">Input source:</span>
+                      <span className="node-assets-pick-label">{translate('Input source:')}</span>
                       <select
                         className="node-input-source-select nodrag"
                         value={data.assetSlot ?? 'canvas'}
@@ -424,10 +428,10 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                           })
                         }}
                       >
-                        <option value="canvas">Selection from board</option>
+                        <option value="canvas">{translate('Selection from board')}</option>
                         {[0, 1, 2, 3, 4, 5, 6, 7].map((s) => (
                           <option key={s} value={s}>
-                            Asset {s + 1}
+                            {translate('Asset {0}', { 0: s + 1 })}
                           </option>
                         ))}
                       </select>
@@ -438,14 +442,14 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                         ? `Board selections feed connected outputs: ${connectedInputLabels
                             .map((label) => `“${label}”`)
                             .join(', ')}. Each type has its own count.`
-                        : 'What you select on the board before running the macro comes here: images and videos go to “images”, text goes to “text”.'
-                      : `Input uses Asset ${data.assetSlot + 1}.`}
+                        : translate('What you select on the board before running the macro comes here: images and videos go to “images”, text goes to “text”.')
+                      : translate('Input uses Asset {0}.', { 0: data.assetSlot + 1 })}
                   </>
                 )
               ) : isAssistantOutput ? (
-                'Everything arriving at this input appears in the assistant feed.'
+                translate('Everything arriving at this input appears in the assistant feed.')
               ) : (
-                'Everything arriving at these inputs appears on the board after the macro runs.'
+                translate('Everything arriving at these inputs appears on the board after the macro runs.')
               )}
             </InlineNotice>
           ) : isCombine ? (
@@ -453,7 +457,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
               <ExpandableTextarea
                 {...promptField}
                 rows={2}
-                placeholder="Separator between texts (newline by default)…"
+                placeholder={translate('Separator between texts (newline by default)…')}
               />
               <InlineNotice className="node-inline-notice" tone="info">
                 Combines text from all connected inputs into one text.
@@ -463,23 +467,23 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
             <ExpandableTextarea
               {...promptField}
               rows={3}
-              placeholder="Constant text — sent to other nodes as output"
+              placeholder={translate('Constant text — sent to other nodes as output')}
             />
           ) : isMedia ? (
             <div className="node-media-body nodrag">
               {uploading ? (
-                <div className="node-upload-loading">Loading file…</div>
+                <div className="node-upload-loading">{translate('Loading file…')}</div>
               ) : data.result?.url ? (
                 <div className="node-media-preview-wrap">
                   <ResultPreview result={data.result} />
                   {data.assetSlot != null && (
                     <div className="node-asset-badge">
-                      Asset {data.assetSlot + 1}
+                      {translate('Asset {0}', { 0: data.assetSlot + 1 })}
                     </div>
                   )}
                   <button
                     className="node-media-clear icon-btn"
-                    title="Delete file"
+                    title={translate('Delete file')}
                     onClick={handleClearFile}
                   >
                     <IconTrash size={14} />
@@ -488,7 +492,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
               ) : (
                 <div className="node-upload-zone">
                   <label className="node-upload-btn">
-                    <IconUpload size={15} /> Choose a file
+                    <IconUpload size={15} />  {translate('Choose a file')}
                     <input
                       type="file"
                       accept="image/*,video/*,audio/mpeg,audio/wav,.mp3,.wav"
@@ -497,7 +501,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                     />
                   </label>
                   <div className="node-assets-pick-group">
-                    <span className="node-assets-pick-label">or from assets:</span>
+                    <span className="node-assets-pick-label">{translate('or from assets:')}</span>
                     <div className="node-assets-pick-btns">
                       {[0, 1, 2, 3, 4, 5, 6, 7].map((slot) => {
                         const store = getActiveCanvasStore()
@@ -507,7 +511,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                             key={slot}
                             type="button"
                             className={`node-asset-chip ${asset ? 'has-asset' : 'empty'}`}
-                            title={asset ? `Use Asset ${slot + 1}` : `Asset ${slot + 1}  is empty on the canvas`}
+                            title={asset ? translate('Use Asset {0}', { 0: slot + 1 }) : translate('Asset {0}  is empty on the canvas', { 0: slot + 1 })}
                             disabled={!asset}
                             onClick={() => {
                               if (!asset) return
@@ -518,7 +522,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                               })
                             }}
                           >
-                            Asset {slot + 1}
+                            {translate('Asset {0}', { 0: slot + 1 })}
                           </button>
                         )
                       })}
@@ -542,7 +546,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
                   rows={2}
                   placeholder={
                     data.kind === 'text'
-                      ? 'LLM instruction…'
+                      ? translate('LLM instruction…')
                       : data.kind === 'other'
                         ? 'What to detect in the image (for example, “person”, “car”)…'
                         : 'Describe what to generate…'
@@ -590,10 +594,10 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
               {viewed && (
                 <button
                   className="node-to-canvas nodrag"
-                  title="Add result to canvas"
+                  title={translate('Add result to canvas')}
                   onClick={() => requestCanvasPlace(viewed, metaFor(data.kind).title)}
                 >
-                  <IconToCanvas size={14} /> to canvas
+                  <IconToCanvas size={14} /> {translate('to canvas')}
                 </button>
               )}
             </>
@@ -615,7 +619,7 @@ export function GenNode({ id, data, selected }: NodeProps<CanaiNode>) {
               position={Position.Right}
               role="button"
               tabIndex={0}
-              aria-label={`Output “${label}” node “${nodeTitle}”`}
+              aria-label={translate('Output “{0}” node “{1}”', { 0: label, 1: nodeTitle })}
               onKeyDown={handleNodePortKeyDown}
               style={{ '--port-color': PORT_COLORS[port.type] } as React.CSSProperties}
             />

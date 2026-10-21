@@ -1,5 +1,7 @@
 import type { AgentInputSchemaView } from '../../../../../packages/agent-protocol/index'
 import type { AgentTaskInputErrors, AgentTaskInputValues } from './agentPackageModel'
+import { useT } from '../../../i18n/context.js'
+
 
 export function AgentTaskForm({
   schema,
@@ -12,12 +14,13 @@ export function AgentTaskForm({
   errors: AgentTaskInputErrors
   onChange(key: string, value: unknown): void
 }) {
+  const t = useT()
   if (!schema || schema.fields.length === 0) return null
   return (
-    <div className="agent-task-inputs" aria-label="Task parameters">
+    <div className="agent-task-inputs" aria-label={t('Task parameters')}>
       {schema.fields.map((field) => {
         const integer = (field as typeof field & { integer?: boolean }).integer === true
-        const label = `${field.label ?? field.key}${field.required ? ' · required' : ''}`
+        const label = `${field.label ?? field.key}${field.required ? t(' · required') : ''}`
         const error = errors[field.key]
         const descriptionId = field.description ? `agent-input-${field.key}-description` : undefined
         const errorId = error ? `agent-input-${field.key}-error` : undefined
@@ -48,7 +51,7 @@ export function AgentTaskForm({
                 aria-invalid={Boolean(error)}
                 aria-describedby={describedBy}
               >
-                <option value="">Choose…</option>
+                <option value="">{t('Choose…')}</option>
                 {(field.enum ?? []).map((value) => <option value={value} key={value}>{value}</option>)}
               </select>
             ) : (

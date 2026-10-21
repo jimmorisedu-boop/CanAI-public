@@ -10,6 +10,8 @@ import { copyText } from '../ui/ids'
 import { isReadingLatest } from './assistantReading'
 import { assistantPromptVariants } from './assistantPromptVariants'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Лента разговора с помощником.
 //
@@ -28,6 +30,7 @@ export function TabletAssistant({
   /** Подставить готовый промпт в поле ввода (вкладка «Промпт»). */
   onUsePrompt(text: string): void
 }) {
+  const t = useT()
   const messages = useAssistantMessages(projectId)
   const active = useActiveAssistantMessageId(projectId)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -51,9 +54,9 @@ export function TabletAssistant({
     ? (
       <InlineNotice
         tone="error"
-        title="Conversation did not load"
+        title={t('Conversation did not load')}
         detail={chat.localError ? tabletSystemMessage(chat.localError) : undefined}
-        action={{ label: 'Retry', onClick: () => void promptChatStore.loadProject(projectId, true) }}
+        action={{ label: t('Retry'), onClick: () => void promptChatStore.loadProject(projectId, true) }}
       />
     )
     : chat.localError
@@ -89,7 +92,7 @@ export function TabletAssistant({
     }}>
       <div className="tablet-assistant-messages" ref={contentRef}>
       {errorNotice}
-      {messages.length === 0 && <><IconMagic size={22} /><p>Ask about lighting, angle, or composition. The assistant answers in words and suggests ready prompts only when asked.</p></>}
+      {messages.length === 0 && <><IconMagic size={22} /><p>{t('Ask about lighting, angle, or composition. The assistant answers in words and suggests ready prompts only when asked.')}</p></>}
       {messages.map((message) => (
         <Message
           key={message.id}
@@ -100,7 +103,7 @@ export function TabletAssistant({
       ))}
       </div>
     </div>
-    {unread && <button className="ui-btn tablet-assistant-unread" type="button" onClick={showLatest}>New response ↓</button>}
+    {unread && <button className="ui-btn tablet-assistant-unread" type="button" onClick={showLatest}>{t('New response ↓')}</button>}
     </div>
   )
 }
@@ -114,6 +117,7 @@ function Message({
   store: CanvasStore
   onUsePrompt(text: string): void
 }) {
+  const t = useT()
   const mine = message.role === 'user'
   const working = message.status === 'submitting' || message.status === 'queued' || message.status === 'running'
   const answer = [message.text, message.reply].filter(Boolean).join('\n\n')
@@ -125,9 +129,9 @@ function Message({
       <div className="tablet-msg-body">
         {message.text && <p>{message.text}</p>}
         {message.reply && <p>{message.reply}</p>}
-        {working && <p className="tablet-msg-status">Formulating…</p>}
+        {working && <p className="tablet-msg-status">{t('Formulating…')}</p>}
         {message.status === 'error' && (
-          <p className="tablet-msg-error">{tabletSystemMessage(message.error, 'Could not get a response')}</p>
+          <p className="tablet-msg-error">{tabletSystemMessage(message.error, t('Could not get a response'))}</p>
         )}
         {!mine && suggestions.map((suggestion, index) => (
           <PromptCard
@@ -138,11 +142,11 @@ function Message({
           />
         ))}
         {!mine && !working && answer && <div className="tablet-prompt-card-actions">
-          {suggestions.length === 0 && <button className="ui-btn" type="button" onClick={() => onUsePrompt(answer)}>To prompt</button>}
+          {suggestions.length === 0 && <button className="ui-btn" type="button" onClick={() => onUsePrompt(answer)}>{t('To prompt')}</button>}
           <button className="ui-btn" type="button" onClick={() => {
-            void copyText(answer).then(() => notify({ kind: 'success', message: 'Response copied' }))
-              .catch(() => notify({ kind: 'error', message: 'Could not copy' }))
-          }}><IconCopy size={16} /> Copy</button>
+            void copyText(answer).then(() => notify({ kind: 'success', message: t('Response copied') }))
+              .catch(() => notify({ kind: 'error', message: t('Could not copy') }))
+          }}><IconCopy size={16} />  {t('Copy')}</button>
         </div>}
       </div>
     </div>
@@ -158,24 +162,25 @@ function PromptCard({
   store: CanvasStore
   onUsePrompt(text: string): void
 }) {
+  const t = useT()
   return (
     <div className="tablet-prompt-card">
       {suggestion.title && <strong>{suggestion.title}</strong>}
       <p>{suggestion.prompt}</p>
       <div className="tablet-prompt-card-actions">
         <button type="button" className="ui-btn" onClick={() => onUsePrompt(suggestion.prompt)}>
-          To line
+          {t('To line')}
         </button>
         <button
           type="button"
           className="ui-btn"
           onClick={() => {
             void copyText(suggestion.prompt)
-              .then(() => notify({ kind: 'success', message: 'Prompt copied' }))
-              .catch(() => notify({ kind: 'error', message: 'Could not copy' }))
+              .then(() => notify({ kind: 'success', message: t('Prompt copied') }))
+              .catch(() => notify({ kind: 'error', message: t('Could not copy') }))
           }}
         >
-          <IconCopy size={16} /> Copy
+          <IconCopy size={16} />  {t('Copy')}
         </button>
         <button
           type="button"
@@ -183,10 +188,10 @@ function PromptCard({
           onClick={() => {
             const id = store.placeText(suggestion.prompt)
             store.setSelection([id])
-            notify({ kind: 'success', message: 'Text added to canvas' })
+            notify({ kind: 'success', message: t('Text added to canvas') })
           }}
         >
-          <IconToCanvas size={16} /> To canvas
+          <IconToCanvas size={16} />  {t('To canvas')}
         </button>
       </div>
     </div>

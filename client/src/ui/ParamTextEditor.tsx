@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { IconClose } from './icons'
+import { useT } from '../i18n/context.js'
+
 
 // Большой редактор текстового параметра (системный промпт и т.п.).
 //
@@ -23,6 +25,7 @@ export function ParamTextEditor({
   onChange(next: string): void
   onClose(): void
 }) {
+  const t = useT()
   const areaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -62,9 +65,9 @@ export function ParamTextEditor({
         <header className="param-editor-head">
           <strong>{label}</strong>
           <span className="param-editor-count">
-            {characters} characters · {lines} lines
+            {t('{0} characters · {1} lines', { 0: characters, 1: lines })}
           </span>
-          <button className="param-editor-close" aria-label="Close (Esc)" title="Esc" onClick={onClose}>
+          <button className="param-editor-close" aria-label={t('Close (Esc)')} title={t('Esc')} onClick={onClose}>
             <IconClose size={16} />
           </button>
         </header>

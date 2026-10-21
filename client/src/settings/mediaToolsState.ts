@@ -26,7 +26,7 @@ export interface MediaToolsView {
 
 export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsView {
   if (!state) {
-    return { label: 'Checking…', tone: 'neutral', note: null, action: null, busy: true }
+    return { label: t('Checking…'), tone: 'neutral', note: null, action: null, busy: true }
   }
 
   if (state.state === 'ready') {
@@ -35,16 +35,16 @@ export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsVie
     // собрать дистрибутив, у которого компонента нет вовсе.
     return state.source === 'system'
       ? {
-          label: 'System',
+          label: t('System'),
           tone: 'ok',
-          note: 'Using ffmpeg installed on the system. There is no copy in the app folder; download one on another computer.',
-          action: 'Download a copy',
+          note: t('Using ffmpeg installed on the system. There is no copy in the app folder; download one on another computer.'),
+          action: t('Download a copy'),
           busy: false,
         }
       : {
-          label: 'Ready',
+          label: t('Ready'),
           tone: 'ok',
-          note: 'Lives in the app folder and travels with it.',
+          note: t('Lives in the app folder and travels with it.'),
           action: null,
           busy: false,
         }
@@ -54,7 +54,7 @@ export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsVie
     return {
       label: `${state.percent ?? 0}%`,
       tone: 'neutral',
-      note: 'Downloading component — about 40 MB. You can keep working.',
+      note: t('Downloading component — about 40 MB. You can keep working.'),
       action: null,
       busy: true,
     }
@@ -62,19 +62,19 @@ export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsVie
 
   if (state.state === 'failed') {
     return {
-      label: 'Download failed',
+      label: t('Download failed'),
       tone: 'danger',
-      note: state.message || 'Could not download component.',
-      action: 'Try again',
+      note: state.message || t('Could not download component.'),
+      action: t('Try again'),
       busy: false,
     }
   }
 
   if (state.state === 'unsupported') {
     return {
-      label: 'Unavailable',
+      label: t('Unavailable'),
       tone: 'warn',
-      note: 'No build is available for this system — install ffmpeg and ffprobe yourself.',
+      note: t('No build is available for this system — install ffmpeg and ffprobe yourself.'),
       action: null,
       busy: false,
     }
@@ -85,19 +85,19 @@ export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsVie
     // лежать в папке с самого начала. Значит и совет другой — не «скачайте», а
     // «распакуйте заново».
     return {
-      label: 'Missing from folder',
+      label: t('Missing from folder'),
       tone: 'warn',
-      note: 'Video processing ships with the app. The file is missing; extract the archive again. Nothing needs downloading.',
+      note: t('Video processing ships with the app. The file is missing; extract the archive again. Nothing needs downloading.'),
       action: null,
       busy: false,
     }
   }
 
   return {
-    label: 'Not installed',
+    label: t('Not installed'),
     tone: 'warn',
-    note: 'Needed for audio and video: trimming, splitting shots, and extracting tracks.',
-    action: 'Download',
+    note: t('Needed for audio and video: trimming, splitting shots, and extracting tracks.'),
+    action: t('Download'),
     busy: false,
   }
 }
@@ -106,3 +106,4 @@ export function mediaToolsView(state: FfmpegStateResponse | null): MediaToolsVie
 export function shouldPollMediaTools(state: FfmpegStateResponse | null): boolean {
   return state?.state === 'downloading'
 }
+import { t } from '../i18n/translate.js'

@@ -27,6 +27,7 @@ An explicit request to create or edit media can start generation; a prompt-only 
 ## Notes
 
 - Provider connections and paid calls are explicit. A model reply alone never grants a generation request.
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics
 

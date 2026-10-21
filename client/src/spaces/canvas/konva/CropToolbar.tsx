@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { IconCrop, IconDone } from '../../../ui/icons'
 import { RATIO_PRESETS } from './cropMath'
+import { useT } from '../../../i18n/context.js'
+
 
 // Плавающий тулбар режима кропа (верх-центр): пресеты пропорций + применить.
 export function CropToolbar({
@@ -16,6 +18,7 @@ export function CropToolbar({
   onApply: () => void
   onCancel: () => void
 }) {
+  const t = useT()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -33,7 +36,7 @@ export function CropToolbar({
   return (
     <div className="sketch-palette crop-toolbar">
       <span className="sketch-palette-label">
-        <IconCrop size={15} /> Crop
+        <IconCrop size={15} />  {t('Crop')}
       </span>
       {RATIO_PRESETS.map((p) => (
         <button
@@ -45,14 +48,15 @@ export function CropToolbar({
         </button>
       ))}
       <button className="sketch-cancel" disabled={busy} onClick={onCancel}>
-        Cancel
+
+        {t('Cancel')}
       </button>
       <button className="sketch-done" disabled={busy} onClick={onApply}>
         {busy ? (
           'Cropping…'
         ) : (
           <>
-            <IconDone size={15} weight="bold" /> Apply
+            <IconDone size={15} weight="bold" />  {t('Apply')}
           </>
         )}
       </button>

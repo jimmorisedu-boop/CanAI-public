@@ -3,6 +3,7 @@ import { api, type Macro } from '../../api'
 import type { GenRef, Job, JobKind, ProjectSource, ServerStatus } from '../../types'
 import { IconCombine, IconCopy, IconEdit, IconGenerate, IconImage, IconLLM, IconSound, IconStop, IconVideo, IconTrash, IconCollapse, IconMinus, IconMemory } from '../../ui/icons'
 import { usePromptCollapse } from './usePromptCollapse'
+import { useT } from '../../i18n/context.js'
 import { PriceBadge } from '../../ui/PriceBadge'
 import { priceBadgeTitle } from '../../ui/quotePresentation'
 import { useCompactLayout } from '../../ui/useCompactLayout'
@@ -117,6 +118,7 @@ import {
   handleSettledCanvasGeneration,
 } from './canvasGenerationSettle'
 
+
 // Реэкспорт ради прежних импортов: доставка результата переехала в свой
 // модуль, чтобы ею мог пользоваться и планшет, где промпт-бара нет.
 export {
@@ -156,6 +158,7 @@ export function PromptBar({
   chatOpen: boolean
   onChatOpenChange(open: boolean): void
 }) {
+  const t = useT()
   const promptChatProjectId = projectKey({ source: projectSource, id: projectId })
   const compact = useCompactLayout()
   const [mode, setMode] = useState<ActionDockMode>(() => {
@@ -1547,20 +1550,20 @@ export function PromptBar({
       defer: (run) => window.requestAnimationFrame(run),
       focusPrompt: () => textareaRef.current?.focus({ preventScroll: true }),
       pulsePrompt: () => showOnboardingTarget(promptDockRef.current, {
-        message: "Enter a description and click “Generate” or Shift+Enter.",
+        message: t('Enter a description and click “Generate” or Shift+Enter.'),
       }),
       firstCanvasReference: () => store.getItems().find((candidate) => (
         candidate.kind === 'image' || candidate.kind === 'video' || candidate.kind === 'text'
       )) ?? null,
       focusCanvasReference: (reference) => store.focusOnboardingItem(reference.id),
       pulseReferences: () => showOnboardingTarget(referenceChipsRef.current, {
-        message: "Select an object on the canvas to use it as a reference.",
+        message: t('Select an object on the canvas to use it as a reference.'),
       }),
       announce,
       product: { generate: () => { void submitRef.current() } },
     })
     return registerPromptOnboardingTargets(handlers)
-  }, [onChatOpenChange, store])
+  }, [onChatOpenChange, store, t])
 
   useEffect(() => {
     return registerGenerationComposer({
@@ -1689,7 +1692,7 @@ export function PromptBar({
     <>
     <div ref={promptDockRef} className={`prompt-dock${discussOpen ? ' has-assistant' : ''}${panelCollapsed ? ' is-collapsed' : ''}${panelCollapsed && selectedAssistant.id ? ' has-collapsed-helper' : ''}`}>
       {panelCollapsed && (
-        <button type="button" className="prompt-dock-restore" aria-label="Expand prompt panel" aria-expanded={false} title="Expand prompt panel · S" onClick={togglePanel}>
+        <button type="button" className="prompt-dock-restore" aria-label={t('Expand prompt panel')} aria-expanded={false} title={t('Expand prompt panel · S')} onClick={togglePanel}>
           <span aria-hidden="true" />
         </button>
       )}
@@ -1712,7 +1715,7 @@ export function PromptBar({
           <div
             className="prompt-bar-grip"
             role="separator"
-            aria-label="Change the maximum prompt height"
+            aria-label={t('Change the maximum prompt height')}
             onPointerDown={startPromptResize}
           >
             <i aria-hidden="true" />
@@ -1744,7 +1747,7 @@ export function PromptBar({
           {!discussOpen && (prompt.trim() || composerRefs.length > 0 || sketchTarget) && (
             <button
               className="prompt-clear-btn"
-              title="Clear prompt. Right-click to also clear prompts saved on selected images."
+              title={t('Clear prompt. Right-click to also clear prompts saved on selected images.')}
               onMouseDown={(e) => e.preventDefault()}
               onClick={handleClearAll}
               onContextMenu={handleClearAllPermanent}
@@ -1753,13 +1756,13 @@ export function PromptBar({
             </button>
           )}
           {mode === 'make' && (
-            <div className="prompt-header-batch-toggle ui-toggle" role="group" aria-label="Reference usage">
+            <div className="prompt-header-batch-toggle ui-toggle" role="group" aria-label={t('Reference usage')}>
               <button
                 type="button"
                 className={batchMode === 'together' ? 'on' : ''}
                 aria-pressed={batchMode === 'together'}
-                title="Use references together for one prompt"
-                aria-label="Use references together for one prompt"
+                title={t('Use references together for one prompt')}
+                aria-label={t('Use references together for one prompt')}
                 onClick={() => setBatchMode('together')}
                 disabled={!ready || kind !== 'image'}
               >
@@ -1769,8 +1772,8 @@ export function PromptBar({
                 type="button"
                 className={batchMode === 'each' ? 'on' : ''}
                 aria-pressed={batchMode === 'each'}
-                title={kind === 'image' ? "Use each reference separately" : "Available for images only"}
-                aria-label="Use each reference separately"
+                title={kind === 'image' ? t('Use each reference separately') : t('Available for images only')}
+                aria-label={t('Use each reference separately')}
                 onClick={() => setBatchMode('each')}
                 disabled={!ready || kind !== 'image'}
               >
@@ -1783,13 +1786,13 @@ export function PromptBar({
               type="button"
               role="switch"
               className="prompt-collapse-btn assistant-memory-toggle"
-              aria-label="Board memory"
+              aria-label={t('Board memory')}
               aria-checked={promptChatSnapshot.boardMemoryEnabled}
               aria-busy={promptChatSnapshot.boardMemorySaving}
               disabled={!promptChatSnapshot.boardMemoryControlSupported || promptChatSnapshot.loadState !== 'ready' || promptChatSnapshot.boardMemorySaving}
               title={promptChatSnapshot.boardMemoryControlSupported
-                ? `Board memory ${promptChatSnapshot.boardMemoryEnabled ? "on" : "off"}. Uses board context for replies and model selection. Chat history and attached references stay available.`
-                : "The board memory cannot be changed: the server has not confirmed support for this setting."}
+                ? t('Board memory {0}. Uses board context for replies and model selection. Chat history and attached references stay available.', { 0: promptChatSnapshot.boardMemoryEnabled ? t('on') : t('off') })
+                : t('The board memory cannot be changed: the server has not confirmed support for this setting.')}
               onClick={() => {
                 setLocalError(null)
                 void promptChatStore.setBoardMemoryEnabled(promptChatProjectId, !promptChatSnapshot.boardMemoryEnabled).catch((error) => {
@@ -1800,7 +1803,7 @@ export function PromptBar({
               <IconMemory size={16} weight={promptChatSnapshot.boardMemoryEnabled ? 'fill' : 'regular'} />
             </button>
           )}
-          <button type="button" className="prompt-collapse-btn" aria-label="Collapse prompt panel" aria-expanded={true} title="Collapse prompt panel · S" onClick={togglePanel}>
+          <button type="button" className="prompt-collapse-btn" aria-label={t('Collapse prompt panel')} aria-expanded={true} title={t('Collapse prompt panel · S')} onClick={togglePanel}>
             {discussOpen ? <IconMinus size={16} /> : <IconCollapse size={16} />}
           </button>
         </div>
@@ -1818,13 +1821,13 @@ export function PromptBar({
         <PromptComposerField
           textareaRef={textareaRef}
           value={prompt}
-          ariaLabel={discussOpen ? "Message assistant" : "Prompt for generation"}
-          placeholder={promptPlaceholder({
+          ariaLabel={discussOpen ? t('Message assistant') : t('Prompt for generation')}
+          placeholder={t(promptPlaceholder({
             chatOpen: discussOpen,
             sketchTarget,
             textRefCount: textRefs.length,
             mediaRefCount: mediaRefs.length,
-          })}
+          }))}
           mention={mention}
           mentionList={mentionList}
           mediaRefs={mediaRefs}
@@ -1859,8 +1862,8 @@ export function PromptBar({
               <button
                 type="button"
                 className="prompt-clear-btn"
-                aria-label="Clear message"
-                title="Clear message and attachments"
+                aria-label={t('Clear message')}
+                title={t('Clear message and attachments')}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={handleClearAll}
               >
@@ -1872,35 +1875,35 @@ export function PromptBar({
                 <button
                   type="button"
                   className={kind === 'image' ? 'on' : ''}
-                  title="Image"
-                  aria-label="Image"
+                  title={t('Image')}
+                  aria-label={t('Image')}
                   aria-pressed={kind === 'image'}
                   onClick={() => switchKind('image')}
                 >
                   <IconImage size={15} />
-                  {compact && <span>Image</span>}
+                  {compact && <span>{t('Image')}</span>}
                 </button>
                 <button
                   type="button"
                   className={kind === 'video' ? 'on' : ''}
-                  title="Video"
-                  aria-label="Video"
+                  title={t('Video')}
+                  aria-label={t('Video')}
                   aria-pressed={kind === 'video'}
                   onClick={() => switchKind('video')}
                 >
                   <IconVideo size={15} />
-                  {compact && <span>Video</span>}
+                  {compact && <span>{t('Video')}</span>}
                 </button>
                 <button
                   type="button"
                   className={kind === 'audio' ? 'on' : ''}
-                  title="Audio"
-                  aria-label="Audio"
+                  title={t('Audio')}
+                  aria-label={t('Audio')}
                   aria-pressed={kind === 'audio'}
                   onClick={() => switchKind('audio')}
                 >
                   <IconSound size={15} />
-                  {compact && <span>Audio</span>}
+                  {compact && <span>{t('Audio')}</span>}
                 </button>
               </div>
             )}
@@ -1932,10 +1935,10 @@ export function PromptBar({
               <button
                 className="ask stop"
                 type="button"
-                title="Stop assistant"
+                title={t('Stop assistant')}
                 onClick={() => promptChatStore.cancel(promptChatProjectId, activeAssistantId)}
               >
-                <IconStop size={16} /> Stop
+                <IconStop size={16} /> {t('Stop')}
               </button>
             )}
             {mode === 'discuss' && !activeAssistantId && (
@@ -1943,15 +1946,15 @@ export function PromptBar({
                   className="ask paid-action"
                   type="button"
                   disabled={!ready || !generationReady || promptChatSnapshot.boardMemorySaving || !prompt.trim()}
-                  title="Send to assistant: it returns ready prompts; explicit commands create a board result and ask for confirmation before an expensive batch (Shift+↵)"
+                  title={t('Send to assistant: it returns ready prompts; explicit commands create a board result and ask for confirmation before an expensive batch (Shift+↵)')}
                   onClick={() => void ask()}
                 >
                   <IconLLM size={16} />
-                  <span className="paid-action-label">Send</span>
+                  <span className="paid-action-label">{t('Send')}</span>
                   <PriceBadge
                     amount={chatEstimate?.costUsd ?? null}
                     precision={3}
-                    title="Approximate cost of response"
+                    title={t('Approximate cost of response')}
                     variant="action"
                   />
                 </button>
@@ -1961,12 +1964,12 @@ export function PromptBar({
               className="generate paid-action"
               disabled={!ready || !generationReady || (!prompt.trim() && textRefs.length === 0)}
               title={displayedGenerationPrice == null && displayModel?.pricingNote
-                ? `Generate (Shift+Enter). Click again to run another generation in parallel. ${displayModel.pricingNote}`
-                : "Generate (Shift+Enter). Click again to run another generation in parallel"}
+                ? t('Generate (Shift+Enter). Click again to run another generation in parallel. {0}', { 0: displayModel.pricingNote })
+                : t('Generate (Shift+Enter). Click again to run another generation in parallel')}
               onClick={() => void submit()}
             >
               <IconGenerate size={17} weight="fill" />
-                  <span className="paid-action-label">{createLabel}</span>
+                  <span className="paid-action-label">{createLabel === 'Generate' ? t('Generate') : createLabel}</span>
               {displayedGenerationPrice != null && (
                 <PriceBadge
                   amount={displayedGenerationPrice}
@@ -2009,7 +2012,7 @@ export function PromptBar({
                 ? (displayRequest?.baseModel ?? dockPreview.selection.baseModel)?.name ?? null
                 : null}
               modelTitle={displayRequest?.plan.model
-                ? `Model: ${displayRequest.plan.model.name}`
+                ? t('Model: {0}', { 0: displayRequest.plan.model.name })
                 : dockPreview.selection.error ?? undefined}
               imageReferenceCount={
                 sketchTarget

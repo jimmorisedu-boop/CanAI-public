@@ -4,6 +4,8 @@ import { notify } from '../spaces/canvas/notifications'
 import { promptChatStore } from '../spaces/canvas/promptChatStore'
 import { TabletDialog } from './TabletDialog'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Диалоги помощника на планшете.
 //
@@ -29,6 +31,7 @@ function when(value: number): string {
 }
 
 export function TabletAssistantChats({ projectId }: { projectId: string }) {
+  const t = useT()
   const snapshot = useSyncExternalStore(
     useCallback((listener: () => void) => promptChatStore.subscribe(projectId, listener), [projectId]),
     useCallback(() => promptChatStore.getSnapshot(projectId), [projectId]),
@@ -39,7 +42,7 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
   // что в корзине досок: от промаха защищает второе нажатие, а не запрет.
   const [confirmId, setConfirmId] = useState<string | null>(null)
 
-  const title = snapshot.active?.meta.title?.trim() || TITLE_FALLBACK
+  const title = snapshot.active?.meta.title?.trim() || t(TITLE_FALLBACK)
 
   const run = async (work: Promise<unknown>, fallback: string): Promise<boolean> => {
     setBusy(true)
@@ -47,7 +50,7 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
       await work
       return true
     } catch (error) {
-      notify({ kind: 'error', message: tabletSystemMessage(error, fallback) })
+      notify({ kind: 'error', message: tabletSystemMessage(error, t(fallback)) })
       return false
     } finally {
       setBusy(false)
@@ -62,11 +65,11 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
 
   return (
     <>
-      <div className="tablet-assistant-chats" role="group" aria-label="Assistant conversations">
+      <div className="tablet-assistant-chats" role="group" aria-label={t('Assistant conversations')}>
         <button
           type="button"
           className="ui-btn quiet tablet-assistant-chat-open"
-          aria-label={`Assistant conversations: ${title}`}
+          aria-label={t('Assistant conversations: {0}', { 0: title })}
           aria-haspopup="dialog"
           onClick={() => setListOpen(true)}
         >
@@ -76,8 +79,8 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
         <button
           type="button"
           className="ui-btn quiet icon-only tablet-assistant-chat-new"
-          aria-label="New conversation"
-          title="New conversation"
+          aria-label={t('New conversation')}
+          title={t('New conversation')}
           disabled={busy}
           onClick={() => void create()}
         >
@@ -87,17 +90,17 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
 
       {listOpen && (
         <TabletDialog
-          title="Assistant conversations"
+          title={t('Assistant conversations')}
           onClose={() => { setListOpen(false); setConfirmId(null) }}
           actions={
             <button type="button" className="ui-btn primary" disabled={busy} onClick={() => void create()}>
-              <IconPlus size={18} /> New conversation
+              <IconPlus size={18} />  {t('New conversation')}
             </button>
           }
         >
           <div className="tablet-chat-list">
             {snapshot.list.length === 0 && (
-              <p className="tablet-inline-empty">No conversations yet — start a new one.</p>
+              <p className="tablet-inline-empty">{t('No conversations yet — start a new one.')}</p>
             )}
             {snapshot.list.map((item) => (
               <div
@@ -123,7 +126,7 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
                 <button
                   type="button"
                   className="ui-btn danger tablet-chat-drop"
-                  aria-label={`Delete conversation “${item.title?.trim() || TITLE_FALLBACK}”`}
+                  aria-label={t('Delete conversation “{0}”', { 0: item.title?.trim() || TITLE_FALLBACK })}
                   disabled={busy}
                   onClick={() => {
                     if (confirmId !== item.id) {
@@ -138,7 +141,7 @@ export function TabletAssistantChats({ projectId }: { projectId: string }) {
                     void run(promptChatStore.trash(projectId, item.id), 'Could not delete conversation')
                   }}
                 >
-                  <IconTrash size={18} /> {confirmId === item.id ? 'Are you sure?' : ''}
+                  <IconTrash size={18} /> {confirmId === item.id ? t('Are you sure?') : ''}
                 </button>
               </div>
             ))}

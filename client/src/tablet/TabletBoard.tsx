@@ -44,6 +44,9 @@ import { ProjectConflictState } from '../spaces/canvas/ProjectConflictState'
 import { AgentPanel } from '../spaces/canvas/agents/AgentPanel'
 import { useAgentPanel } from '../spaces/canvas/agents/useAgentPanel'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+import { t as translate } from '../i18n/translate.js'
+
 
 // Экран доски на планшете.
 //
@@ -82,16 +85,16 @@ export function classifyTabletBoardLoadError(error: unknown): TabletBoardLoadFai
   const code = error instanceof ApiError
     ? error.code
     : typeof metadata?.code === 'string' ? metadata.code : undefined
-  const displayMessage = tabletSystemMessage(error, 'The server could not open the saved board. Try again.', code)
+  const displayMessage = tabletSystemMessage(error, translate('The server could not open the saved board. Try again.'), code)
   const auth = status === 401 || status === 403
     || /AUTH|UNAUTHORIZED|FORBIDDEN|SESSION|LOGIN/u.test(code ?? '')
     || /требуется вход|сеанс входа|доступ отозван|нет прав|войдите|sign[- ]in required|login required|session expired|access revoked|no permission|permission denied/iu.test(message)
   if (auth) {
     return {
       kind: 'auth',
-      title: 'Sign-in required',
-      detail: 'The session expired or access to this board was revoked. Return to the board list, sign in again, and retry.',
-      retryLabel: 'Retry after signing in',
+      title: translate('Sign-in required'),
+      detail: translate('The session expired or access to this board was revoked. Return to the board list, sign in again, and retry.'),
+      retryLabel: translate('Retry after signing in'),
     }
   }
 
@@ -101,17 +104,17 @@ export function classifyTabletBoardLoadError(error: unknown): TabletBoardLoadFai
   if (network) {
     return {
       kind: 'network',
-      title: 'Could not open board',
-      detail: 'Check the connection to your computer and try again.',
-      retryLabel: 'Retry',
+      title: translate('Could not open board'),
+      detail: translate('Check the connection to your computer and try again.'),
+      retryLabel: translate('Retry'),
     }
   }
 
   return {
     kind: 'unknown',
-    title: 'Board did not load',
-    detail: message.trim() ? displayMessage : 'The server could not open the saved board. Try again.',
-    retryLabel: 'Retry',
+    title: translate('Board did not load'),
+    detail: message.trim() ? displayMessage : translate('The server could not open the saved board. Try again.'),
+    retryLabel: translate('Retry'),
   }
 }
 
@@ -134,6 +137,7 @@ export function TabletBoard({
   canEdit: boolean
   canManage: boolean
 }) {
+  const t = useT()
   const storeRef = useRef<CanvasStore>()
   if (!storeRef.current) storeRef.current = new CanvasStore()
   const store = storeRef.current
@@ -302,7 +306,7 @@ export function TabletBoard({
     mode: 'none' as const,
     canControl: false,
     canLaunch: false,
-    label: false ? 'Local' : 'Host',
+    label: false ? t('Local') : t('Host'),
     reason: 'Agents are not supported by this connection',
   }, [runtime.capabilities?.agents, runtime.kind])
   const [resolvedAgentCapability, setResolvedAgentCapability] = useState(fallbackAgentCapability)
@@ -365,16 +369,16 @@ export function TabletBoard({
 
   const addFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
-    setBusyNote(`Loading ${files.length}…`)
+    setBusyNote(t('Loading {0}…', { 0: files.length }))
     try {
       await importFilesToBoard(store, files, runtime, projectId)
     } catch (error) {
-      setBusyNote(tabletSystemMessage(error, 'Could not load'))
+      setBusyNote(tabletSystemMessage(error, t('Could not load')))
       window.setTimeout(() => setBusyNote(null), 4000)
       return
     }
     setBusyNote(null)
-  }, [store, runtime, projectId])
+  }, [store, runtime, projectId, t])
 
   const viewport = useCallback(() => {
     // При открытом инспекторе рабочая сцена сужается. Точные команды камеры
@@ -461,7 +465,7 @@ export function TabletBoard({
       const recovered = await session.retryConflictRecovery()
       setConflict(recovered)
     } catch (error) {
-      setBusyNote(tabletSystemMessage(error, 'Could not save conflict copy'))
+      setBusyNote(tabletSystemMessage(error, t('Could not save conflict copy')))
       window.setTimeout(() => setBusyNote(null), 4000)
     } finally {
       setConflictRetrying(false)
@@ -555,7 +559,7 @@ export function TabletBoard({
       />
 
       <div className="tablet-body" ref={bodyRef}>
-        {loadState === 'loading' && <p className="tablet-state">Opening board…</p>}
+        {loadState === 'loading' && <p className="tablet-state">{t('Opening board…')}</p>}
         {loadState === 'error' && (
           <div className="tablet-state">
             <InlineNotice
@@ -565,7 +569,7 @@ export function TabletBoard({
               action={{ label: loadFailure.retryLabel, onClick: retryLoad }}
               secondary={loadFailure.kind === 'auth' ? { label: 'Back to list', onClick: onExit } : undefined}
             />
-            <p>An empty canvas will not overwrite the saved board.</p>
+            <p>{t('An empty canvas will not overwrite the saved board.')}</p>
           </div>
         )}
 
@@ -586,10 +590,10 @@ export function TabletBoard({
 
         {handoff && (
           <div className="tablet-state">
-            <p><strong>The board is currently open on device “{handoff.device}”</strong></p>
+            <p><strong>{t('The board is currently open on device “{0}”', { 0: handoff.device })}</strong></p>
             <p>{boardHandoffDetail(handoff)}</p>
             <button type="button" className="ui-btn primary" disabled={returning} onClick={() => void takeBoard()}>
-              {returning ? 'Restoring…' : 'Restore here'}
+              {returning ? t('Restoring…') : t('Restore here')}
             </button>
           </div>
         )}
@@ -649,7 +653,7 @@ export function TabletBoard({
                   const item = items[0]
                   if (action === 'resize' && items.length === 1 && (item.kind === 'image' || item.kind === 'video')) {
                     void store.withSelection([item.id], () => setGestureResize({ itemId: item.id, at: { x: 20, y: 60 } }))
-                      .catch(() => setBusyNote('Could not get resize access'))
+                      .catch(() => setBusyNote(t('Could not get resize access')))
                   } else runBoardAction(action, items)
                 }}
               />
@@ -661,7 +665,7 @@ export function TabletBoard({
             >
               <div className="tablet-dock-content">
                 <TabletPrompt
-                  dragHandle={<button type="button" className="ui-btn quiet tablet-dock-handle" aria-label="Move prompt panel" title="Drag to move; double-tap to return it to the bottom" {...dockPlacement.drag} onDoubleClick={dockPlacement.reset}><span aria-hidden="true">•••</span></button>}
+                  dragHandle={<button type="button" className="ui-btn quiet tablet-dock-handle" aria-label={t('Move prompt panel')} title={t('Drag to move; double-tap to return it to the bottom')} {...dockPlacement.drag} onDoubleClick={dockPlacement.reset}><span aria-hidden="true">•••</span></button>}
                   store={store}
                   projectId={projectId}
                   projectSource={false ? 'local' : 'local'}
@@ -679,7 +683,7 @@ export function TabletBoard({
             </div>}
             {!live && <div className="tablet-local-readonly-note">
               {loadState === 'opening'
-                ? 'Connecting to board…'
+                ? t('Connecting to board…')
                 : loadState === 'offline'
                   ? 'Offline — board is view only'
                   : 'You have view-only access'}
@@ -689,7 +693,7 @@ export function TabletBoard({
       </div>
 
       {chromeHidden && (
-        <p className="tablet-chrome-hint">Four-finger tap restores the interface</p>
+        <p className="tablet-chrome-hint">{t('Four-finger tap restores the interface')}</p>
       )}
 
       {live && !chromeHidden && clipboardMenu && (
@@ -722,14 +726,14 @@ export function TabletBoard({
         <div className="tablet-toast">
           <InlineNotice
             tone="error"
-            title="Board is not saving"
-            detail="Edits remain only on this screen. Check the connection to your computer."
+            title={t('Board is not saving')}
+            detail={t('Edits remain only on this screen. Check the connection to your computer.')}
           />
         </div>
       )}
 
       {tasksOpen && <TabletTasks projectId={projectId} onClose={() => setTasksOpen(false)} />}
-      {busyNote && selectedItems.length === 0 && <div className="tablet-toast"><InlineNotice tone="info" title={tabletSystemMessage(busyNote, 'Working…')} /></div>}
+      {busyNote && selectedItems.length === 0 && <div className="tablet-toast"><InlineNotice tone="info" title={tabletSystemMessage(busyNote, t('Working…'))} /></div>}
 
       {renaming && canManage && (
         <RenameDialog
@@ -755,15 +759,15 @@ export function TabletBoard({
 
       {detailsId && (() => {
         const item = store.getItem(detailsId)
-        return item ? <TabletDialog title="Generation settings" onClose={() => setDetailsId(null)} actions={<>
-          <button type="button" className="ui-btn" onClick={() => { setDetailsId(null); openViewer(item.id) }}>Open large</button>
+        return item ? <TabletDialog title={t('Generation settings')} onClose={() => setDetailsId(null)} actions={<>
+          <button type="button" className="ui-btn" onClick={() => { setDetailsId(null); openViewer(item.id) }}>{t('Open large')}</button>
           <button type="button" className="ui-btn primary" disabled={!live || !item.prompt} onClick={() => {
             requestPromptFill({ shapeId: item.id, prompt: item.prompt, modelId: item.modelId, referenceIds: item.referenceIds })
             setDetailsId(null)
-          }}>To prompt</button>
+          }}>{t('To prompt')}</button>
         </>}>
-          <p><strong>Model:</strong> {actions.modelNameOf(item) || item.modelId || 'Not saved'}</p>
-          <p>Size: {item.naturalWidth ?? Math.round(item.w)} × {item.naturalHeight ?? Math.round(item.h)} · References: {item.referenceIds?.length ?? 0}</p>
+          <p><strong>{t('Model:')}</strong> {actions.modelNameOf(item) || item.modelId || 'Not saved'}</p>
+          <p>{t('Size:')} {item.naturalWidth ?? Math.round(item.w)} × {item.naturalHeight ?? Math.round(item.h)}  {t('· References:')} {item.referenceIds?.length ?? 0}</p>
           <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', userSelect: 'text' }}>{item.prompt || 'Prompt not saved'}</p>
         </TabletDialog> : null
       })()}
@@ -790,22 +794,24 @@ function RenameDialog({
   onClose(): void
   onSave(next: string): Promise<void>
 }) {
+  const t = useT()
   const [value, setValue] = useState(name)
   const trimmed = value.trim()
   return (
     <TabletDialog
-      title="Board name"
+      title={t('Board name')}
       onClose={onClose}
       actions={
         <>
-          <button type="button" className="ui-btn quiet" onClick={onClose}>Cancel</button>
+          <button type="button" className="ui-btn quiet" onClick={onClose}>{t('Cancel')}</button>
           <button
             type="button"
             className="ui-btn primary"
             disabled={!trimmed || trimmed === name}
             onClick={() => void onSave(trimmed)}
           >
-            Save
+
+            {t('Save')}
           </button>
         </>
       }
@@ -813,7 +819,7 @@ function RenameDialog({
       <input
         className="ui-field tablet-input-line"
         value={value}
-        aria-label="Board name"
+        aria-label={t('Board name')}
         autoFocus
         onChange={(event) => setValue(event.target.value)}
       />

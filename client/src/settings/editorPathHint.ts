@@ -17,15 +17,15 @@ export function editorPathHint(platform: string | undefined): EditorPathHint {
   if (platform === 'darwin') {
     return {
       placeholder: '/Applications/Adobe Photoshop 2025/Adobe Photoshop 2025.app',
-      note: 'Select the app itself — the “.app” folder. You do not need to choose its internals; the app finds them.',
-      browse: 'Choose app',
+      note: t('Select the app itself — the “.app” folder. You do not need to choose its internals; the app finds them.'),
+      browse: t('Choose app'),
     }
   }
   if (platform && platform !== 'win32') {
     // Диалога выбора здесь нет, поэтому и обещать кнопку нельзя.
     return {
       placeholder: '/usr/bin/gimp',
-      note: 'Select the full path to the program executable.',
+      note: t('Select the full path to the program executable.'),
       browse: null,
     }
   }
@@ -33,6 +33,7 @@ export function editorPathHint(platform: string | undefined): EditorPathHint {
   return {
     placeholder: 'C:\\Program Files\\Adobe\\Adobe Photoshop 2025\\Photoshop.exe',
     note: null,
-    browse: 'Choose app',
+    browse: t('Choose app'),
   }
 }
+import { t } from '../i18n/translate.js'

@@ -29,6 +29,7 @@ Save the workflow, then launch its macro slot from the Canvas. The editor itself
 - Nodes preserve their IDs, schemas, and typed values when a workflow is saved.
 - Connection errors use English. Your node labels, prompts, and Macro names keep their original language.
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
+- System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered.
 
 ## Related topics
 

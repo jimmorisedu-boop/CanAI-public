@@ -27,6 +27,7 @@ Add a photo to the chat only when you want Assistant to receive that image.
 ## Notes
 
 - Board memory is text and generation context. It is not automatic visual access to all images on the board.
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics
 

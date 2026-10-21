@@ -11,6 +11,8 @@ import {
   type ResizeRect,
   type ResizeItemShape,
 } from './tabletResizeMath'
+import { useT } from '../i18n/context.js'
+
 
 const HANDLES: ReadonlyArray<ResizeHandle> = ['nw', 'ne', 'sw', 'se']
 
@@ -61,6 +63,7 @@ export function TabletResize({
   onClose(): void
   onCancel?: () => void
 }) {
+  const t = useT()
   const hostRef = useRef<HTMLDivElement>(null)
   const captureTargetRef = useRef<HTMLElement | null>(null)
   const originalNodeRef = useRef<{ node: HTMLElement; hadVisibility: string } | null>(null)
@@ -283,7 +286,7 @@ export function TabletResize({
         transform: `rotate(${item.rotation ?? 0}deg)`,
       }}
       role="group"
-      aria-label={`Size: ${itemName(item)}`}
+      aria-label={t('Size: {0}', { 0: itemName(item) })}
     >
       {active && <div className="tablet-resize-preview" aria-hidden="true">
         {item.kind === 'video'
@@ -294,8 +297,8 @@ export function TabletResize({
       <button
         type="button"
         className="tablet-resize-menu"
-        aria-label="More actions"
-        title="More actions"
+        aria-label={t('More actions')}
+        title={t('More actions')}
         onClick={() => onMenu(itemId, menuPoint ?? { x: display.x, y: display.y })}
       >⋯</button>
       {HANDLES.map((handle) => (
@@ -304,7 +307,7 @@ export function TabletResize({
           className={`tablet-resize-handle ${handle}`}
           role="button"
           tabIndex={0}
-          aria-label={`Resize for ${handle}`}
+          aria-label={t('Resize for {0}', { 0: handle })}
           onPointerDown={startDrag(handle)}
           onPointerMove={onMove}
           onPointerUp={finishDrag}

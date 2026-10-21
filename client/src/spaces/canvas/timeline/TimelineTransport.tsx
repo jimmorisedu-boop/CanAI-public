@@ -3,6 +3,8 @@ import { TimelineButton } from './TimelineButton'
 import { clearTimelineNotice } from './timelineNotice'
 import type { StatusLine } from './timelineStatus'
 import { timecode } from './timelineTimecode'
+import { useT } from '../../../i18n/context.js'
+
 
 // Транспорт под превью: шаг назад, играть/пауза, шаг вперёд, звук, таймкод,
 // живая строка состояния и главная кнопка «Снять кадр на холст». Сообщения
@@ -33,10 +35,11 @@ export function TimelineTransport({
   onToggleMute(): void
   onCapture(): void
 }) {
+  const t = useT()
   return (
-    <div className="tl-transport" role="group" aria-label="Playback controls">
+    <div className="tl-transport" role="group" aria-label={t('Playback controls')}>
       <TimelineButton
-        label="Previous frame"
+        label={t('Previous frame')}
         keys="←"
         shortcut="ArrowLeft"
         placement="top-start"
@@ -46,7 +49,7 @@ export function TimelineTransport({
         <IconStepBack size={18} />
       </TimelineButton>
       <TimelineButton
-        label={playing ? 'Pause' : 'Play'}
+        label={playing ? t('Pause') : t('Play')}
         keys="Space"
         shortcut="Space"
         placement="top-start"
@@ -56,7 +59,7 @@ export function TimelineTransport({
         {playing ? <IconPause size={18} /> : <IconRun size={18} />}
       </TimelineButton>
       <TimelineButton
-        label="Next frame"
+        label={t('Next frame')}
         keys="→"
         shortcut="ArrowRight"
         placement="top-start"
@@ -66,7 +69,7 @@ export function TimelineTransport({
         <IconStepForward size={18} />
       </TimelineButton>
       <TimelineButton
-        label={muted ? 'Turn preview audio on' : 'Mute preview audio'}
+        label={muted ? t('Turn preview audio on') : t('Mute preview audio')}
         placement="top-start"
         on={muted}
         onClick={onToggleMute}
@@ -90,7 +93,7 @@ export function TimelineTransport({
       </span>
 
       <TimelineButton
-        label="Capture frame to canvas"
+        label={t('Capture frame to canvas')}
         keys="F"
         shortcut="F"
         placement="top-end"

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2
+
+- Added Russian interface language alongside the default English interface.
+- Switch instantly in Settings → General → Language, or Settings → Language on
+  a tablet. Each device remembers its choice without changing board content,
+  prompts, model identifiers, or other participants' preferences.
+- Failed board imports retry temporary Windows file locks during rollback.
+- Updated the Vite 6 build tool to its compatible security patch.
+
 ## 0.1.1 — release candidate
 
 This release candidate refreshes the local edition release guidance for the

@@ -4,6 +4,8 @@ import { IconDownload, IconDuplicate, IconEdit, IconTrash } from '../../ui/icons
 import { macroRunnable } from '../nodes/macroPersistence'
 import type { GraphSnapshot } from '../nodes/types'
 import { MACRO_SLOT_COUNT, describeMacro } from './macroLibraryModel'
+import { useT } from '../../i18n/context.js'
+
 
 export interface MacroRowRename {
   value: string
@@ -40,6 +42,7 @@ export function MacroLibraryRow({
   onExport(): void
   onRemove(): void
 }) {
+  const t = useT()
   const graph = macro.graph as Partial<GraphSnapshot>
   const nodes = Array.isArray(graph?.nodes) ? graph.nodes : []
   const ready = macroRunnable({ nodes, edges: Array.isArray(graph?.edges) ? graph.edges : [] })
@@ -54,14 +57,14 @@ export function MacroLibraryRow({
       onDragEnd={drag.onEnd}
     >
       <span className={`macro-lib-slot ${orphan ? 'none' : ''}`} aria-hidden="true">
-        {orphan ? '—' : (macro.slot ?? 0) + 1}
+        {orphan ? t('—') : (macro.slot ?? 0) + 1}
       </span>
       <button
         type="button"
         className="macro-lib-open"
         disabled={Boolean(rename) || busy}
-        aria-label={`Open "${macro.name}" in the node editor`}
-        title="Open in workflow editor"
+        aria-label={t('Open "{0}" in the node editor', { 0: macro.name })}
+        title={t('Open in workflow editor')}
         onClick={onOpen}
         onKeyDown={(event) => {
           if (!event.altKey) return
@@ -75,7 +78,7 @@ export function MacroLibraryRow({
             className="macro-lib-rename"
             value={rename.value}
             autoFocus
-            aria-label="New name"
+            aria-label={t('New name')}
             onChange={(event) => rename.onChange(event.target.value)}
             onBlur={rename.onCommit}
             onKeyDown={(event) => {
@@ -98,8 +101,8 @@ export function MacroLibraryRow({
       <button
         type="button"
         className="icon-btn macro-lib-act"
-        aria-label={`Rename "${macro.name}"`}
-        title="Rename"
+        aria-label={t('Rename "{0}"', { 0: macro.name })}
+        title={t('Rename')}
         disabled={busy}
         onClick={(event) => { event.stopPropagation(); onRenameStart() }}
       >
@@ -108,8 +111,8 @@ export function MacroLibraryRow({
       <button
         type="button"
         className="icon-btn macro-lib-act"
-        aria-label={`Duplicate "${macro.name}"`}
-        title={full ? `All ${MACRO_SLOT_COUNT} slots are occupied — free one` : 'Duplicate'}
+        aria-label={t('Duplicate "{0}"', { 0: macro.name })}
+        title={full ? t('All {0} slots are occupied — free one', { 0: MACRO_SLOT_COUNT }) : t('Duplicate')}
         disabled={full || busy}
         onClick={(event) => { event.stopPropagation(); onDuplicate() }}
       >
@@ -118,8 +121,8 @@ export function MacroLibraryRow({
       <button
         type="button"
         className="icon-btn macro-lib-act"
-        aria-label={`Save "${macro.name}" to file`}
-        title="Save to a file — you can share it with a colleague"
+        aria-label={t('Save "{0}" to file', { 0: macro.name })}
+        title={t('Save to a file — you can share it with a colleague')}
         disabled={busy}
         onClick={(event) => { event.stopPropagation(); onExport() }}
       >
@@ -128,8 +131,8 @@ export function MacroLibraryRow({
       <button
         type="button"
         className="icon-btn macro-lib-act danger"
-        aria-label={`Delete "${macro.name}"`}
-        title="Delete"
+        aria-label={t('Delete "{0}"', { 0: macro.name })}
+        title={t('Delete')}
         disabled={busy}
         onClick={(event) => { event.stopPropagation(); onRemove() }}
       >

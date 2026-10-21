@@ -28,6 +28,7 @@ Choose Generate to send the prompt and its selected references together.
 
 - Selecting a Canvas item alone does not attach it to Assistant chat. For Assistant, drag a card into the chat or add it from Assets. Attachments added while a question is sending stay in the composer for your next question.
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
+- System labels follow the selected interface language; reference text and labels remain as entered.
 
 ## Related topics
 

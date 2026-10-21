@@ -21,6 +21,7 @@ import { CaptureFrameButton, MediaProgressBar, MediaTimeBadge, PlayPauseOverlay 
 import { formatMediaTime } from './mediaTime'
 import { MEDIA_TIME_BADGE_FONT, mediaTimeBadgeRightReservation, mediaTimeBadgeText } from './mediaBadgeLayout'
 import { useMediaPlayerHotkeys, useProgressScrub } from './useMediaPlayerInput'
+import { useT } from '../../../i18n/context.js'
 import {
   onCanvasItemDragMove,
   onCanvasItemDragStart,
@@ -67,6 +68,7 @@ export const GifItem = memo(function GifItem({
   persistNaturalSize = true,
   viewScale = 1,
 }: ItemProps & { persistNaturalSize?: boolean; viewScale?: number }) {
+  const t = useT()
   // Ступень превью — тем же правилом, что у картинки (см. ImageItem).
   const previewWidth = useRef<number>()
   previewWidth.current = stickyPreviewStep(previewWidth.current, item.w * viewScale * devicePixelRatio)
@@ -211,7 +213,7 @@ export const GifItem = memo(function GifItem({
         return { blob, width: canvas.width, height: canvas.height, name: `frame${formatMediaTime(player.currentTime)}.png` }
       }, boardMediaUploader())
     } catch (err) {
-      showErrorToast(err instanceof Error ? err.message : 'Failed to extract a frame from the GIF')
+      showErrorToast(err instanceof Error ? err.message : t('Failed to extract a frame from the GIF'))
     } finally {
       setCapturing(false)
     }

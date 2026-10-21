@@ -35,6 +35,7 @@ Seeing Recovered data needs review? Keep a copy of the whole app folder. Compare
 - A cancelled job does not resume. Keep the app folder intact so saved boards and tasks remain available.
 - If both the main state file and its backup are unreadable, CanAI stops with a recovery message instead of replacing your data with an empty state.
 - Desktop and tablet errors use English. Your board names, prompts, and content keep their original language. An unfamiliar server error points to Diagnostics.
+- System labels follow the selected interface language; saved results and task state remain unchanged.
 
 ## Related topics
 

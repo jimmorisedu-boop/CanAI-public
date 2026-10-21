@@ -24,6 +24,10 @@ Save in the external editor and return. The first save creates a new result besi
 
 ![Use the external editor: Return to CanAI](../../client/public/help/external-editor-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; edit operations preserve the source content.
+
 ## Shortcuts
 
 - **F2** — Open the configured external editor

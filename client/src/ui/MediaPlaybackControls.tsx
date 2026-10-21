@@ -1,4 +1,7 @@
 import { useEffect, useState, type RefObject, type SyntheticEvent } from 'react'
+import { useT } from '../i18n/context.js'
+import { t as translate } from '../i18n/translate.js'
+
 
 export interface MediaPlaybackControlsProps {
   /** The media element whose native controls are replaced. */
@@ -66,7 +69,7 @@ export function createNativeMediaErrorGuard(media: HTMLMediaElement): NativeMedi
 
 /** Format a media time without exposing NaN/Infinity in the interface. */
 export function formatMediaTime(seconds: number): string {
-  if (seconds === Infinity) return 'Live'
+  if (seconds === Infinity) return translate('Live')
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
   const whole = Math.floor(seconds)
   const minutes = Math.floor(whole / 60)
@@ -104,6 +107,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true, className = '' }: MediaPlaybackControlsProps) {
+  const t = useT()
   const [snapshot, setSnapshot] = useState<MediaSnapshot>(() => snapshotFor(mediaRef.current, fullscreenRef))
   const [interactionError, setInteractionError] = useState<string | null>(null)
 
@@ -186,7 +190,7 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
       void result.catch(() => {
         // The media element keeps its native error state/events; this only
         // prevents an unhandled promise while explaining the failed action.
-        setInteractionError('Could not play this media.')
+        setInteractionError(t('Could not play this media.'))
         setSnapshot(snapshotFor(media, fullscreenRef))
       })
     } else {
@@ -202,7 +206,7 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
       media.currentTime = clamp(next, 0, snapshot.duration)
       setSnapshot(snapshotFor(media, fullscreenRef))
     } catch {
-      setInteractionError('Could not seek this media.')
+      setInteractionError(t('Could not seek this media.'))
     }
   }
 
@@ -227,17 +231,17 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
     if (typeof document !== 'undefined' && document.fullscreenElement === element) {
       if (typeof document.exitFullscreen !== 'function') return
       try {
-        void document.exitFullscreen().catch(() => setInteractionError('Could not exit full screen.'))
+        void document.exitFullscreen().catch(() => setInteractionError(t('Could not exit full screen.')))
       } catch {
-        setInteractionError('Could not exit full screen.')
+        setInteractionError(t('Could not exit full screen.'))
       }
       return
     }
     if (typeof element.requestFullscreen === 'function') {
       try {
-        void element.requestFullscreen().catch(() => setInteractionError('Could not enter full screen.'))
+        void element.requestFullscreen().catch(() => setInteractionError(t('Could not enter full screen.')))
       } catch {
-        setInteractionError('Could not enter full screen.')
+        setInteractionError(t('Could not enter full screen.'))
       }
     }
   }
@@ -246,7 +250,7 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
     <div
       className={`${classes} nodrag nopan nowheel`}
       role="group"
-      aria-label="Media playback controls"
+      aria-label={t('Media playback controls')}
       data-ready={usable ? 'true' : 'false'}
       onPointerDown={stopPropagation}
       onClick={stopPropagation}
@@ -259,10 +263,10 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
         className="media-playback-button"
         onClick={togglePlayback}
         disabled={!usable}
-        aria-label={snapshot.paused ? 'Play' : 'Pause'}
-        title={snapshot.paused ? 'Play' : 'Pause'}
+        aria-label={snapshot.paused ? t('Play') : t('Pause')}
+        title={snapshot.paused ? t('Play') : t('Pause')}
       >
-        {snapshot.paused ? 'Play' : 'Pause'}
+        {snapshot.paused ? t('Play') : t('Pause')}
       </button>
       {showSeek && <>
         <input
@@ -274,20 +278,20 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
           value={current}
           onChange={(event) => seek(event.target.value)}
           disabled={!seekable}
-          aria-label={snapshot.duration === Infinity ? 'Seek live media' : 'Seek'}
+          aria-label={snapshot.duration === Infinity ? t('Seek live media') : t('Seek')}
           aria-valuetext={timeLabel}
         />
-        <output className="media-playback-time" aria-label="Playback time">{timeLabel}</output>
+        <output className="media-playback-time" aria-label={t('Playback time')}>{timeLabel}</output>
       </>}
       <button
         type="button"
         className="media-playback-button"
         onClick={toggleMute}
         disabled={!usable}
-        aria-label={snapshot.muted ? 'Unmute' : 'Mute'}
-        title={snapshot.muted ? 'Unmute' : 'Mute'}
+        aria-label={snapshot.muted ? t('Unmute') : t('Mute')}
+        title={snapshot.muted ? t('Unmute') : t('Mute')}
       >
-        {snapshot.muted ? 'Unmute' : 'Mute'}
+        {snapshot.muted ? t('Unmute') : t('Mute')}
       </button>
       <input
         className="media-playback-volume"
@@ -298,7 +302,7 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
         value={snapshot.volume}
         onChange={(event) => changeVolume(event.target.value)}
         disabled={!usable}
-        aria-label="Volume"
+        aria-label={t('Volume')}
       />
       {fullscreenRef && (
         <button
@@ -306,10 +310,10 @@ export function MediaPlaybackControls({ mediaRef, fullscreenRef, showSeek = true
           className="media-playback-button"
           onClick={toggleFullscreen}
           disabled={!usable}
-          aria-label={snapshot.fullscreen ? 'Exit full screen' : 'Full screen'}
-          title={snapshot.fullscreen ? 'Exit full screen' : 'Full screen'}
+          aria-label={snapshot.fullscreen ? t('Exit full screen') : t('Full screen')}
+          title={snapshot.fullscreen ? t('Exit full screen') : t('Full screen')}
         >
-          {snapshot.fullscreen ? 'Exit full screen' : 'Full screen'}
+          {snapshot.fullscreen ? t('Exit full screen') : t('Full screen')}
         </button>
       )}
       {errorMessage && <span className="media-playback-error" role="alert">{errorMessage}</span>}

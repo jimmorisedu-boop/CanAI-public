@@ -16,6 +16,8 @@ import {
 import type { ArchivedItem } from '../konva/types'
 import { formatBytes } from './archiveSort'
 import { MediaPlaybackControls } from '../../../ui/MediaPlaybackControls'
+import { useT } from '../../../i18n/context.js'
+
 
 // Крупный просмотр записи архива: то, ради чего архив вообще открывают —
 // «а что это было?». Стрелки листают по текущему (отфильтрованному и
@@ -39,6 +41,7 @@ export function ArchivePreview({
   onDownload(entry: ArchivedItem): void
   onDelete(entry: ArchivedItem): void
 }) {
+  const t = useT()
   const entry = entries[index]
   const mediaRef = useRef<HTMLVideoElement>(null)
   const fullscreenRef = useRef<HTMLDivElement>(null)
@@ -65,14 +68,14 @@ export function ArchivePreview({
   ].filter(Boolean)
 
   return (
-    <div className="archive-preview" role="dialog" aria-label="Archive preview" onClick={onClose}>
+    <div className="archive-preview" role="dialog" aria-label={t('Archive preview')} onClick={onClose}>
       <div className="archive-preview-body" onClick={(e) => e.stopPropagation()}>
         <header>
           <strong>{archiveTitle(entry)}</strong>
           <span className="archive-preview-counter">
             {index + 1} / {entries.length}
           </span>
-          <button className="icon-btn" title="Close preview (Esc)" onClick={onClose}>
+          <button className="icon-btn" title={t('Close preview (Esc)')} onClick={onClose}>
             <IconClose size={16} />
           </button>
         </header>
@@ -81,7 +84,7 @@ export function ArchivePreview({
           <button
             className="icon-btn archive-preview-nav"
             disabled={index === 0}
-            title="Previous (←)"
+            title={t('Previous (←)')}
             onClick={() => onIndex(index - 1)}
           >
             <IconPrev size={18} />
@@ -101,7 +104,7 @@ export function ArchivePreview({
           <button
             className="icon-btn archive-preview-nav"
             disabled={index >= entries.length - 1}
-            title="Next (→)"
+            title={t('Next (→)')}
             onClick={() => onIndex(index + 1)}
           >
             <IconNext size={18} />
@@ -111,17 +114,17 @@ export function ArchivePreview({
         <footer>
           <div className="archive-preview-facts">
             <small>{facts.join(' · ')}</small>
-            {entry.prompt && <small title={entry.prompt}>Prompt: {entry.prompt}</small>}
+            {entry.prompt && <small title={entry.prompt}>{t('Prompt:')} {entry.prompt}</small>}
           </div>
           <div className="archive-preview-actions">
             <button className="generate" onClick={() => onRestore(entry)}>
-              <IconRestore size={14} /> Return to canvas
+              <IconRestore size={14} />  {t('Return to canvas')}
             </button>
             <button className="editor-close" onClick={() => onDownload(entry)}>
-              <IconDownload size={14} /> Download
+              <IconDownload size={14} />  {t('Download')}
             </button>
             <button className="editor-close danger" onClick={() => onDelete(entry)}>
-              <IconTrash size={14} /> Delete
+              <IconTrash size={14} />  {t('Delete')}
             </button>
           </div>
         </footer>

@@ -1,4 +1,6 @@
 import type { CatalogDefaults, CatalogLibraryView, CatalogModel, JobKind, ModelLifecycle } from '../types.js'
+import { t } from '../i18n/translate.js'
+import { getIntlLocale } from '../i18n/language.js'
 
 export type CatalogKindFilter = 'all' | JobKind
 export type CatalogLifecycleFilter = 'all' | ModelLifecycle
@@ -20,16 +22,16 @@ export interface CatalogRow extends CatalogModel {
 }
 
 function usd(value: number): string {
-  return `$${value.toLocaleString('en-US', { maximumFractionDigits: 6 })}`
+  return `$${value.toLocaleString(getIntlLocale(), { maximumFractionDigits: 6 })}`
 }
 
 export function modelPriceSummary(model: CatalogModel): string {
   if (model.kind === 'text' && model.textPricing) {
-    return `${usd(model.textPricing.inputPerMillion)} input · ${usd(model.textPricing.outputPerMillion)} output / 1M`
+    return `${usd(model.textPricing.inputPerMillion)} ${t('input')} · ${usd(model.textPricing.outputPerMillion)} ${t('output')} / 1M`
   }
   const pricing = model.pricing
-  if (!pricing) return model.pricingNote || 'Price not set'
-  const unit = pricing.unit === 'second' ? 'second' : 'result'
+  if (!pricing) return model.pricingNote || t('Price not set')
+  const unit = pricing.unit === 'second' ? t('second') : t('result')
   return `${usd(pricing.usd)} / ${unit}`
 }
 

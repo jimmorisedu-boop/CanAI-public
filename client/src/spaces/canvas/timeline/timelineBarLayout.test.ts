@@ -53,6 +53,6 @@ test('полный текст итога доступен подсказкой �
 test('«Применить» — последний в строке монтажа, итог стоит перед ним', () => {
   const montage = fs.readFileSync(new URL('./TimelineMontage.tsx', import.meta.url), 'utf8')
   const result = montage.indexOf('className="timeline-result"')
-  const apply = montage.indexOf('label="Apply edits"')
+  const apply = montage.indexOf("label={t('Apply edits')}")
   assert.ok(result !== -1 && apply !== -1 && result < apply, 'итог — перед главной кнопкой')
 })

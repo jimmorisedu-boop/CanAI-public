@@ -44,7 +44,7 @@ test('PromptBar.tsx: exactly one AssistantPresets in discuss mode; no obsolete p
   const text = readFileSync(new URL(file, import.meta.url), 'utf8')
   assert.doesNotMatch(text, /useAssistantPromptPreparation|CanvasActionPreparationReview|action-dock-prepare-button|цена по расходу/u)
   assert.match(text, /actionDockCreateLabel\(kind, batchMode,/u)
-  assert.match(text, /paid-action-label[^>]*>\{createLabel\}/u)
+  assert.match(text, /paid-action-label[^>]*>\{createLabel === 'Generate' \? t\('Generate'\) : createLabel\}/u)
 
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const pickers: ts.JsxSelfClosingElement[] = []
@@ -67,8 +67,8 @@ test('PromptBar.tsx: header batch toggle includes together and each options and 
   const text = readFileSync(new URL(file, import.meta.url), 'utf8')
   assert.match(text, /useState<ActionBatchMode>\('together'\)/u)
   assert.match(text, /prompt-header-batch-toggle/u)
-  assert.match(text, /title="Use references together for one prompt"/u)
-  assert.match(text, /title=\{kind === 'image' \? "Use each reference separately"/u)
+  assert.match(text, /title=\{t\('Use references together for one prompt'\)\}/u)
+  assert.match(text, /title=\{kind === 'image' \? t\('Use each reference separately'\) : t\('Available for images only'\)\}/u)
 })
 
 
@@ -77,7 +77,7 @@ test('TabletPrompt.tsx: single state hook, compact select only in Make above tab
   const text = readFileSync(new URL(file, import.meta.url), 'utf8')
   assert.doesNotMatch(text, /useAssistantPromptPreparation|CanvasActionPreparationReview|action-dock-prepare-button|цена по расходу/u)
   assert.match(text, /actionDockCreateLabel\(kind, batchMode,/u)
-  assert.match(text, /paid-action-label[^>]*>\{createLabel\}/u)
+  assert.match(text, /paid-action-label[^>]*>\{createLabel === 'Generate' \? t\('Generate'\) : createLabel\}/u)
 
   const hookMatches = text.match(/useTabletAssistantSelection\(/gu) ?? []
   assert.equal(hookMatches.length, 1, 'TabletPrompt must use exactly one useTabletAssistantSelection hook')

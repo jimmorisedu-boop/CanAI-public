@@ -12,6 +12,8 @@ import { TabletSettings } from './TabletSettings'
 import type { TabletProject, TabletRuntime } from './runtime'
 import { TabletProjectTrash } from './TabletProjectTrash'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 type Board = TabletProject
 
@@ -25,6 +27,7 @@ export function TabletGallery({
   canCreate: boolean
   onOpen(board: TabletProject): void
 }) {
+  const t = useT()
   const [boards, setBoards] = useState<Board[]>([])
   const [holders, setHolders] = useState<Record<string, BoardHolder>>({})
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +54,7 @@ export function TabletGallery({
       setHolders(Object.fromEntries(presence.map((entry) => [entry.projectId, entry.holder])))
       setError(null)
     } catch (cause) {
-      setError(tabletSystemMessage(cause, 'Could not load boards'))
+      setError(tabletSystemMessage(cause, t('Could not load boards')))
     } finally {
       setLoading(false)
     }
@@ -61,7 +64,7 @@ export function TabletGallery({
     void load()
     const timer = window.setInterval(() => void load(), 10_000)
     return () => window.clearInterval(timer)
-  }, [runtime])
+  }, [runtime, t])
 
   const shown = useMemo(() => {
     const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
@@ -71,26 +74,26 @@ export function TabletGallery({
   return (
     <div className="tablet-screen tablet-gallery">
       <header className="tablet-topbar tablet-toolbar">
-        <h1 className="tablet-screen-title">Your boards</h1>
+        <h1 className="tablet-screen-title">{t('Your boards')}</h1>
         <span className="tablet-topbar-gap" />
         <label className="tablet-search">
           <IconSearch size={16} />
-          <input className="ui-field" value={query} placeholder="Search" aria-label="Search boards" onChange={(event) => setQuery(event.target.value)} />
+          <input className="ui-field" value={query} placeholder={t('Search')} aria-label={t('Search boards')} onChange={(event) => setQuery(event.target.value)} />
         </label>
         <div className="tablet-topbar-actions">
-          {canRestore && <button type="button" className="ui-icon-btn tablet-icon" aria-label="Board trash" onClick={() => setTrashOpen(true)}><IconTrash size={20} /></button>}
+          {canRestore && <button type="button" className="ui-icon-btn tablet-icon" aria-label={t('Board trash')} onClick={() => setTrashOpen(true)}><IconTrash size={20} /></button>}
           {canCreate && runtime.createProject && <button type="button" className="ui-btn primary" disabled={creating} onClick={async () => {
             setCreating(true)
             try { onOpen(await runtime.createProject!('New board')) }
-            catch (cause) { setError(tabletSystemMessage(cause, 'Could not create board')) }
+            catch (cause) { setError(tabletSystemMessage(cause, t('Could not create board'))) }
             finally { setCreating(false) }
-          }}><IconPlus size={18} /> New board</button>}
-          <button type="button" className="ui-icon-btn tablet-icon" aria-label="Settings" onClick={() => setSettingsOpen(true)}><IconSettings size={20} /></button>
+          }}><IconPlus size={18} />  {t('New board')}</button>}
+          <button type="button" className="ui-icon-btn tablet-icon" aria-label={t('Settings')} onClick={() => setSettingsOpen(true)}><IconSettings size={20} /></button>
         </div>
       </header>
 
       <LocalRecoveryNotice needsReview={recoveryNeedsReview} className="tablet-error" />
-      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, 'Could not load boards')} onDismiss={() => setError(null)} />}
+      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, t('Could not load boards'))} onDismiss={() => setError(null)} />}
       <div className="tablet-cards">
         {shown.map((board) => {
           const holder = holders[board.id]
@@ -98,38 +101,39 @@ export function TabletGallery({
             <button type="button" className="tablet-card" onClick={() => onOpen(board)}>
               <span className="tablet-card-thumb">{board.thumb ? <img src={previewSrc(board.thumb, 512)} alt="" decoding="async" /> : <span className="tablet-card-empty" />}</span>
               <span className="tablet-card-name">{board.name}</span>
-              {holder && <span className="tablet-card-holder">open on “{holder.device}”</span>}
+              {holder && <span className="tablet-card-holder">{t('open on “{0}”', { 0: holder.device })}</span>}
             </button>
-            {board.permissions.canManage && <button type="button" className="tablet-card-more ui-icon-btn" aria-label={`What to do with board “${board.name}”`} onClick={(event) => { setMenuFor(board); menu.open(event) }}><span className="tablet-more-dots" aria-hidden="true">•••</span></button>}
+            {board.permissions.canManage && <button type="button" className="tablet-card-more ui-icon-btn" aria-label={t('What to do with board “{0}”', { 0: board.name })} onClick={(event) => { setMenuFor(board); menu.open(event) }}><span className="tablet-more-dots" aria-hidden="true">•••</span></button>}
           </div>
         })}
       </div>
-      {loading && <p className="tablet-state" role="status">Loading boards…</p>}
-      {!loading && shown.length === 0 && !error && <p className="tablet-state">{boards.length === 0 ? 'No boards yet.' : 'Nothing found.'}</p>}
+      {loading && <p className="tablet-state" role="status">{t('Loading boards…')}</p>}
+      {!loading && shown.length === 0 && !error && <p className="tablet-state">{boards.length === 0 ? t('No boards yet.') : t('Nothing found.')}</p>}
 
-      {menu.anchor && menuFor && <TabletPopover anchor={menu.anchor} label="Board actions" onClose={menu.close}>
-        {runtime.renameProject && <button type="button" className="tablet-menu-item" onClick={() => { setRenaming(menuFor); menu.close() }}>Rename</button>}
+      {menu.anchor && menuFor && <TabletPopover anchor={menu.anchor} label={t('Board actions')} onClose={menu.close}>
+        {runtime.renameProject && <button type="button" className="tablet-menu-item" onClick={() => { setRenaming(menuFor); menu.close() }}>{t('Rename')}</button>}
         {runtime.archiveProject && <button type="button" className="tablet-menu-item danger" onClick={() => {
           const board = menuFor
           menu.close()
-          void runtime.archiveProject?.(board.id).then(() => { notify({ kind: 'success', message: `“${board.name}” in trash`, ...(canRestore ? { action: { label: 'Open trash', run: () => setTrashOpen(true) } } : {}) }); void load() }).catch((cause) => notify({ kind: 'error', message: tabletSystemMessage(cause, 'Could not delete') }))
-        }}>Move to trash</button>}
+          void runtime.archiveProject?.(board.id).then(() => { notify({ kind: 'success', message: t('“{0}” in trash', { 0: board.name }), ...(canRestore ? { action: { label: t('Open trash'), run: () => setTrashOpen(true) } } : {}) }); void load() }).catch((cause) => notify({ kind: 'error', message: tabletSystemMessage(cause, t('Could not delete')) }))
+        }}>{t('Move to trash')}</button>}
       </TabletPopover>}
 
       {renaming && <RenameBoard board={renaming} runtime={runtime} onClose={() => setRenaming(null)} onSaved={() => { setRenaming(null); void load() }} />}
       {settingsOpen && <TabletSettings onClose={() => setSettingsOpen(false)} />}
-      {trashOpen && <TabletProjectTrash runtime={runtime} onClose={() => setTrashOpen(false)} onRestored={(project) => { setBoards((current) => [project, ...current.filter((item) => item.id !== project.id)]); notify({ kind: 'success', message: `Board “${project.name}” restored` }) }} />}
+      {trashOpen && <TabletProjectTrash runtime={runtime} onClose={() => setTrashOpen(false)} onRestored={(project) => { setBoards((current) => [project, ...current.filter((item) => item.id !== project.id)]); notify({ kind: 'success', message: t('Board “{0}” restored', { 0: project.name }) }) }} />}
     </div>
   )
 }
 
 function RenameBoard({ board, runtime, onClose, onSaved }: { board: Board; runtime: TabletRuntime; onClose(): void; onSaved(): void }) {
+  const t = useT()
   const [value, setValue] = useState(board.name)
   const trimmed = value.trim()
-  return <TabletDialog title="Board name" onClose={onClose} actions={<>
-    <button type="button" className="ui-btn quiet" onClick={onClose}>Cancel</button>
-    <button type="button" className="ui-btn primary" disabled={!trimmed || trimmed === board.name} onClick={() => { if (!runtime.renameProject) return; void runtime.renameProject(board.id, trimmed).then(onSaved).catch((cause) => notify({ kind: 'error', message: tabletSystemMessage(cause, 'Could not rename') })) }}>Save</button>
+  return <TabletDialog title={t('Board name')} onClose={onClose} actions={<>
+    <button type="button" className="ui-btn quiet" onClick={onClose}>{t('Cancel')}</button>
+    <button type="button" className="ui-btn primary" disabled={!trimmed || trimmed === board.name} onClick={() => { if (!runtime.renameProject) return; void runtime.renameProject(board.id, trimmed).then(onSaved).catch((cause) => notify({ kind: 'error', message: tabletSystemMessage(cause, t('Could not rename')) })) }}>{t('Save')}</button>
   </>}>
-    <input className="ui-field tablet-input-line" value={value} aria-label="Board name" autoFocus onChange={(event) => setValue(event.target.value)} />
+    <input className="ui-field tablet-input-line" value={value} aria-label={t('Board name')} autoFocus onChange={(event) => setValue(event.target.value)} />
   </TabletDialog>
 }

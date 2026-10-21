@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import { IconClose, IconRefresh, IconStop } from '../../ui/icons'
 import { cancelImport, dismissImport, getImports, retryImport, subscribeImports } from './importQueue'
 import { systemErrorMessage } from '../../ui/systemMessage'
+import { useT } from '../../i18n/context.js'
+
 
 function bytes(value: number): string {
   return value >= 1024 * 1024 ? `${(value / 1024 / 1024).toFixed(1)} MB` : `${Math.round(value / 1024)} KB`
@@ -26,6 +28,7 @@ export function assetShelfWidth(shelf: Element | null | undefined): number | nul
 }
 
 export function ImportQueuePanel() {
+  const t = useT()
   const tasks = useSyncExternalStore(subscribeImports, getImports, getImports)
   const panel = useRef<HTMLElement>(null)
   const shown = tasks.length > 0
@@ -54,18 +57,18 @@ export function ImportQueuePanel() {
 
   if (!shown) return null
   return (
-    <aside className="import-queue" aria-label="File import" ref={panel}>
+    <aside className="import-queue" aria-label={t('File import')} ref={panel}>
       {tasks.map((task) => (
         <article key={task.id}>
           <div><strong title={task.name}>{task.name}</strong><small>{task.state === 'error'
             ? systemErrorMessage(task.error, 'Import failed')
-            : `${bytes(task.loaded)} of ${bytes(task.total)}`}</small></div>
+            : t('{0} of {1}', { 0: bytes(task.loaded), 1: bytes(task.total) })}</small></div>
           {task.state === 'uploading' ? (
-            <button className="icon-btn" aria-label="Stop import" onClick={() => cancelImport(task.id)}><IconStop size={14} /></button>
+            <button className="icon-btn" aria-label={t('Stop import')} onClick={() => cancelImport(task.id)}><IconStop size={14} /></button>
           ) : (
             <>
-              <button className="icon-btn" aria-label="Retry import" onClick={() => retryImport(task.id)}><IconRefresh size={14} /></button>
-              <button className="icon-btn" aria-label="Remove" onClick={() => dismissImport(task.id)}><IconClose size={14} /></button>
+              <button className="icon-btn" aria-label={t('Retry import')} onClick={() => retryImport(task.id)}><IconRefresh size={14} /></button>
+              <button className="icon-btn" aria-label={t('Remove')} onClick={() => dismissImport(task.id)}><IconClose size={14} /></button>
             </>
           )}
           <progress max={task.total || 1} value={task.loaded} />

@@ -2,6 +2,8 @@ import { IconFitAll } from '../ui/icons'
 import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import { useCameraVersion } from '../spaces/canvas/konva/useStore'
 import { clampScale, fitCamera, zoomAt } from './boardGestures'
+import { useT } from '../i18n/context.js'
+
 
 // Масштаб доски.
 //
@@ -10,6 +12,7 @@ import { clampScale, fitCamera, zoomAt } from './boardGestures'
 // вслепую после случайного отдаления неприятно.
 
 export function TabletZoom({ store, host }: { store: CanvasStore; host: () => HTMLElement | null }) {
+  const t = useT()
   useCameraVersion(store)
   const camera = store.getCamera()
 
@@ -25,18 +28,18 @@ export function TabletZoom({ store, host }: { store: CanvasStore; host: () => HT
   }
 
   return (
-    <div className="tablet-zoom" role="group" aria-label="Zoom">
+    <div className="tablet-zoom" role="group" aria-label={t('Zoom')}>
       <button
         type="button"
         className="ui-icon-btn"
-        aria-label="Show all"
+        aria-label={t('Show all')}
         onClick={() => store.setCamera(fitCamera(store.getItems(), viewport()))}
       >
         <IconFitAll size={18} />
       </button>
-      <button type="button" className="ui-icon-btn" aria-label="Zoom out" onClick={() => zoomBy(1 / 1.25)}>−</button>
+      <button type="button" className="ui-icon-btn" aria-label={t('Zoom out')} onClick={() => zoomBy(1 / 1.25)}>−</button>
       <span className="tablet-zoom-value">{Math.round(camera.scale * 100)} %</span>
-      <button type="button" className="ui-icon-btn" aria-label="Zoom in" onClick={() => zoomBy(1.25)}>+</button>
+      <button type="button" className="ui-icon-btn" aria-label={t('Zoom in')} onClick={() => zoomBy(1.25)}>+</button>
       <button
         type="button"
         className="ui-btn quiet tablet-zoom-reset"

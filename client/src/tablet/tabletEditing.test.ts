@@ -12,6 +12,9 @@ import { resizeFromCorner, resizeFromEdge } from '../spaces/canvas/konva/cropMat
 import { clearTimelineNotice, getTimelineNotice, notifyInTimeline } from '../spaces/canvas/timeline/timelineNotice.js'
 import { setTimelineTarget } from '../spaces/canvas/timeline/timelineBus.js'
 
+const identityTranslate = (message: string, params?: Record<string, unknown>) =>
+  params ? message.replace(/\{(\d+)\}/gu, (token, key: string) => Object.hasOwn(params, key) ? String(params[key]) : token) : message
+
 test('tablet frame capture uses the explicit board uploader, never the desktop global target', async () => {
   const source = fs.readFileSync(new URL('../spaces/canvas/timeline/captureFrame.ts', import.meta.url), 'utf8')
   const tree = ts.createSourceFile('captureFrame.ts', source, ts.ScriptTarget.Latest, true)
@@ -65,8 +68,8 @@ for (const outcome of ['failure', 'empty', 'empty-result', 'success'] as const) 
       { placeVideoPieces: () => { created++; return ['piece'] }, removeItems() {} }, () => {}, () => '',
       async (piece: unknown) => piece,
     )
-    const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose',
-      callback('./TabletClip.tsx', 'apply'))({ current: false }, () => {}, { apply }, () => closed++)
+    const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose', 't',
+      callback('./TabletClip.tsx', 'apply'))({ current: false }, () => {}, { apply }, () => closed++, identityTranslate)
     await tabletApply()
     assert.equal(closed, outcome === 'success' ? 1 : 0)
     assert.equal(created, outcome === 'success' ? 1 : 0)
@@ -240,12 +243,12 @@ test('crop upload failure releases the busy lock so the user can retry', async (
   let closed = 0
   // Обрезка идёт фоном (пункт 3.6): экран закрывается, как только кусок
   // вырезан, а сбой ДО этого — ошибка на экране, как раньше.
-  const apply = new Function('busyRef', 'setBusy', 'setError', 'rect', 'bounds', 'applyCropInBackground', 'store', 'item', 'upload', 'onClose', 'notify', 'tabletSystemMessage',
+  const apply = new Function('busyRef', 'setBusy', 'setError', 'rect', 'bounds', 'applyCropInBackground', 'store', 'item', 'upload', 'onClose', 'notify', 'tabletSystemMessage', 't',
     callback('./TabletCrop.tsx', 'apply'))(
       { current: false }, (value: boolean) => busyStates.push(value), (value: string | null) => { if (value) errors.push(value) },
       { x: 0, y: 0, w: 60, h: 80 }, { w: 100, h: 80 },
       async () => { attempts++; if (attempts === 1) throw new Error(upstreamError) }, {}, { id: 'image', w: 100, h: 80 }, {}, () => { closed++ },
-      () => {}, tabletSystemMessage,
+      () => {}, tabletSystemMessage, identityTranslate,
     )
 
   await apply()
@@ -291,8 +294,8 @@ test('failed clip apply is an accessible inline error inside the editor, with it
       { cutVideo: async () => { throw new Error(upstreamError) } }, null,
       { placeVideoPieces() { assert.fail('a failed request must not create media') } }, setTimelineTarget, () => '',
     )
-    const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose',
-      callback('./TabletClip.tsx', 'apply'))({ current: false }, () => {}, { apply }, () => closed++)
+    const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose', 't',
+      callback('./TabletClip.tsx', 'apply'))({ current: false }, () => {}, { apply }, () => closed++, identityTranslate)
     await tabletApply()
     const html = renderToStaticMarkup(createElement(TabletClipFeedback, { error: null }))
     assert.match(html, /role="alert"/)

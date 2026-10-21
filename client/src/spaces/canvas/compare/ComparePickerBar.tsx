@@ -9,6 +9,8 @@ import {
   type ComparePicking,
 } from './compareBus'
 import { descendantsOf } from './compareSelection'
+import { useT } from '../../../i18n/context.js'
+
 
 // Плашка режима набора. Живёт СВЕРХУ холста: пользователь в этот момент
 // смотрит на объекты, а не на промпт-бар внизу. Держим её короткой — длинные
@@ -21,6 +23,7 @@ export function ComparePickerBar({
   store: CanvasStore
   session: ComparePicking
 }) {
+  const t = useT()
   const chosen = session.candidateIds
     .map((id) => store.getItem(id))
     .filter((item): item is CanvasItem => Boolean(item))
@@ -47,8 +50,8 @@ export function ComparePickerBar({
 
       <span className="compare-picker-text">
         {session.candidateIds.length === 0
-          ? 'Choose what to compare'
-          : `Selected: ${session.candidateIds.length}`}
+          ? t('Choose what to compare')
+          : t('Selected: {0}', { 0: session.candidateIds.length })}
       </span>
 
       {notYetTaken.length > 0 && (
@@ -59,20 +62,21 @@ export function ComparePickerBar({
             setCompareCandidates([...session.candidateIds, ...notYetTaken])
           }}
         >
-          All generations ({notYetTaken.length})
+          {t('All generations ({0})', { 0: notYetTaken.length })}
         </button>
       )}
 
       <button
         className="chip-btn primary"
         disabled={session.candidateIds.length === 0}
-        title="Enter"
+        title={t('Enter')}
         onClick={confirmComparePicking}
       >
-        Compare
+
+        {t('Compare')}
       </button>
 
-      <button className="icon-btn compare-dismiss" aria-label="Cancel comparison" onClick={closeCompare}>
+      <button className="icon-btn compare-dismiss" aria-label={t('Cancel comparison')} onClick={closeCompare}>
         <IconClose size={15} />
       </button>
     </div>

@@ -29,6 +29,7 @@ Wait for the test result, inspect it, then choose Add model to publish the teste
 - A changed test file recalculates the estimate. A model cannot be added until a valid result arrives.
 - Model discovery and test errors use English. Model names and sample prompts keep their original language.
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
+- System labels follow the selected interface language; model IDs, API values, and prompt text are preserved.
 
 ## Related topics
 

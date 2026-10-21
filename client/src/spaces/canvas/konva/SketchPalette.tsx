@@ -6,6 +6,8 @@ import {
   IconSketch,
   IconUndo,
 } from '../../../ui/icons'
+import { useT } from '../../../i18n/context.js'
+
 
 export interface Brush {
   tool: 'draw' | 'erase'
@@ -45,16 +47,17 @@ export function SketchPalette({
   onCancel: () => void
   onDone: () => void
 }) {
+  const t = useT()
   return (
-    <div className="sketch-palette" role="toolbar" aria-label="Sketch tools">
+    <div className="sketch-palette" role="toolbar" aria-label={t('Sketch tools')}>
       <div className="sketch-scroll">
-        <span className="sketch-palette-label">Sketch</span>
+        <span className="sketch-palette-label">{t('Sketch')}</span>
 
-        <div className="sketch-tool-group" role="group" aria-label="Tool">
+        <div className="sketch-tool-group" role="group" aria-label={t('Tool')}>
           <button
             type="button"
             className={`sketch-icon-button ${brush.tool === 'draw' ? 'on' : ''}`}
-            aria-label="Brush"
+            aria-label={t('Brush')}
             aria-pressed={brush.tool === 'draw'}
             disabled={busy}
             onClick={() => onBrush({ ...brush, tool: 'draw' })}
@@ -64,7 +67,7 @@ export function SketchPalette({
           <button
             type="button"
             className={`sketch-icon-button ${brush.tool === 'erase' ? 'on' : ''}`}
-            aria-label="Eraser"
+            aria-label={t('Eraser')}
             aria-pressed={brush.tool === 'erase'}
             disabled={busy}
             onClick={() => onBrush({ ...brush, tool: 'erase' })}
@@ -73,7 +76,7 @@ export function SketchPalette({
           </button>
         </div>
 
-        <div className="sketch-colors" role="group" aria-label="Brush color">
+        <div className="sketch-colors" role="group" aria-label={t('Brush color')}>
           {SWATCHES.map((color) => (
             <button
               type="button"
@@ -90,7 +93,7 @@ export function SketchPalette({
         </div>
 
         <label className="sketch-size-wrap">
-          <span className="sr-only">Brush size</span>
+          <span className="sr-only">{t('Brush size')}</span>
           <input
             type="range"
             min={2}
@@ -99,16 +102,16 @@ export function SketchPalette({
             disabled={busy}
             onChange={(event) => onBrush({ ...brush, size: Number(event.target.value) })}
             className="sketch-size"
-            aria-label="Brush size"
+            aria-label={t('Brush size')}
           />
           <output>{brush.size}</output>
         </label>
 
-        <div className="sketch-tool-group" role="group" aria-label="Sketch history">
+        <div className="sketch-tool-group" role="group" aria-label={t('Sketch history')}>
           <button
             type="button"
             className="sketch-icon-button"
-            aria-label="Undo stroke"
+            aria-label={t('Undo stroke')}
             disabled={busy || !canUndo}
             onClick={onUndo}
           >
@@ -117,7 +120,7 @@ export function SketchPalette({
           <button
             type="button"
             className="sketch-icon-button"
-            aria-label="Redo stroke"
+            aria-label={t('Redo stroke')}
             disabled={busy || !canRedo}
             onClick={onRedo}
           >
@@ -130,21 +133,21 @@ export function SketchPalette({
         <button
           type="button"
           className="sketch-cancel"
-          aria-label="Cancel"
+          aria-label={t('Cancel')}
           disabled={busy}
           onClick={onCancel}
         >
-          <IconClose size={16} /> <span>Cancel</span>
+          <IconClose size={16} /> <span>{t('Cancel')}</span>
         </button>
         <button
           type="button"
           className="sketch-done"
-          aria-label="Apply"
+          aria-label={t('Apply')}
           disabled={busy || !canUndo}
           onClick={onDone}
         >
-          {busy ? 'Saving…' : (
-            <><IconDone size={16} /> <span>Apply</span></>
+          {busy ? t('Saving…') : (
+            <><IconDone size={16} /> <span>{t('Apply')}</span></>
           )}
         </button>
       </div>

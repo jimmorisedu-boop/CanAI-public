@@ -27,6 +27,7 @@ A provider connection is required before you confirm a paid generation.
 ## Notes
 
 - A new attempt after a failed paid request can make another provider call. Check Tasks before retrying.
+- System labels follow the selected interface language; model IDs, API values, and prompt text are preserved.
 
 ## Related topics
 

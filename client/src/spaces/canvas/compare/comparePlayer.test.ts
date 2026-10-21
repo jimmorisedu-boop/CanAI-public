@@ -18,7 +18,7 @@ const read = (name: string) => readFileSync(join(here, name), 'utf8')
 
 test('видео сравнивается и рядом, и шторой', () => {
   const viewer = read('CompareViewer.tsx')
-  assert.match(viewer, /\{hasVideo && \(\s*<div className="compare-modes" role="group" aria-label="Layout">/u,
+  assert.match(viewer, /\{hasVideo && \(\s*<div className="compare-modes" role="group" aria-label=\{t\('Layout'\)\}>/u,
     'переключатель раскладки есть только у видео')
   assert.match(viewer, /\['side-by-side', 'Side by side'\],\s*\['overlay', 'Curtain'\]/u, 'у видео наложение называется шторой')
   assert.match(viewer, /const overlayMode: OverlayMode = hasVideo \? 'wipe' : mode/u)

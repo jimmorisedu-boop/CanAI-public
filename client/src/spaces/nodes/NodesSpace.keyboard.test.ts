@@ -12,6 +12,9 @@ const requireClient = createRequire(path.join(root, 'client/package.json'))
 const ts = requireClient('typescript')
 
 const source = (file) => fs.readFileSync(path.join(root, file), 'utf8')
+const identityTranslate = (message, params) => params
+  ? message.replace(/\{(\d+)\}/gu, (token, key) => Object.hasOwn(params, key) ? String(params[key]) : token)
+  : message
 let runner
 class Hooks {
   slots = []; cursor = 0; effects = []
@@ -127,6 +130,7 @@ const flowModule = moduleFrom('client/src/spaces/nodes/NodesSpace.tsx', {
   '../../ui/hotkeys': { hits: () => false },
   '../../ui/useCompactLayout': { useCompactLayout: () => false },
   '../../settings/navigationMode': { useNavigationMode: () => 'mouse', reactFlowNavigationProps: () => ({}) },
+  '../../i18n/context.js': { useT: () => identityTranslate },
 }, '\nexport { Flow as AuditFlow };\n')
 function renderFlow() {
   runner = flowHooks; runner.begin()
@@ -188,6 +192,7 @@ test('actual ConfirmHost alertdialog blocks graph shortcuts and deletion', () =>
   const confirmModule = moduleFrom('client/src/ui/ConfirmHost.tsx', {
     'react-dom': { createPortal: child => child },
     'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
+    '../i18n/context.js': { useT: () => identityTranslate },
   })
   const confirmHooks = new Hooks()
   runner = confirmHooks; runner.begin(); confirmModule.ConfirmHost()

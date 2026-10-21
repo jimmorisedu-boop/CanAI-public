@@ -2,6 +2,7 @@ import type { CapturePhase, FrameCaptureRecord } from './frameCaptureQueue'
 import type { TimelineNotice } from './timelineNotice'
 import { timecode } from './timelineTimecode'
 import { systemErrorMessage } from '../../../ui/systemMessage'
+import { t as translate } from '../../../i18n/translate.js'
 
 // Строка состояния транспорта и правила про кадры на полке — чистые функции,
 // чтобы их можно было проверить без DOM. Оверлей только рисует результат.
@@ -49,12 +50,12 @@ export function statusLine(input: {
   }
   const busy = records.filter((record) => isBusyPhase(record.phase))
   if (busy.length === 1) {
-    return { text: `Frame ${timecode(busy[0].requestedTime)} — saving…`, tone: 'idle' }
+    return { text: translate('Frame {0} — saving…', { 0: timecode(busy[0].requestedTime) }), tone: 'idle' }
   }
   if (busy.length > 1) {
-    return { text: `Saving frames: ${busy.length}…`, tone: 'idle' }
+    return { text: translate('Saving frames: {0}…', { 0: busy.length }), tone: 'idle' }
   }
-  return { text: STATUS_IDLE, tone: 'idle' }
+  return { text: translate(STATUS_IDLE), tone: 'idle' }
 }
 
 /**
@@ -69,17 +70,17 @@ export function frameTransitionNotice(
   if (before === record.phase) return null
   const at = timecode(record.requestedTime)
   if (record.phase === 'saved') {
-    return { kind: 'success', message: `Frame ${at} — on canvas`, replaceKey: 'timeline-frame' }
+    return { kind: 'success', message: translate('Frame {0} — on canvas', { 0: at }), replaceKey: 'timeline-frame' }
   }
   if (record.phase === 'error') {
     return {
       kind: 'error',
-      message: `Frame ${at} — was not saved${record.error ? `: ${systemErrorMessage(record.error)}` : ''}`,
+      message: translate('Frame {0} — was not saved{1}', { 0: at, 1: record.error ? `: ${systemErrorMessage(record.error)}` : '' }),
       replaceKey: 'timeline-frame',
     }
   }
   if (record.phase === 'cancelled') {
-    return { kind: 'info', message: `Frame ${at} — canceled`, replaceKey: 'timeline-frame' }
+    return { kind: 'info', message: translate('Frame {0} — canceled', { 0: at }), replaceKey: 'timeline-frame' }
   }
   return null
 }
@@ -116,29 +117,29 @@ export function pickFrameTarget(
   }
   const at = timecode(record.requestedTime)
   if (isBusyPhase(record.phase)) {
-    return { ok: false, notice: { kind: 'info', tone: 'warn', message: `Frame ${at} is still saving — please wait`, replaceKey: key } }
+    return { ok: false, notice: { kind: 'info', tone: 'warn', message: translate('Frame {0} is still saving — please wait', { 0: at }), replaceKey: key } }
   }
   if (record.phase === 'error') {
-    return { ok: false, notice: { kind: 'error', message: `Frame ${at} was not saved — retry it from the shelf`, replaceKey: key } }
+    return { ok: false, notice: { kind: 'error', message: translate('Frame {0} was not saved — retry it from the shelf', { 0: at }), replaceKey: key } }
   }
   if (record.phase === 'cancelled') {
-    return { ok: false, notice: { kind: 'info', tone: 'warn', message: `Frame ${at} was canceled — retry it from the shelf`, replaceKey: key } }
+    return { ok: false, notice: { kind: 'info', tone: 'warn', message: translate('Frame {0} was canceled — retry it from the shelf', { 0: at }), replaceKey: key } }
   }
   if (need === 'download' && !record.resultUrl) {
-    return { ok: false, notice: { kind: 'info', tone: 'warn', message: `Frame ${at} has no file to download yet`, replaceKey: key } }
+    return { ok: false, notice: { kind: 'info', tone: 'warn', message: translate('Frame {0} has no file to download yet', { 0: at }), replaceKey: key } }
   }
   if (need === 'show' && !record.resultItemId) {
-    return { ok: false, notice: { kind: 'info', tone: 'warn', message: `Frame ${at} is not on the canvas yet`, replaceKey: key } }
+    return { ok: false, notice: { kind: 'info', tone: 'warn', message: translate('Frame {0} is not on the canvas yet', { 0: at }), replaceKey: key } }
   }
   return { ok: true, record }
 }
 
 /** Подпись состояния кадра на карточке полки. */
 export function frameStatusText(record: FrameCaptureRecord): string {
-  if (isBusyPhase(record.phase)) return 'Saving…'
-  if (record.phase === 'saved') return 'Saved'
-  if (record.phase === 'cancelled') return 'Canceled'
-  return record.error ? `Error: ${systemErrorMessage(record.error)}` : 'Error'
+  if (isBusyPhase(record.phase)) return translate('Saving…')
+  if (record.phase === 'saved') return translate('Saved')
+  if (record.phase === 'cancelled') return translate('Canceled')
+  return record.error ? translate('Error: {0}', { 0: systemErrorMessage(record.error) }) : translate('Error')
 }
 
 /** Тон карточки: «сохраняю» — цветом метки, «сохранено» — зелёным, ошибка — опасностью. */

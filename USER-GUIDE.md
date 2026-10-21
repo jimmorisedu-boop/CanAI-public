@@ -14,6 +14,11 @@ Open **Help** from the `?` control for the full offline guide. Search by task,
 open a category, and follow the illustrated steps; **Show first steps again**
 replays the short introduction when you need it.
 
+The interface starts in English. Choose **Settings → General → Language →
+Русский** to switch to Russian immediately. On a tablet, open **Settings →
+Language**. This preference is saved in this browser on this device; board
+names, prompts, generated content, and other devices keep their own language.
+
 To update a release installation, extract the new release ZIP into a new folder and migrate your data as described below. Use **Migrate data.bat** or **Migrate data.command** in the new folder, choose the old folder, and check the boards before removing the old copy. The migration copies `server/data/` and `server/.env`, leaves the old folder intact, and sets aside data already present in the new folder.
 
 If **Recovered data needs review** appears, CanAI has restored a validated backup of its board index or task store. Stop the app and keep a copy of the whole folder before repairing missing work. Damaged originals remain beside the recovered files as `.corrupt-…` copies. Tasks with a saved provider request continue using that request; uncertain unfinished tasks stay on hold so recovery cannot silently charge you again. Automatic media cleanup stays paused across restarts.

@@ -1,6 +1,8 @@
 import type { Macro } from '../../api'
 import { IconTrash } from '../../ui/icons'
 import { describeMacro } from './macroLibraryModel'
+import { useT } from '../../i18n/context.js'
+
 
 // Макросы из области, которой в приложении больше нет (цепочки помощника).
 // Прятать их нельзя: такой макрос не открыть и не удалить, а ссылки на медиа
@@ -13,13 +15,14 @@ export function MacroLibraryLegacy({
   busy: boolean
   onRemove(macro: Macro): void
 }) {
+  const t = useT()
   if (macros.length === 0) return null
   return (
     <>
-      <div className="macro-lib-section warn">Left over from the previous version</div>
+      <div className="macro-lib-section warn">{t('Left over from the previous version')}</div>
       {macros.map((macro) => (
         <article className="macro-lib-row orphan" key={macro.id}>
-          <span className="macro-lib-slot none" aria-hidden="true">—</span>
+          <span className="macro-lib-slot none" aria-hidden="true">{t('—')}</span>
           <div className="macro-lib-name">
             <strong>{macro.name}</strong>
             <small className="warn">
@@ -29,8 +32,8 @@ export function MacroLibraryLegacy({
           <button
             type="button"
             className="icon-btn macro-lib-act danger"
-            aria-label={`Delete "${macro.name}"`}
-            title="Delete"
+            aria-label={t('Delete "{0}"', { 0: macro.name })}
+            title={t('Delete')}
             disabled={busy}
             onClick={() => onRemove(macro)}
           >

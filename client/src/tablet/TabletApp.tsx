@@ -11,12 +11,15 @@ import { LanTabletRuntime } from './lanRuntime'
 import type { TabletProject, TabletRuntime } from './runtime'
 import { useTabletUiScale } from './useTabletUiScale'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 type Screen = { kind: 'gallery' } | { kind: 'board'; project: TabletProject }
 
 const runtime: TabletRuntime = new LanTabletRuntime()
 
 function LoginScreen({ onDone }: { onDone(state: RemoteSessionState): void }) {
+  const t = useT()
   const [pin, setPin] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -38,22 +41,22 @@ function LoginScreen({ onDone }: { onDone(state: RemoteSessionState): void }) {
     <div className="tablet-login">
       <div className="tablet-login-card">
         <h1>CanAI</h1>
-        <p>Enter the access code from your computer — Settings → Tablet access.</p>
+        <p>{t('Enter the access code from your computer — Settings → Tablet access.')}</p>
         <input
           className="ui-field tablet-pin"
           inputMode="numeric"
           autoComplete="one-time-code"
           pattern="[0-9]*"
           value={pin}
-          placeholder="Code"
+          placeholder={t('Code')}
           onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 12))}
           onKeyDown={(event) => { if (event.key === 'Enter' && pin.length >= 4) void submit() }}
         />
         {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, 'Could not sign in')} />}
         <button type="button" className="ui-btn primary" disabled={busy || pin.length < 4} onClick={() => void submit()}>
-          {busy ? 'Checking…' : 'Sign in'}
+          {busy ? t('Checking…') : t('Sign in')}
         </button>
-        <p className="tablet-login-note">This device: {deviceName()}</p>
+        <p className="tablet-login-note">{t('This device: {0}', { 0: deviceName() })}</p>
       </div>
     </div>
   )
@@ -117,14 +120,15 @@ function Screens({
   setSession(state: RemoteSessionState): void
   setScreen(screen: Screen): void
 }) {
+  const t = useT()
   if (!session) {
-    if (!unreachable) return <p className="tablet-state">Connecting…</p>
+    if (!unreachable) return <p className="tablet-state">{t('Connecting…')}</p>
     return (
       <div className="tablet-login">
         <div className="tablet-login-card">
-          <h1>Server is not responding</h1>
+          <h1>{t('Server is not responding')}</h1>
           <p>Could not reach the local CanAI app. Check the tablet connection and try again.</p>
-          <button type="button" className="ui-btn primary" onClick={onRetry}>Try again</button>
+          <button type="button" className="ui-btn primary" onClick={onRetry}>{t('Try again')}</button>
         </div>
       </div>
     )
@@ -136,8 +140,8 @@ function Screens({
         <div className="tablet-login">
           <div className="tablet-login-card">
             <h1>CanAI</h1>
-            <p>Tablet access is not set up yet. On your computer, open Settings → Tablet access, set a code, and enable access.</p>
-            <button type="button" className="ui-btn" onClick={() => void readRemoteSession().then(setSession)}>Check again</button>
+            <p>{t('Tablet access is not set up yet. On your computer, open Settings → Tablet access, set a code, and enable access.')}</p>
+            <button type="button" className="ui-btn" onClick={() => void readRemoteSession().then(setSession)}>{t('Check again')}</button>
           </div>
         </div>
       )

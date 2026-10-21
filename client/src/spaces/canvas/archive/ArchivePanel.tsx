@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { IconClose, IconDownload, IconRestore, IconSearch, IconTrash } from '../../../ui/icons'
 import { useDialogFocus } from '../../../ui/dialogFocus'
-import { OBJECTS, pluralWithCount } from '../../../ui/plural'
 import type { CanvasStore } from '../konva/canvasStore'
 import { useContentVersion } from '../konva/useStore'
 import type { ArchivedItem } from '../konva/types'
@@ -13,11 +12,14 @@ import { downloadArchiveEntry, downloadArchiveZip } from './archiveDownload'
 import { ARCHIVE_SORTS, filterArchive, sortArchive, type ArchiveSort } from './archiveSort'
 import { useArchiveSizes } from './archiveSizes'
 import { ARCHIVE_PAGE_SIZE, archiveDisplayPage } from './archiveDisplay'
+import { useT } from '../../../i18n/context.js'
+
 
 // Панель архива доски: поиск + сортировка + сетка превью. Открывается кликом
 // (левым или правым) по плитке «Архив». Фон — .settings-backdrop, поэтому
 // хоткеи холста сами замолкают, пока панель открыта (см. useCanvasHotkeys).
 export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose(): void }) {
+  const t = useT()
   const dialogRef = useRef<HTMLElement>(null)
   useDialogFocus(dialogRef, onClose)
   useContentVersion(store)
@@ -97,8 +99,10 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
     onClose()
     notify({
       kind: 'success',
-      message: count === 1 ? 'Object returned to canvas' : `Returned to canvas: ${pluralWithCount(count, OBJECTS)}`,
-      action: { label: 'Cancel', run: () => store.undo() },
+      message: count === 1
+        ? t('Object returned to canvas')
+        : t('Returned to canvas: {0}', { 0: `${count} ${t(count === 1 ? 'object' : 'objects')}` }),
+      action: { label: t('Cancel'), run: () => store.undo() },
     })
   }
 
@@ -111,8 +115,10 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
     setConfirmDelete(false)
     notify({
       kind: 'info',
-      message: count === 1 ? 'Removed from Archive' : `Removed from Archive: ${pluralWithCount(count, OBJECTS)}`,
-      action: { label: 'Cancel', run: () => store.undo() },
+      message: count === 1
+        ? t('Removed from Archive')
+        : t('Removed from Archive: {0}', { 0: `${count} ${t(count === 1 ? 'object' : 'objects')}` }),
+      action: { label: t('Cancel'), run: () => store.undo() },
     })
   }
 
@@ -125,8 +131,8 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
     setBusy(true)
     try {
       const { ok, failed } = await downloadArchiveZip(entries)
-      if (ok === 0) notify({ kind: 'error', message: 'Failed to download the selection' })
-      else if (failed > 0) notify({ kind: 'info', message: `Downloaded ${ok}of ${ok + failed} — some files are unavailable` })
+      if (ok === 0) notify({ kind: 'error', message: t('Failed to download the selection') })
+      else if (failed > 0) notify({ kind: 'info', message: t('Downloaded {0}of {1} — some files are unavailable', { 0: ok, 1: ok + failed }) })
     } finally {
       setBusy(false)
     }
@@ -148,12 +154,12 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
         onClick={(e) => e.stopPropagation()}
       >
         <header className="archive-head">
-          <h2 id="archive-title">Archive</h2>
+          <h2 id="archive-title">{t('Archive')}</h2>
           <small>
             {archive.length === 0
-              ? 'empty'
-              : `${pluralWithCount(archive.length, OBJECTS)}${
-                  ordered.length !== archive.length ? `, found ${ordered.length}` : ''
+              ? t('empty')
+              : `${archive.length} ${t(archive.length === 1 ? 'object' : 'objects')}${
+                  ordered.length !== archive.length ? `, ${t('found {0}', { 0: ordered.length })}` : ''
                 }`}
           </small>
           <div className="archive-search">
@@ -161,7 +167,7 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
             <input
               type="text"
               value={query}
-              placeholder="Search by name, text, or prompt"
+              placeholder={t('Search by name, text, or prompt')}
               autoFocus
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -169,7 +175,7 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
           <select
             className="archive-sort"
             value={sort}
-            title={sizesLoading ? 'File sizes are still being calculated' : 'Order'}
+            title={sizesLoading ? t('File sizes are still being calculated') : t('Order')}
             onChange={(e) => setSort(e.target.value as ArchiveSort)}
           >
             {ARCHIVE_SORTS.map((option) => (
@@ -178,7 +184,7 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
               </option>
             ))}
           </select>
-          <button className="icon-btn" title="Close (Esc)" onClick={onClose}>
+          <button className="icon-btn" title={t('Close (Esc)')} onClick={onClose}>
             <IconClose size={16} />
           </button>
         </header>
@@ -191,25 +197,25 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
               disabled={ordered.length === 0}
               onChange={() => setPicked(allPicked ? new Set() : new Set(ordered.map((entry) => entry.id)))}
             />
-            <span>{pickedEntries.length > 0 ? `Selected: ${pickedEntries.length}` : 'Select all'}</span>
+            <span>{pickedEntries.length > 0 ? t('Selected: {0}', { 0: pickedEntries.length }) : t('Select all')}</span>
           </label>
           <div className="archive-toolbar-actions">
             <button className="generate" disabled={!pickedEntries.length} onClick={() => restore(pickedEntries)}>
-              <IconRestore size={14} /> Return to canvas
+              <IconRestore size={14} />  {t('Return to canvas')}
             </button>
             <button
               className="editor-close"
               disabled={!pickedEntries.length || busy}
               onClick={() => void download(pickedEntries)}
             >
-              <IconDownload size={14} /> {busy ? 'Preparing…' : 'Download'}
+              <IconDownload size={14} /> {busy ? t('Preparing…') : t('Download')}
             </button>
             <button
               className={`editor-close danger ${confirmDelete ? 'armed' : ''}`}
               disabled={!pickedEntries.length}
               onClick={() => (confirmDelete ? remove(pickedEntries) : setConfirmDelete(true))}
             >
-              <IconTrash size={14} /> {confirmDelete ? `Delete ${pickedEntries.length}?` : 'Delete permanently'}
+              <IconTrash size={14} /> {confirmDelete ? t('Delete {0}?', { 0: pickedEntries.length }) : t('Delete permanently')}
             </button>
           </div>
         </div>
@@ -217,8 +223,8 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
         {ordered.length === 0 ? (
           <div className="archive-empty">
             {archive.length === 0
-              ? 'Archive is empty. Select objects on the canvas and drag them to the Archive tile; they will wait here.'
-              : 'Nothing found. Try another word or clear the search.'}
+              ? t('Archive is empty. Select objects on the canvas and drag them to the Archive tile; they will wait here.')
+              : t('Nothing found. Try another word or clear the search.')}
           </div>
         ) : (
           <div className="archive-grid">
@@ -239,7 +245,7 @@ export function ArchivePanel({ store, onClose }: { store: CanvasStore; onClose()
                 onClick={() => setVisibleLimit((current) => current + ARCHIVE_PAGE_SIZE)}
               >
                 Show more {Math.min(ARCHIVE_PAGE_SIZE, displayPage.remaining)}
-                <small>Remaining {displayPage.remaining}</small>
+                <small>{t('Remaining')} {displayPage.remaining}</small>
               </button>
             )}
           </div>

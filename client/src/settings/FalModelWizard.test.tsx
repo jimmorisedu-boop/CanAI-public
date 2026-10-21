@@ -97,7 +97,7 @@ test('wizard uses the shared quote confirmation and has no free-form JSON escape
   assert.match(source, /quoteConfirmationRequest/)
   assert.match(source, /newId\(\)/)
   assert.match(source, /https:\/\/fal\.ai\/models/)
-  assert.match(source, />Add model<\/button>/)
+  assert.match(source, />\{t\('Add model'\)\}<\/button>/)
   assert.doesNotMatch(source, />Read schema<\/button>/)
   assert.doesNotMatch(source, /Custom parameter description|JSON/)
 })

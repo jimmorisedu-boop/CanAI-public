@@ -29,6 +29,6 @@ test('СТОРОЖ: обе страницы вшивают номер, а пра
   const helper = await readFile(new URL('../../viteBuildInfo.ts', import.meta.url), 'utf8')
   assert.match(helper, /from '\.\.\/server\/src\/buildInfo'/, 'правило чтения номера — только серверное')
   const diagnostics = await readFile(new URL('../settings/DiagnosticsSection.tsx', import.meta.url), 'utf8')
-  assert.match(diagnostics, /<dt>Interface<\/dt>/)
-  assert.match(diagnostics, /<dt>Server<\/dt>/)
+  assert.match(diagnostics, /<dt>\{t\('Interface'\)\}<\/dt>/)
+  assert.match(diagnostics, /<dt>\{t\('Server'\)\}<\/dt>/)
 })

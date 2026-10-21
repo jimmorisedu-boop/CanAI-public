@@ -10,11 +10,14 @@ import { requestAddPromptAsset } from './promptAssetBus'
 import { screenPreviewSrc } from './konva/screenPreview'
 import { boardMediaUploader } from './konva/boardUploader'
 import { createAssetShelfTarget, registerSaveForLaterOnboardingTarget, showOnboardingTarget } from './onboardingTargets'
+import { useT } from '../../i18n/context.js'
+
 
 // Полка быстрого доступа справа:
 // перетащи файл ИЛИ объект с холста на слот → миниатюра; клик → ассет
 // уходит референсом в промпт; ПКМ (правый клик) — открепить. Живёт в доске.
 export function AssetBar({ store }: { store: CanvasStore }) {
+  const t = useT()
   useContentVersion(store)
   const [busySlot, setBusySlot] = useState<number | null>(null)
   const shelfRef = useRef<HTMLDivElement>(null)
@@ -46,7 +49,7 @@ export function AssetBar({ store }: { store: CanvasStore }) {
       // файл на сервер и оставлять там мусор до ближайшей уборки.
       const { w, h, readable } = await measure(file, isImage)
       if (!readable) {
-        notify({ kind: 'error', message: `"${file.name || "file"}" does not open: it is damaged or it is not what it looks like from the extension` })
+        notify({ kind: 'error', message: t('"{0}" does not open: it is damaged or it is not what it looks like from the extension', { 0: file.name || 'file' }) })
         return
       }
       // ⚠️ Полка живёт В ДОКУМЕНТЕ доски, поэтому на сетевой файл обязан
@@ -65,7 +68,7 @@ export function AssetBar({ store }: { store: CanvasStore }) {
         height: h,
       })
     } catch {
-      notify({ kind: 'error', message: "Failed to add file to Assets. Try again." })
+      notify({ kind: 'error', message: t('Failed to add file to Assets. Try again.') })
     } finally {
       setBusySlot(null)
     }
@@ -86,8 +89,9 @@ export function AssetBar({ store }: { store: CanvasStore }) {
 
   return (
     <div ref={shelfRef} className="asset-bar" data-canvas-safe-edge="right">
-      <div className="asset-bar-title" title="Drag an image/video here (from canvas or file) and a thumbnail will appear. Click - add to prompt. RMB - unpin.">
-        Assets
+      <div className="asset-bar-title" title={t('Drag an image/video here (from canvas or file) and a thumbnail will appear. Click - add to prompt. RMB - unpin.')}>
+
+        {t('Assets')}
       </div>
       <div className="asset-slots-grid">
         {Array.from({ length: slotCount }, (_, slot) => {
@@ -99,8 +103,8 @@ export function AssetBar({ store }: { store: CanvasStore }) {
               data-asset-slot={slot}
               title={
                 asset
-                  ? `${asset.name || asset.kind} - click will add to prompt, RMB - unpin`
-                  : "Drag an image/video from the canvas or file - it will be pinned here"
+                  ? t('{0} - click will add to prompt, RMB - unpin', { 0: asset.name || asset.kind })
+                  : t('Drag an image/video from the canvas or file - it will be pinned here')
               }
               onClick={() => onSlotClick(slot)}
               onContextMenu={(e) => onSlotContextMenu(slot, e)}

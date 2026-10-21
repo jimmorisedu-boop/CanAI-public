@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useT } from '../../i18n/context.js'
+
 
 /**
  * The empty assistant id is a real product state: questions use the default
@@ -55,6 +57,7 @@ export function AssistantPicker({
   manageLabel = "Configure",
   manage = true,
 }: AssistantPickerProps) {
+  const t = useT()
   const [busy, setBusy] = useState(false)
   const active = items.find((item) => item.id === activeId)
 
@@ -66,19 +69,19 @@ export function AssistantPicker({
 
   if (variant === 'compact') {
     return (
-      <div className="assistant-picker assistant-picker-compact" role="group" aria-label="Assistant selection">
-        <span className="assistant-picker-label">Assistant:</span>
+      <div className="assistant-picker assistant-picker-compact" role="group" aria-label={t('Assistant selection')}>
+        <span className="assistant-picker-label">{t('Assistant:')}</span>
         <select
           className="assistant-picker-select"
-          aria-label="Select assistant"
+          aria-label={t('Select assistant')}
           value={itemValue(activeId)}
           disabled={disabled || busy}
           onChange={(event) => choose(valueId(event.target.value))}
         >
-          <option value={UNIVERSAL_ASSISTANT_ID}>Universal</option>
+          <option value={UNIVERSAL_ASSISTANT_ID}>{t('Universal')}</option>
           {items.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}
         </select>
-        {active && <span className="assistant-picker-scope">{active.scope === 'team' ? "shared" : "my"}</span>}
+        {active && <span className="assistant-picker-scope">{active.scope === 'team' ? t('shared') : t('my')}</span>}
         {manage && onManage && (
           <button
             type="button"
@@ -94,19 +97,19 @@ export function AssistantPicker({
   }
 
   return (
-    <div className="assistant-picker assistant-picker-shelf" role="group" aria-label="Assistants">
+    <div className="assistant-picker assistant-picker-shelf" role="group" aria-label={t('Assistants')}>
       <div className="macros-inline">
         <button
           type="button"
           className={`macros-inline-btn${activeId === null ? ' on' : ''}`}
           aria-pressed={activeId === null}
           disabled={disabled || busy}
-          title={activeId === null ? "Universal assistant enabled" : "Enable Universal Assistant"}
-          aria-label={activeId === null ? "Turn off profile selection, leave Universal" : "Enable Universal Assistant"}
+          title={activeId === null ? t('Universal assistant enabled') : t('Enable Universal Assistant')}
+          aria-label={activeId === null ? t('Turn off profile selection, leave Universal') : t('Enable Universal Assistant')}
           onClick={() => choose(null)}
           onMouseDown={(event) => event.preventDefault()}
         >
-          <span className="macro-slot-name">Universal</span>
+          <span className="macro-slot-name">{t('Universal')}</span>
         </button>
         {items.map((item) => (
           <button
@@ -115,8 +118,8 @@ export function AssistantPicker({
             className={`macros-inline-btn${activeId === item.id ? ' on' : ''}`}
             aria-pressed={activeId === item.id}
             disabled={disabled || busy}
-            title={activeId === item.id ? `"${itemTitle(item)}" enabled` : `Enable "${itemTitle(item)}"`}
-            aria-label={activeId === item.id ? `Disable assistant ${item.name}` : `Enable assistant ${item.name}`}
+            title={activeId === item.id ? t('"{0}" enabled', { 0: itemTitle(item) }) : t('Enable "{0}"', { 0: itemTitle(item) })}
+            aria-label={activeId === item.id ? t('Disable assistant {0}', { 0: item.name }) : t('Enable assistant {0}', { 0: item.name })}
             onClick={() => choose(activeId === item.id ? null : item.id)}
             onMouseDown={(event) => event.preventDefault()}
           >
@@ -127,8 +130,8 @@ export function AssistantPicker({
           <button
             type="button"
             className="macros-inline-btn more"
-            title="Manage assistants: edit, delete, add"
-            aria-label="Manage assistants"
+            title={t('Manage assistants: edit, delete, add')}
+            aria-label={t('Manage assistants')}
             disabled={disabled || busy}
             onClick={onManage}
           >

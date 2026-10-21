@@ -6,6 +6,8 @@ import {
   type ClipSize,
 } from './clipPreviewGeometry'
 import { TabletClipCrop } from './TabletClipCrop'
+import { useT } from '../i18n/context.js'
+
 
 /** Video preview with an explicit aspect-fit frame and source-pixel crop overlay. */
 export function TabletClipPreview({
@@ -15,6 +17,7 @@ export function TabletClipPreview({
   session: TimelineSession
   videoRef: RefObject<HTMLVideoElement | null>
 }) {
+  const t = useT()
   const previewRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const [available, setAvailable] = useState<ClipSize>({ width: 0, height: 0 })
@@ -77,7 +80,7 @@ export function TabletClipPreview({
       ref={previewRef}
       className="tablet-clip-preview nodrag nopan nowheel"
       role="group"
-      aria-label="Clip preview"
+      aria-label={t('Clip preview')}
       aria-busy={session.loading ? 'true' : 'false'}
       onPointerDown={stopPreviewPointer}
       onPointerMove={stopPreviewPointer}

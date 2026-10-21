@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { useT } from '../../i18n/context.js'
+
 
 export interface ActionDockPersonaBarProps {
   children: ReactNode
@@ -20,6 +22,7 @@ export function ActionDockPersonaBar({
   preparingText,
   onStop,
 }: ActionDockPersonaBarProps) {
+  const t = useT()
   return (
     <div className="action-dock-persona-wrapper">
       <div className="action-dock-persona-bar">
@@ -39,7 +42,8 @@ export function ActionDockPersonaBar({
               className="action-dock-persona-stop"
               onClick={onStop}
             >
-              Stop
+
+              {t('Stop')}
             </button>
           )}
         </div>

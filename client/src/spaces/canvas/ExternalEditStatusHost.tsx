@@ -5,6 +5,8 @@ import type { ExternalEditSnapshot } from './externalEditRegistry'
 import { editNoticeGroupText, groupEditNotices } from './editNoticeGroups'
 import { useEditNotices } from './useEditNotices'
 import { systemErrorMessage } from '../../ui/systemMessage'
+import { useT } from '../../i18n/context.js'
+
 
 export interface ExternalEditStatusHostProps {
   snapshot: ExternalEditSnapshot
@@ -110,6 +112,7 @@ export function ExternalEditStatusHost({
   onRevealFile,
   onStop,
 }: ExternalEditStatusHostProps) {
+  const t = useT()
   const announced = useRef(browserAnnouncements)
   useEffect(() => {
     const next = externalEditAnnouncement(snapshot, announced.current)
@@ -131,11 +134,11 @@ export function ExternalEditStatusHost({
   if (snapshot.status !== 'error' && visible.length === 0) return null
 
   return (
-    <aside className="external-edit-status-host" aria-label="External edits">
+    <aside className="external-edit-status-host" aria-label={t('External edits')}>
       {snapshot.status === 'error' && (
         <div className="external-edit-status-card connection" role="status" aria-live="polite">
-          <strong>No connection to external editor</strong>
-          <span>{snapshot.error ? systemErrorMessage(snapshot.error) : "Sessions saved. I will reconnect automatically."}</span>
+          <strong>{t('No connection to external editor')}</strong>
+          <span>{snapshot.error ? systemErrorMessage(snapshot.error) : t('Sessions saved. I will reconnect automatically.')}</span>
         </div>
       )}
       {/* Карточки об одном и том же складываются в одну с числом: у группы
@@ -165,15 +168,15 @@ export function ExternalEditStatusHost({
             )}
             <div className="external-edit-status-actions">
               {session.projectStatus === 'active' && session.projectId !== currentProjectId && (
-                <button type="button" onClick={() => onOpenProject(session.projectId)}>Open board</button>
+                <button type="button" onClick={() => onOpenProject(session.projectId)}>{t('Open board')}</button>
               )}
               {session.projectStatus === 'trashed' && (
-                <button type="button" onClick={() => onOpenTrash(session.projectId)}>Open trash</button>
+                <button type="button" onClick={() => onOpenTrash(session.projectId)}>{t('Open trash')}</button>
               )}
               {/* Показать в папке — действие про КОНКРЕТНЫЙ файл, поэтому оно
                   есть только у одиночной карточки: у группы имена в списке. */}
               {session.projectStatus === 'missing' && !many && (
-                <button type="button" onClick={() => onRevealFile(session.url)}>Show file in folder</button>
+                <button type="button" onClick={() => onRevealFile(session.url)}>{t('Show file in folder')}</button>
               )}
               <button
                 type="button"
@@ -192,7 +195,8 @@ export function ExternalEditStatusHost({
                   className="external-edit-status-hide"
                   onClick={() => { for (const item of group.sessions) dismiss(item) }}
                 >
-                  Hide
+
+                  {t('Hide')}
                 </button>
               )}
             </div>

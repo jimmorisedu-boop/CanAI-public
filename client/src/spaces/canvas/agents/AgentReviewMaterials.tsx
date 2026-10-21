@@ -2,6 +2,8 @@ import { useRef } from 'react'
 import type { AgentArtifact, AgentReviewMaterial } from '../../../../../packages/agent-protocol/index'
 import { artifactMediaHref, artifactPreviewHref, reviewArtifactMatch } from './agentPanelPresentation'
 import { MediaPlaybackControls } from '../../../ui/MediaPlaybackControls'
+import { useT } from '../../../i18n/context.js'
+
 
 const artifactKindLabel: Record<AgentArtifact['kind'], string> = {
   image: 'Image', video: 'Video', audio: 'Audio', text: 'Text', document: 'Document', plan: 'Plan',
@@ -25,6 +27,7 @@ export function AgentReviewMaterials({
   materials: readonly AgentReviewMaterial[]
   artifacts: readonly AgentArtifact[]
 }) {
+  const t = useT()
   return (
     <div className="agent-review-materials">
       {materials.map((material) => {
@@ -53,15 +56,15 @@ export function AgentReviewMaterials({
                 Open artifact file
               </a>
             ) : inlineText ? (
-              <span className="agent-review-artifact-missing">Prepared text is shown above</span>
+              <span className="agent-review-artifact-missing">{t('Prepared text is shown above')}</span>
             ) : match.state === 'ready' ? (
               <span className="agent-review-artifact-missing">
-                {artifact?.text !== undefined ? 'Material text is available in the card' : 'Material file is not available yet'}
+                {artifact?.text !== undefined ? t('Material text is available in the card') : t('Material file is not available yet')}
               </span>
             ) : match.state === 'stale' ? (
-              <span className="agent-review-artifact-missing">The material version changed — a new card is expected</span>
+              <span className="agent-review-artifact-missing">{t('The material version changed — a new card is expected')}</span>
             ) : (
-              <span className="agent-review-artifact-missing">Material is still loading</span>
+              <span className="agent-review-artifact-missing">{t('Material is still loading')}</span>
             )}
           </article>
         )

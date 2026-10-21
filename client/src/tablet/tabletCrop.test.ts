@@ -32,6 +32,9 @@ test('crop handles resize with a stable opposite corner and ignore unrelated poi
       useState(value: any) { const at = i++; if (!(at in slots)) slots[at] = typeof value === 'function' ? value() : value; return [slots[at], (next: any) => { slots[at] = next }] },
       useRef(value: any) { return slots[i++] ??= { current: value } },
       useCallback(fn: any) { return fn }, useLayoutEffect() {},
+      useContext(context: any) { return context._currentValue },
+      useSyncExternalStore(_subscribe: any, getSnapshot: () => unknown) { return getSnapshot() },
+      useMemo(fn: any) { return fn() },
     }
     try { return TabletCrop({ store, itemId: original.id, upload: async () => { throw Error('unexpected upload') }, onClose() {} }) }
     finally { internals.ReactCurrentDispatcher.current = previous }

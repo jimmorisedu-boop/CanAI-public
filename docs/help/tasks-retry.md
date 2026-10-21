@@ -28,6 +28,7 @@ Review the fresh estimate before confirming another paid generation.
 
 - A saved provider result can finish after a restart without a duplicate submission. A manual Retry is a new attempt.
 - Task cards, tooltips, and progress messages use English, including errors saved by an older server. Diagnostics retain the original response.
+- System labels follow the selected interface language; saved results and task state remain unchanged.
 
 ## Related topics
 

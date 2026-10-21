@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useModalFocus } from '../tablet/modalFocus'
 import { registerConfirmHost, type ConfirmRequest } from './confirmBus'
+import { useT } from '../i18n/context.js'
 
 interface Pending {
   request: ConfirmRequest
@@ -10,6 +11,7 @@ interface Pending {
 
 // Одно окно подтверждения на всё приложение. Монтируется рядом с тостами.
 export function ConfirmHost() {
+  const t = useT()
   const [pending, setPending] = useState<Pending | null>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
   // Esc и клик мимо = отказ. Именно отказ, а не «ничего не произошло»:
@@ -71,14 +73,14 @@ export function ConfirmHost() {
         )}
         <div className="confirm-actions">
           <button type="button" className="confirm-cancel" onClick={() => close(false)}>
-            {request.cancelLabel ?? 'Cancel'}
+            {t(request.cancelLabel ?? 'Cancel')}
           </button>
           <button
             type="button"
             className={`confirm-ok ${request.danger ? 'danger' : ''}`}
             onClick={() => close(true)}
           >
-            {request.confirmLabel}
+            {t(request.confirmLabel)}
           </button>
         </div>
       </div>

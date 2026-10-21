@@ -4,6 +4,8 @@ import type { CanvasItem } from '../konva/types'
 import { DEFAULT_FACE_THRESHOLD, faceVerdict, formatSimilarity } from './faceMath'
 import { compareFaces, type FaceComparison } from './faceSimilarity'
 import { systemErrorMessage } from '../../../ui/systemMessage'
+import { useT } from '../../../i18n/context.js'
+
 
 // Сходство лиц в просмотрщике сравнения.
 //
@@ -108,6 +110,7 @@ export function FaceSimilarityChip({
   /** Открыть выбор лица. Не передан — приписка остаётся просто пояснением. */
   onPick?(side: 'a' | 'b'): void
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   if (state.kind === 'off') return null
@@ -116,7 +119,7 @@ export function FaceSimilarityChip({
     // Тихое предложение, а не требование: ничего не качается без спроса.
     return (
       <button type="button" className="face-chip face-chip-offer" onClick={onEnable}>
-        enable face comparison
+        {t('enable face comparison')}
       </button>
     )
   }
@@ -125,18 +128,18 @@ export function FaceSimilarityChip({
     // Ручки моделей на сервере нет: файлы обновились, а процесс остался старым.
     // Говорим ровно то, что надо сделать, — «не посчиталось» тут бесполезно.
     return (
-      <span className="face-chip" title="Server is running an older version">
-        <i className="face-dot" aria-hidden="true" />restart CanAI; the server is outdated
+      <span className="face-chip" title={t('Server is running an older version')}>
+        <i className="face-dot" aria-hidden="true" />{t('restart CanAI; the server is outdated')}
       </span>
     )
   }
 
   if (state.kind === 'busy') {
-    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />calculating similarity…</span>
+    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />{t('calculating similarity…')}</span>
   }
 
   if (state.kind === 'error') {
-    return <span className="face-chip face-chip-bad" title={systemErrorMessage(state.message, 'Similarity could not be calculated')}><i className="face-dot" aria-hidden="true" />similarity could not be calculated</span>
+    return <span className="face-chip face-chip-bad" title={systemErrorMessage(state.message, 'Similarity could not be calculated')}><i className="face-dot" aria-hidden="true" />{t('Similarity could not be calculated')}</span>
   }
 
   const { value } = state
@@ -146,7 +149,7 @@ export function FaceSimilarityChip({
       : value.where === 'a'
         ? 'no face in the source'
         : 'no face in the candidate'
-    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />{where} — nothing to compare</span>
+    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />{where}  {t('— nothing to compare')}</span>
   }
 
   const verdict = faceVerdict(value.similarity, threshold)
@@ -164,12 +167,12 @@ export function FaceSimilarityChip({
     <span className={`face-chip face-chip-comparison ${verdict === 'same' ? 'face-chip-same' : ''}`}>
       <span className="face-chip-result">
         <b>{formatSimilarity(value.similarity)}</b>
-        <span className="face-chip-verdict">{verdict === 'same' ? 'same person' : 'different person'}</span>
+        <span className="face-chip-verdict">{verdict === 'same' ? t('same person') : t('different person')}</span>
         <button
           type="button"
           className="face-chip-threshold"
           aria-expanded={open}
-          title="Threshold used for the verdict"
+          title={t('Threshold used for the verdict')}
           onClick={() => setOpen((current) => !current)}
         >
           Threshold {thresholdLabel}
@@ -183,7 +186,7 @@ export function FaceSimilarityChip({
             max={0.8}
             step={0.01}
             value={threshold}
-            aria-label="Face-similarity threshold"
+            aria-label={t('Face-similarity threshold')}
             onChange={(event) => onThreshold(Number(event.target.value))}
           />
           <button type="button" onClick={() => onThreshold(DEFAULT_FACE_THRESHOLD)}>
@@ -202,12 +205,12 @@ export function FaceSimilarityChip({
           <span>{multipleFacesLabel}</span>
           {onPick && multipleA && (
             <button type="button" className="face-chip-pick" onClick={() => onPick('a')}>
-              {multipleB ? 'Select on source' : 'Select face'}
+              {multipleB ? t('Select on source') : t('Select face')}
             </button>
           )}
           {onPick && multipleB && (
             <button type="button" className="face-chip-pick" onClick={() => onPick('b')}>
-              {multipleA ? 'Select on candidate' : 'Select face'}
+              {multipleA ? t('Select on candidate') : t('Select face')}
             </button>
           )}
         </span>

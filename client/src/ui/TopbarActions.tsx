@@ -7,6 +7,8 @@ import { getGenerationTasks, subscribeGenerationTasks } from '../spaces/canvas/g
 import { getMacroRuns, subscribeMacroRuns } from '../spaces/canvas/macroRuns'
 import { IconHelp, IconMoon, IconSettings, IconSun } from './icons'
 import { OverflowMenu } from './OverflowMenu'
+import { useT } from '../i18n/context.js'
+
 
 interface TopbarAttentionInput {
   saveStatus: SaveStatus
@@ -66,30 +68,31 @@ export function TopbarActions({
   attention: boolean
   defaultMenuOpen?: boolean
 }) {
+  const t = useT()
   const missingComponents = useMissingComponents()
   const settings = (
-    <Tooltip title="Settings" hint={missingComponents.length > 0
-      ? `fal.ai key, external editor, and more. Missing: ${missingComponents.join(', ')}.`
-      : 'fal.ai key, external editor, and other app settings.'}>
-      <button type="button" className="tab settings-button icon-btn" aria-label="Settings" onClick={onSettings}>
+    <Tooltip title={t('Settings')} hint={missingComponents.length > 0
+      ? t('fal.ai key, external editor, and more. Missing: {0}.', { 0: missingComponents.join(', ') })
+      : t('fal.ai key, external editor, and other app settings.')}>
+      <button type="button" className="tab settings-button icon-btn" aria-label={t('Settings')} onClick={onSettings}>
         <IconSettings />
         {missingComponents.length > 0 && <span className="settings-dot" aria-hidden="true" />}
       </button>
     </Tooltip>
   )
   const themeControl = (
-    <Tooltip title={theme === 'dark' ? 'Light theme' : 'Dark theme'} hint="Switch the app theme.">
-      <button type="button" className="tab theme-toggle-btn icon-btn" aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'} onClick={onTheme}>
+    <Tooltip title={theme === 'dark' ? t('Light theme') : t('Dark theme')} hint={t('Switch the app theme.')}>
+      <button type="button" className="tab theme-toggle-btn icon-btn" aria-label={theme === 'dark' ? t('Light theme') : t('Dark theme')} onClick={onTheme}>
         {theme === 'dark' ? <IconSun /> : <IconMoon />}
-        {compact && <span>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>}
+        {compact && <span>{theme === 'dark' ? t('Light theme') : t('Dark theme')}</span>}
       </button>
     </Tooltip>
   )
   const help = (
-    <Tooltip title="Help" hint="Guides and canvas and node keyboard shortcuts.">
-      <button type="button" className="tab help-button icon-btn" aria-label="Help" onClick={onHelp}>
+    <Tooltip title={t('Help')} hint={t('Guides and canvas and node keyboard shortcuts.')}>
+      <button type="button" className="tab help-button icon-btn" aria-label={t('Help')} onClick={onHelp}>
         <IconHelp />
-        {compact && <span>Help</span>}
+        {compact && <span>{t('Help')}</span>}
       </button>
     </Tooltip>
   )
@@ -108,7 +111,7 @@ export function TopbarActions({
     </>
   }
   return <div className="top-bar-compact-actions">
-    <OverflowMenu label="More" panelLabel="App actions" attention={attention} compact={compact} defaultOpen={defaultMenuOpen}>
+    <OverflowMenu label={t('More')} panelLabel="App actions" attention={attention} compact={compact} defaultOpen={defaultMenuOpen}>
       <div className="compact-topbar-status" role="status">{save}</div>
       {settings}
       <div className="compact-topbar-export">{exportControl}</div>

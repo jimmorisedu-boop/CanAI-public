@@ -24,6 +24,10 @@ Use Export file for a local package, drag rows or use Alt+Arrow to reorder, and 
 
 ![Manage the Macro Library: Export and organize](../../client/public/help/macro-library-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered.
+
 ## Related topics
 
 - [Build a Workflow](./workflow-editor.md)

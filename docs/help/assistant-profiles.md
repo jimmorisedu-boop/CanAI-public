@@ -27,6 +27,7 @@ Use From file to import an assistant package, or Save to a file to reuse its ins
 ## Notes
 
 - A profile combines instructions, one text model, and optional text documents. It does not replace the local provider connection.
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics
 

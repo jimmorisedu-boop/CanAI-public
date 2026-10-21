@@ -1,6 +1,8 @@
 import { IconCamera, IconClose, IconDownload, IconRefresh, IconToCanvas, IconTrash } from '../../../ui/icons'
 import type { FrameCaptureRecord } from './frameCaptureQueue'
 import { systemErrorMessage } from '../../../ui/systemMessage'
+import { useT } from '../../../i18n/context.js'
+
 
 // Полка снятых кадров ПЛАНШЕТА — сетка карточек в его полноэкранном окне
 // правки клипа (TabletClip). На компьютере полка другая: лента карточек
@@ -51,16 +53,18 @@ export function SavedFramesDrawer({
   onDownload(id: string): void
   onSeek(time: number): void
 }) {
+  const t = useT()
   if (frames.length === 0) {
     return (
       <div className="tl-shelf-empty">
         <IconCamera size={18} />
-        Nothing here yet. Capture a frame (click “Capture frame” or press F) and it will appear here.
+
+        {t('Nothing here yet. Capture a frame (click “Capture frame” or press F) and it will appear here.')}
       </div>
     )
   }
   return (
-    <div className="tl-shelf-grid" role="list" aria-label="Captured frames">
+    <div className="tl-shelf-grid" role="list" aria-label={t('Captured frames')}>
       {frames.map((record) => {
         const busy = isFrameBusy(record)
         const failed = record.phase === 'error'
@@ -69,14 +73,14 @@ export function SavedFramesDrawer({
             key={record.id}
             className={`tl-shelf-card ${record.phase}`}
             role="listitem"
-            aria-label={`Frame ${record.requestedTime.toFixed(2)} s — ${STATUS_TEXT[record.phase]}`}
+            aria-label={t('Frame {0} s — {1}', { 0: record.requestedTime.toFixed(2), 1: STATUS_TEXT[record.phase] })}
           >
             <button
               type="button"
               className="tl-shelf-thumb"
               onClick={() => onSeek(record.requestedTime)}
               disabled={failed}
-              aria-label={`Go to ${record.requestedTime.toFixed(2)} s`}
+              aria-label={t('Go to {0} s', { 0: record.requestedTime.toFixed(2) })}
             >
               {record.resultUrl ? (
                 <img src={record.resultUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -90,38 +94,38 @@ export function SavedFramesDrawer({
             </div>
             <div className="tl-shelf-actions">
               {failed && (
-                <button type="button" title="Retry" onClick={() => onRetry(record.id)} aria-label="Retry frame capture">
+                <button type="button" title={t('Retry')} onClick={() => onRetry(record.id)} aria-label={t('Retry frame capture')}>
                   <IconRefresh size={14} />
                 </button>
               )}
               {busy && (
-                <button type="button" title="Cancel" onClick={() => onCancel(record.id)} aria-label="Cancel frame capture">
+                <button type="button" title={t('Cancel')} onClick={() => onCancel(record.id)} aria-label={t('Cancel frame capture')}>
                   <IconClose size={14} />
                 </button>
               )}
               <button
                 type="button"
-                title="To canvas (G)"
+                title={t('To canvas (G)')}
                 disabled={record.phase !== 'saved'}
                 onClick={() => onShow(record.id)}
-                aria-label="Show frame on canvas"
+                aria-label={t('Show frame on canvas')}
               >
                 <IconToCanvas size={14} />
               </button>
               <button
                 type="button"
-                title="Download (D)"
+                title={t('Download (D)')}
                 disabled={!record.resultUrl}
                 onClick={() => onDownload(record.id)}
-                aria-label="Download frame"
+                aria-label={t('Download frame')}
               >
                 <IconDownload size={14} />
               </button>
               <button
                 type="button"
-                title="Remove"
+                title={t('Remove')}
                 onClick={() => onRemove(record.id)}
-                aria-label="Remove frame from shelf"
+                aria-label={t('Remove frame from shelf')}
               >
                 <IconTrash size={14} />
               </button>

@@ -7,6 +7,7 @@ import { type OnboardingDocument } from './spaces/canvas/onboardingModel'
 import { onboardingStore, useOnboardingSnapshot, type OnboardingSnapshot } from './spaces/canvas/onboardingStore'
 import { createHelpCardTarget, createRecoveryTarget, showOnboardingTarget } from './spaces/canvas/onboardingTargets'
 import { openSettings } from './settings/settingsBus'
+import { useT } from './i18n'
 
 export function OnboardingHelpSection({
   status,
@@ -21,13 +22,14 @@ export function OnboardingHelpSection({
   /** Kept for legacy consumers; reopening now owns the reset operation. */
   onReset?(): void
 }) {
+  const t = useT()
   const canShow = editorMounted && status === 'ready' && document !== null
   return (
     <section id="onboarding-recovery" className="shortcuts-group onboarding-help" aria-labelledby="onboarding-help-title">
-      <h3 id="onboarding-help-title">First steps</h3>
-      <p>A short, optional tour of the board.</p>
+      <h3 id="onboarding-help-title">{t('First steps')}</h3>
+      <p>{t('A short, optional tour of the board.')}</p>
       <div className="onboarding-actions">
-        {canShow && <button className="onboarding-help-action" type="button" onClick={onShow}>Open first steps</button>}
+        {canShow && <button className="onboarding-help-action" type="button" onClick={onShow}>{t('Open first steps')}</button>}
       </div>
     </section>
   )
@@ -50,6 +52,7 @@ export function ShortcutsModal({
   recoveryTargetRequest?: number
   initialTopicId?: string
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   const undoRowRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -59,10 +62,10 @@ export function ShortcutsModal({
   useDialogFocus(dialogRef, onClose)
   const revealRecovery = useCallback(createRecoveryTarget({
     pulseUndoRow: () => showOnboardingTarget(undoRowRef.current, {
-      message: 'Ctrl+Z undoes the last action. Board versions are available in the project menu.',
+      message: t('Ctrl+Z undoes the last action. Board versions are available in the project menu.'),
     }),
     focusModalAction: () => closeButtonRef.current?.focus({ preventScroll: true }),
-  }), [])
+  }), [t])
 
   const showHelpTarget = useCallback((topic: { target?: string }): boolean => {
     if (topic.target !== 'recovery') return false
@@ -121,13 +124,13 @@ export function ShortcutsModal({
         <header className="settings-header help-header">
           <div>
             <p className="help-eyebrow">CanAI</p>
-            <h2 id="help-title">Help</h2>
+            <h2 id="help-title">{t('Help')}</h2>
           </div>
-          <button ref={closeButtonRef} type="button" className="settings-close help-close" onClick={onClose} aria-label="Close help">
+          <button ref={closeButtonRef} type="button" className="settings-close help-close" onClick={onClose} aria-label={t('Close help')}>
             ×
           </button>
         </header>
-        <div className="help-tabs" role="tablist" aria-label="Help sections" aria-orientation="horizontal">
+        <div className="help-tabs" role="tablist" aria-label={t('Help sections')} aria-orientation="horizontal">
           <button
             id="help-tab-guides"
             type="button"
@@ -140,13 +143,13 @@ export function ShortcutsModal({
             onKeyDown={onTabKeyDown}
             onClick={() => setTab('guides')}
           >
-            Guides
+            {t('Guides')}
           </button>
           <button
             id="help-tab-shortcuts"
             type="button"
             role="tab"
-            aria-label="Keyboard shortcuts"
+            aria-label={t('Keyboard shortcuts')}
             aria-controls="help-panel-shortcuts"
             aria-selected={tab === 'shortcuts'}
             tabIndex={tab === 'shortcuts' ? 0 : -1}
@@ -155,7 +158,7 @@ export function ShortcutsModal({
             onKeyDown={onTabKeyDown}
             onClick={() => setTab('shortcuts')}
           >
-            Shortcuts
+            {t('Shortcuts')}
           </button>
         </div>
         <div
@@ -185,15 +188,15 @@ export function ShortcutsModal({
           <div className="shortcuts-grid">
             {HOTKEY_GROUPS.map((group) => (
               <div key={group.id} className="shortcuts-group">
-                <h3>{group.title}</h3>
+                <h3>{t(group.title)}</h3>
                 {hotkeysOfGroup(group.id).map((item) => (
                   <div
                     key={item.id}
                     ref={item.id === 'canvas.undo' ? undoRowRef : undefined}
                     className="shortcuts-row"
                   >
-                    <span className="shortcuts-keys">{formatHotkeyKeys(item.keys)}</span>
-                    <span className="shortcuts-what">{item.what}</span>
+                    <span className="shortcuts-keys">{t(formatHotkeyKeys(item.keys))}</span>
+                    <span className="shortcuts-what">{t(item.what)}</span>
                   </div>
                 ))}
               </div>
@@ -212,9 +215,9 @@ export function ShortcutsModal({
             className="ui-btn quiet"
             onClick={() => { onClose(); openSettings(undefined, 'diagnostics') }}
           >
-            Report a problem
+            {t('Report a problem')}
           </button>
-          <button className="editor-close" onClick={onClose}>Close (Esc)</button>
+          <button className="editor-close" onClick={onClose}>{t('Close (Esc)')}</button>
         </div>
       </div>
     </div>

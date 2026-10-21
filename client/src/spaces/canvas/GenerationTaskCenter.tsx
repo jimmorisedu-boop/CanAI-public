@@ -24,6 +24,8 @@ import {
 } from './macroRuns'
 import { taskAnnouncement } from './taskAnnouncements'
 import { systemErrorMessage, systemStatusMessage } from '../../ui/systemMessage'
+import { useT } from '../../i18n/context.js'
+
 
 const ACTIVE_JOB_STATES: GenerationTask['state'][] = ['queued', 'running', 'cancelling']
 const TERMINAL_JOB_STATES: GenerationTask['state'][] = ['done', 'error', 'cancelled']
@@ -47,6 +49,7 @@ export function showGenerationTaskResults(
 }
 
 export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: string }) {
+  const t = useT()
   const tasks = useSyncExternalStore(
     subscribeGenerationTasks,
     getGenerationTasks,
@@ -197,13 +200,13 @@ export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: 
     <div className="task-center" ref={rootRef}>
       <div className="task-center-trigger">
         <Tooltip
-          title="Tasks"
+          title={t('Tasks')}
           hint={
             activeCount
-              ? `Operations in progress: ${activeCount}. You can review or stop them here.`
+              ? t('Operations in progress: {0}. You can review or stop them here.', { 0: activeCount })
               : hasFailed
-                ? "Some generations failed; review and retry them."
-                : "See active tasks and external edits in the editor here."
+                ? t('Some generations failed; review and retry them.')
+                : t('See active tasks and external edits in the editor here.')
           }
         >
         <button
@@ -212,11 +215,11 @@ export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: 
           className={`tab task-center-button ${activeCount ? 'icon-tab busy' : 'icon-btn idle'} ${open ? 'active' : ''}`}
           aria-expanded={open}
           aria-haspopup="dialog"
-          aria-label={activeCount ? `Tasks — ${activeCount} running` : "Tasks"}
+          aria-label={activeCount ? t('Tasks — {0} running', { 0: activeCount }) : t('Tasks')}
           onClick={() => setOpen((value) => !value)}
         >
           <IconTasks size={16} className={activeCount ? 'task-center-spin' : undefined} />
-          {activeCount > 0 && `Tasks · ${activeCount}`}
+          {activeCount > 0 && t('Tasks · {0}', { 0: activeCount })}
           {activeCount === 0 && hasFailed && (
             <span className="task-center-dot" aria-hidden="true" />
           )}
@@ -226,30 +229,31 @@ export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: 
           <button
             type="button"
             className={`task-center-stopall ${confirmStopAll ? 'armed' : ''}`}
-            aria-label={`Stop all operations (${activeCount})`}
+            aria-label={t('Stop all operations ({0})', { 0: activeCount })}
             title={
               confirmStopAll
-                ? "Click again to stop everything"
-                : `Stop everything (${activeCount})`
+                ? t('Click again to stop everything')
+                : t('Stop everything ({0})', { 0: activeCount })
             }
             onClick={stopAll}
           >
-            {confirmStopAll ? "Are you sure?" : <IconStop size={13} />}
+            {confirmStopAll ? t('Are you sure?') : <IconStop size={13} />}
           </button>
         )}
       </div>
 
       {open && (
-        <section className="task-center-panel" role="dialog" aria-label="Tasks">
+        <section className="task-center-panel" role="dialog" aria-label={t('Tasks')}>
           <header>
-            <span className="task-center-title">Tasks</span>
+            <span className="task-center-title">{t('Tasks')}</span>
             {finishedTasks.length > 0 && (
               <button
                 type="button"
                 className="task-center-clear"
                 onClick={() => finishedTasks.forEach((task) => dismissGenerationTask(task.jobId))}
               >
-                Clear
+
+                {t('Clear')}
               </button>
             )}
           </header>
@@ -271,7 +275,7 @@ export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: 
                   <div>
                     <strong>{run.macroName}</strong>
                     <span className="task-state">
-                      {run.stopping ? "Stopping…" : systemStatusMessage(run.progress, "In progress")}
+                      {run.stopping ? t('Stopping…') : systemStatusMessage(run.progress, "In progress")}
                     </span>
                   </div>
                   <div className="task-center-actions">
@@ -280,7 +284,7 @@ export function GenerationTaskCenter({ currentProjectId }: { currentProjectId?: 
                       disabled={run.stopping}
                       onClick={() => stopMacroRun(run.token)}
                     >
-                      <IconStop size={13} /> Stop
+                      <IconStop size={13} />  {t('Stop')}
                     </button>
                   </div>
                 </article>

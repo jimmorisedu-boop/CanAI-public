@@ -6,6 +6,8 @@ import { Tooltip } from '../../../ui/Tooltip'
 import { frameStatusText, frameStatusTone, framesByTime, isBusyPhase, NO_FRAMES_MESSAGE } from './timelineStatus'
 import { timecode } from './timelineTimecode'
 import { plural } from '../../../ui/plural'
+import { useT } from '../../../i18n/context.js'
+
 
 // Полка сохранённых кадров — ОВЕРЛЕЙ внутри превью: видео при её открытии не
 // сжимается и не прыгает. Закрыта: в правом нижнем углу кластер «шеврон + число
@@ -42,6 +44,7 @@ export function TimelineFramesShelf({
   onShow(id: string): void
   onDownload(id: string): void
 }) {
+  const t = useT()
   const ordered = framesByTime(records)
   const gridRef = useRef<HTMLDivElement>(null)
 
@@ -59,11 +62,11 @@ export function TimelineFramesShelf({
   }, [open, selectedId, records.length])
 
   return (
-    <section className="tl-shelf" data-open={open} aria-label="Saved frames">
+    <section className="tl-shelf" data-open={open} aria-label={t('Saved frames')}>
       <div className="tl-shelf-head">
         <TimelineButton
           buttonRef={toggleRef}
-          label={open ? 'Hide saved frames' : 'Show saved frames'}
+          label={open ? t('Hide saved frames') : t('Show saved frames')}
           keys="B"
           shortcut="B"
           placement="top"
@@ -77,13 +80,13 @@ export function TimelineFramesShelf({
           {records.length}
           <span className="tl-sr"> {plural(records.length, ['saved frame', 'saved frames', 'saved frames'])}</span>
         </span>
-        <span className="tl-shelf-context">Saved frames</span>
+        <span className="tl-shelf-context">{t('Saved frames')}</span>
       </div>
 
       {open && (ordered.length === 0 ? (
-        <p className="tl-lane-empty">{NO_FRAMES_MESSAGE}</p>
+        <p className="tl-lane-empty">{t(NO_FRAMES_MESSAGE)}</p>
       ) : (
-        <div className="tl-lane" ref={gridRef} role="list" aria-label="Saved frames">
+        <div className="tl-lane" ref={gridRef} role="list" aria-label={t('Saved frames')}>
           {ordered.map((record) => {
             const at = timecode(record.requestedTime)
             const tone = frameStatusTone(record)
@@ -96,12 +99,12 @@ export function TimelineFramesShelf({
                 className={`tl-frame${record.id === selectedId ? ' is-current' : ''}`}
                 data-frame-id={record.id}
                 role="listitem"
-                aria-label={`Frame ${at} — ${status}`}
+                aria-label={t('Frame {0} — {1}', { 0: at, 1: status })}
               >
                 <button
                   type="button"
                   className="tl-frame-thumb"
-                  aria-label={`Return to moment ${at}`}
+                  aria-label={t('Return to moment {0}', { 0: at })}
                   aria-current={record.id === selectedId ? 'true' : undefined}
                   onClick={() => onSelect(record)}
                 >
@@ -111,7 +114,7 @@ export function TimelineFramesShelf({
                   <span className="tl-frame-time">{at}</span>
                 </button>
                 <div className="tl-frame-info">
-                  <span className="tl-frame-name">Frame {at}</span>
+                  <span className="tl-frame-name">{t('Frame {0}', { 0: at })}</span>
                   {/* Длинную причину ошибки строка обрежет многоточием — полный
                       текст в подсказке. Короткие подписи в ней не нуждаются. */}
                   {tone === 'error' ? (
@@ -126,7 +129,7 @@ export function TimelineFramesShelf({
                   {record.phase === 'saved' && (
                     <>
                       <TimelineButton
-                        label={`Show frame ${at} on canvas`}
+                        label={t('Show frame {0} on canvas', { 0: at })}
                         keys="G"
                         shortcut="G"
                         disabled={!record.resultItemId}
@@ -135,7 +138,7 @@ export function TimelineFramesShelf({
                         <IconOpenExternal size={16} />
                       </TimelineButton>
                       <TimelineButton
-                        label={`Download frame PNG ${at}`}
+                        label={t('Download frame PNG {0}', { 0: at })}
                         keys="D"
                         shortcut="D"
                         disabled={!record.resultUrl}
@@ -146,18 +149,18 @@ export function TimelineFramesShelf({
                     </>
                   )}
                   {retryable && (
-                    <TimelineButton label="Retry frame capture" onClick={() => onRetry(record.id)}>
+                    <TimelineButton label={t('Retry frame capture')} onClick={() => onRetry(record.id)}>
                       <IconRefresh size={16} />
                     </TimelineButton>
                   )}
                   {busy && (
-                    <TimelineButton label="Cancel frame capture" onClick={() => onCancel(record.id)}>
+                    <TimelineButton label={t('Cancel frame capture')} onClick={() => onCancel(record.id)}>
                       <IconClose size={16} />
                     </TimelineButton>
                   )}
                   {!busy && (
                     <TimelineButton
-                      label={record.resultItemId ? 'Delete frame from canvas' : 'Remove from shelf'}
+                      label={record.resultItemId ? t('Delete frame from canvas') : t('Remove from shelf')}
                       onClick={() => onRemove(record.id)}
                     >
                       <IconTrash size={16} />

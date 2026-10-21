@@ -18,6 +18,9 @@ import { clearTimelineNotice, getTimelineNotice, onTimelineNotice } from '../spa
 import { tabletSystemMessage } from './tabletSystemMessage'
 import { MediaPlaybackControls } from '../ui/MediaPlaybackControls'
 import { bindClipMediaGuards, syncClipMedia } from './clipPlaybackBounds'
+import { useT } from '../i18n/context.js'
+import { t as translate } from '../i18n/translate.js'
+
 
 function isCompactCropViewport(): boolean {
   if (typeof window === 'undefined') return false
@@ -35,7 +38,7 @@ export function TabletClipFeedback({ error }: { error: string | null }) {
   }, [])
   if (!error && !notice) return null
   return <InlineNotice className="tablet-error" tone={error ? 'error' : notice!.kind}
-    title={error ? tabletSystemMessage(error, 'Clip editing failed.') : tabletSystemMessage(notice!.message, 'Clip editing failed.')}
+    title={error ? tabletSystemMessage(error, translate('Clip editing failed.')) : tabletSystemMessage(notice!.message, translate('Clip editing failed.'))}
     action={notice?.action ? { label: notice.action.label, onClick: notice.action.run } : undefined}
     onDismiss={error ? undefined : () => { setNotice(null); clearTimelineNotice() }} />
 }
@@ -59,6 +62,7 @@ export function TabletClip({
   tool?: 'audio'
   onClose(): void
 }) {
+  const t = useT()
   const session = useTimelineSession(store)
   const sessionRef = useRef(session)
   sessionRef.current = session
@@ -181,7 +185,7 @@ export function TabletClip({
   const apply = async () => {
     if (applyingRef.current) return
     applyingRef.current = true
-    setBusyNote('Cutting…')
+    setBusyNote(t('Cutting…'))
     try {
       if (await session.apply() === 'applied') onClose()
     } finally {
@@ -200,12 +204,12 @@ export function TabletClip({
 
   return (
     <TabletFullScreen
-      title="Clip editing"
+      title={t('Clip editing')}
       subtitle={
         <span className="tablet-mono">
           {session.item.name ?? 'clip'}
           {session.facts?.width ? ` · ${session.facts.width} × ${session.facts.height}` : ''}
-          {duration ? ` · ${duration.toFixed(1)}  s` : ''}
+          {duration ? t(' · {0}  s', { 0: duration.toFixed(1) }) : ''}
         </span>
       }
       onCancel={close}
@@ -218,22 +222,22 @@ export function TabletClip({
           disabled={session.busy || Boolean(busyNote) || session.loading || Boolean(session.error) || session.pieces === 0}
           onClick={() => void apply()}
         >
-          {busyNote ?? `Apply · ${session.summary}`}
+          {busyNote ?? t('Apply · {0}', { 0: session.summary })}
         </button>
       }
       footer={
-        <div className="tablet-clip-tools" role="toolbar" aria-label="Clip tools">
-          <button type="button" className="ui-btn" aria-label="Cut" onClick={() => session.addCut()}>
-            <IconScissors size={18} /> <span className="tablet-clip-tool-label">Cut</span>
+        <div className="tablet-clip-tools" role="toolbar" aria-label={t('Clip tools')}>
+          <button type="button" className="ui-btn" aria-label={t('Cut')} onClick={() => session.addCut()}>
+            <IconScissors size={18} /> <span className="tablet-clip-tool-label">{t('Cut')}</span>
           </button>
-          <button type="button" className={`ui-btn ${session.crop ? 'on' : ''}`} aria-label="Crop" aria-pressed={Boolean(session.crop)} onClick={() => {
+          <button type="button" className={`ui-btn ${session.crop ? 'on' : ''}`} aria-label={t('Crop')} aria-pressed={Boolean(session.crop)} onClick={() => {
             session.toggleCrop()
             setCropPanelOpen(!compactCropViewport)
           }}>
-            <IconCrop size={18} /> <span className="tablet-clip-tool-label">Crop</span>
+            <IconCrop size={18} /> <span className="tablet-clip-tool-label">{t('Crop')}</span>
           </button>
-          <button type="button" className="ui-btn" aria-label="Capture frame" onClick={() => frames.capture(session.head)}>
-            <IconCamera size={18} /> <span className="tablet-clip-tool-label">Capture frame</span>
+          <button type="button" className="ui-btn" aria-label={t('Capture frame')} onClick={() => frames.capture(session.head)}>
+            <IconCamera size={18} /> <span className="tablet-clip-tool-label">{t('Capture frame')}</span>
           </button>
           <span className="tablet-full-gap" />
           <div ref={moreWrapRef} className="tablet-clip-more-wrap">
@@ -245,31 +249,31 @@ export function TabletClip({
               aria-controls="tablet-clip-more"
               onClick={() => setMoreOpen((value) => !value)}
             >
-              <IconMenu size={18} /> More
+              <IconMenu size={18} />  {t('More')}
             </button>
-            {moreOpen && <div id="tablet-clip-more" className="tablet-clip-more" role="group" aria-label="More clip tools">
+            {moreOpen && <div id="tablet-clip-more" className="tablet-clip-more" role="group" aria-label={t('More clip tools')}>
               <button type="button" className={`ui-btn ${headDropped ? 'on' : ''}`} disabled={!headSegment} onClick={() => { session.toggleDropAtHead(); closeMore() }}>
                 {headDropped ? <IconRestore size={18} /> : <IconTrash size={18} />}
-                {headDropped ? 'Restore segment' : 'Delete segment'}
+                {headDropped ? t('Restore segment') : t('Delete segment')}
               </button>
               {session.cuts.map(cut => (
                 <button key={cut.time} type="button" className="ui-btn" disabled={session.busy} onClick={() => { session.removeCut(cut.time); closeMore() }}>
-                  Join at {cut.time.toFixed(2)} s
+                  {t('Join at {0} s', { 0: cut.time.toFixed(2) })}
                 </button>
               ))}
               <button type="button" className={`ui-btn ${frames.records.length ? 'on' : ''}`} aria-expanded={frames.open} disabled={frames.records.length === 0} onClick={() => { frames.setOpen(!frames.open); closeMore() }}>
-                <IconCamera size={18} /> Frames · {frames.records.length}
+                <IconCamera size={18} /> {t('Frames · {0}', { 0: frames.records.length })}
               </button>
               <button type="button" className="ui-btn" disabled={session.facts ? !session.facts.hasAudio : false} onClick={() => { closeMore(); void extractAudioFromItem(store, session.item.id) }}>
-                <IconSound size={18} /> Extract audio
+                <IconSound size={18} />  {t('Extract audio')}
               </button>
               <label className={`tablet-clip-auto ${session.autoOn ? 'on' : ''}`}>
                 <input type="checkbox" checked={session.autoOn} onChange={() => session.toggleAuto()} />
-                <span>{session.autoBusy ? 'Finding cuts…' : 'Find cuts'}</span>
+                <span>{session.autoBusy ? t('Finding cuts…') : t('Find cuts')}</span>
               </label>
               {session.autoOn && <label className="tablet-clip-threshold">
-                <span>Sensitivity</span>
-                <input type="range" min={0.05} max={0.9} step={0.01} value={session.threshold} aria-label="Cut sensitivity" onChange={(event) => session.setThreshold(Number(event.target.value))} />
+                <span>{t('Sensitivity')}</span>
+                <input type="range" min={0.05} max={0.9} step={0.01} value={session.threshold} aria-label={t('Cut sensitivity')} onChange={(event) => session.setThreshold(Number(event.target.value))} />
               </label>}
             </div>}
           </div>
@@ -279,7 +283,7 @@ export function TabletClip({
       <TabletClipFeedback error={session.error} />
       <div className="tablet-clip-editor-body">
         <div className="tablet-clip-workspace">
-          <section className="tablet-clip-preview-area" aria-label="Video preview">
+          <section className="tablet-clip-preview-area" aria-label={t('Video preview')}>
             <TabletClipPreview session={session} videoRef={videoRef} />
           </section>
           <TabletClipCropPanel session={session} open={cropPanelOpen} onOpenChange={setCropPanelOpen} />
@@ -294,7 +298,7 @@ export function TabletClip({
       </div>
 
       {frames.open && (
-        <div className="tablet-shelf" role="region" aria-label="Captured frames shelf">
+        <div className="tablet-shelf" role="region" aria-label={t('Captured frames shelf')}>
           <SavedFramesDrawer
             frames={frames.records}
             onRetry={frames.retry}

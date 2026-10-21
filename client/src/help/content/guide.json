@@ -77,7 +77,8 @@
       "notes": [
         "Generation needs a provider connection. You can still explore boards and edit local content without one.",
         "Notices and error tooltips use English. Your own content can use any language.",
-        "Missing media shows an English notice. Restore the file, then retry loading."
+        "Missing media shows an English notice. Restore the file, then retry loading.",
+        "System labels follow the selected interface language; board names, prompts, and generated content keep their original language."
       ],
       "related": [
         "first-result",
@@ -153,7 +154,8 @@
       ],
       "notes": [
         "Imported media stays in the local media library. Text pasted into a prompt remains text.",
-        "All adjustments made while Arrange is open become one Undo step when it closes. Sizes and rotations are preserved. On tablet, select several cards and choose Arrange in the selection actions."
+        "All adjustments made while Arrange is open become one Undo step when it closes. Sizes and rotations are preserved. On tablet, select several cards and choose Arrange in the selection actions.",
+        "System labels follow the selected interface language; board names, prompts, and generated content keep their original language."
       ],
       "related": [
         "references",
@@ -191,7 +193,8 @@
       ],
       "notes": [
         "Selecting a Canvas item alone does not attach it to Assistant chat. For Assistant, drag a card into the chat or add it from Assets. Attachments added while a question is sending stay in the composer for your next question.",
-        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
+        "System labels follow the selected interface language; reference text and labels remain as entered."
       ],
       "related": [
         "assistant-photos",
@@ -229,7 +232,8 @@
         }
       ],
       "notes": [
-        "The model menu shows the compatible modality. CanAI does not silently drop an unsupported reference."
+        "The model menu shows the compatible modality. CanAI does not silently drop an unsupported reference.",
+        "System labels follow the selected interface language; reference text and labels remain as entered."
       ],
       "related": [
         "references",
@@ -272,7 +276,8 @@
       ],
       "notes": [
         "The original Canvas card stays in place when you attach a photo.",
-        "Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail."
+        "Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail.",
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ],
       "related": [
         "assets",
@@ -311,7 +316,8 @@
         }
       ],
       "notes": [
-        "A profile combines instructions, one text model, and optional text documents. It does not replace the local provider connection."
+        "A profile combines instructions, one text model, and optional text documents. It does not replace the local provider connection.",
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ],
       "related": [
         "assistant-chats",
@@ -359,7 +365,8 @@
         "generation-modes"
       ],
       "notes": [
-        "Assistant errors and status labels use English. Chat messages and your own instructions keep their original language."
+        "Assistant errors and status labels use English. Chat messages and your own instructions keep their original language.",
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ]
     },
     {
@@ -391,7 +398,8 @@
         }
       ],
       "notes": [
-        "Board memory is text and generation context. It is not automatic visual access to all images on the board."
+        "Board memory is text and generation context. It is not automatic visual access to all images on the board.",
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ],
       "related": [
         "assistant-photos",
@@ -430,6 +438,9 @@
         "assistant-basics",
         "archive-trash",
         "models"
+      ],
+      "notes": [
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ]
     },
     {
@@ -464,6 +475,9 @@
         "assistant-photos",
         "assets",
         "reference-kinds"
+      ],
+      "notes": [
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ]
     },
     {
@@ -495,7 +509,8 @@
         }
       ],
       "notes": [
-        "Provider connections and paid calls are explicit. A model reply alone never grants a generation request."
+        "Provider connections and paid calls are explicit. A model reply alone never grants a generation request.",
+        "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ],
       "related": [
         "assistant-basics",
@@ -533,7 +548,8 @@
         }
       ],
       "notes": [
-        "The shelf is per board. Assets do not become a second copy of your media file."
+        "The shelf is per board. Assets do not become a second copy of your media file.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ],
       "related": [
         "assistant-photos",
@@ -573,7 +589,8 @@
       "notes": [
         "Assets belong inside a board. Archive and Trash act on whole boards, not individual references.",
         "Connection and sign-in notices use English. Board names keep their original language.",
-        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ],
       "related": [
         "assets",
@@ -613,7 +630,10 @@
         "library",
         "versions"
       ],
-      "target": "recovery"
+      "target": "recovery",
+      "notes": [
+        "System labels follow the selected interface language; board names, prompts, and generated content keep their original language."
+      ]
     },
     {
       "id": "versions",
@@ -644,7 +664,8 @@
         }
       ],
       "notes": [
-        "Restoring a version never overwrites the current board. Use Undo for a single recent edit."
+        "Restoring a version never overwrites the current board. Use Undo for a single recent edit.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ],
       "shortcuts": [
         {
@@ -689,7 +710,8 @@
         }
       ],
       "notes": [
-        "The desktop Boards screen currently imports .canai files. Use Download or a ZIP from the Canvas when you want exported content; both use a real local destination."
+        "The desktop Boards screen currently imports .canai files. Use Download or a ZIP from the Canvas when you want exported content; both use a real local destination.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ],
       "related": [
         "versions",
@@ -726,7 +748,8 @@
         }
       ],
       "notes": [
-        "Each can create multiple paid calls. Review the quote before confirming."
+        "Each can create multiple paid calls. Review the quote before confirming.",
+        "System labels follow the selected interface language; model IDs, API values, and prompt text are preserved."
       ],
       "related": [
         "references",
@@ -764,7 +787,8 @@
         }
       ],
       "notes": [
-        "Unsupported references are reported instead of silently removed. GIF references use their first frame when a model accepts images."
+        "Unsupported references are reported instead of silently removed. GIF references use their first frame when a model accepts images.",
+        "System labels follow the selected interface language; model IDs, API values, and prompt text are preserved."
       ],
       "related": [
         "reference-kinds",
@@ -801,7 +825,8 @@
         }
       ],
       "notes": [
-        "A new attempt after a failed paid request can make another provider call. Check Tasks before retrying."
+        "A new attempt after a failed paid request can make another provider call. Check Tasks before retrying.",
+        "System labels follow the selected interface language; model IDs, API values, and prompt text are preserved."
       ],
       "related": [
         "models",
@@ -842,7 +867,10 @@
         "models",
         "pending-jobs"
       ],
-      "target": "reference-generation"
+      "target": "reference-generation",
+      "notes": [
+        "System labels follow the selected interface language; model IDs, API values, and prompt text are preserved."
+      ]
     },
     {
       "id": "pending-jobs",
@@ -877,7 +905,10 @@
         "variants-cost",
         "restore-generation"
       ],
-      "target": "recovery"
+      "target": "recovery",
+      "notes": [
+        "System labels follow the selected interface language; saved results and task state remain unchanged."
+      ]
     },
     {
       "id": "tasks-retry",
@@ -909,7 +940,8 @@
       ],
       "notes": [
         "A saved provider result can finish after a restart without a duplicate submission. A manual Retry is a new attempt.",
-        "Task cards, tooltips, and progress messages use English, including errors saved by an older server. Diagnostics retain the original response."
+        "Task cards, tooltips, and progress messages use English, including errors saved by an older server. Diagnostics retain the original response.",
+        "System labels follow the selected interface language; saved results and task state remain unchanged."
       ],
       "related": [
         "pending-jobs",
@@ -949,7 +981,8 @@
       "notes": [
         "Nodes preserve their IDs, schemas, and typed values when a workflow is saved.",
         "Connection errors use English. Your node labels, prompts, and Macro names keep their original language.",
-        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
+        "System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered."
       ],
       "related": [
         "macros",
@@ -994,6 +1027,9 @@
         "workflow-editor",
         "macro-library",
         "pending-jobs"
+      ],
+      "notes": [
+        "System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered."
       ]
     },
     {
@@ -1029,7 +1065,10 @@
         "macros",
         "project-files"
       ],
-      "target": "export"
+      "target": "export",
+      "notes": [
+        "System labels follow the selected interface language; node labels, prompts, and Macro names remain as entered."
+      ]
     },
     {
       "id": "crop-sketch",
@@ -1063,7 +1102,8 @@
         }
       ],
       "notes": [
-        "Crop Apply updates the image in place and remains undoable."
+        "Crop Apply updates the image in place and remains undoable.",
+        "System labels follow the selected interface language; edit operations preserve the source content."
       ],
       "related": [
         "navigation-shortcuts",
@@ -1102,7 +1142,8 @@
         }
       ],
       "notes": [
-        "Sketch Apply creates a new image beside the source; the source stays clean."
+        "Sketch Apply creates a new image beside the source; the source stays clean.",
+        "System labels follow the selected interface language; edit operations preserve the source content."
       ],
       "related": [
         "crop-sketch",
@@ -1146,6 +1187,9 @@
       "related": [
         "crop-sketch",
         "settings-local"
+      ],
+      "notes": [
+        "System labels follow the selected interface language; edit operations preserve the source content."
       ]
     },
     {
@@ -1197,6 +1241,9 @@
       "related": [
         "timeline",
         "restore-generation"
+      ],
+      "notes": [
+        "System labels follow the selected interface language; edit operations preserve the source content."
       ]
     },
     {
@@ -1256,7 +1303,8 @@
         "Drag Playback position on the single timeline to seek. Start and End trim the clip; drag a cut down to join it again.",
         "Crop follows the video image. Move its frame or drag a corner; precise values appear beside the preview on wide screens.",
         "More contains segment actions, captured frames, audio extraction, and Find cuts. The ? control shows editing shortcuts.",
-        "In Clip editing, More offers Delete segment or Restore segment. Join at a listed time removes a cut without hiding the video."
+        "In Clip editing, More offers Delete segment or Restore segment. Join at a listed time removes a cut without hiding the video.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ]
     },
     {
@@ -1289,7 +1337,8 @@
       ],
       "notes": [
         "Export copies user content. It does not publish a board or grant provider rights.",
-        "Markers are selection metadata for grouped export; 0 clears the marker."
+        "Markers are selection metadata for grouped export; 0 clears the marker.",
+        "System labels follow the selected interface language; source filenames and clip names remain as entered."
       ],
       "related": [
         "project-files",
@@ -1336,7 +1385,8 @@
       "notes": [
         "The Board map stays in the bottom-left corner. Click or drag it to navigate, and collapse it when you need more room.",
         "On narrow canvases, if the left column overlaps the prompt dock, the map sits 16 px above it.",
-        "The Board map moves your view while keeping the current selection."
+        "The Board map moves your view while keeping the current selection.",
+        "System labels follow the selected interface language; board names, prompts, and generated content keep their original language."
       ],
       "shortcuts": [
         {
@@ -1403,7 +1453,8 @@
       "notes": [
         "A changed test file recalculates the estimate. A model cannot be added until a valid result arrives.",
         "Model discovery and test errors use English. Model names and sample prompts keep their original language.",
-        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound."
+        "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
+        "System labels follow the selected interface language; model IDs, API values, and prompt text are preserved."
       ],
       "related": [
         "settings-provider",
@@ -1442,12 +1493,53 @@
       ],
       "notes": [
         "Generation stays unavailable until a provider is connected. Review the estimate before confirming a request.",
-        "Connection errors use English. If the message asks for details, open Diagnostics to inspect the original server response."
+        "Connection errors use English. If the message asks for details, open Diagnostics to inspect the original server response.",
+        "The language choice is personal to this device; settings values and provider payloads do not change."
       ],
       "related": [
         "quick-start",
         "models",
         "variants-cost"
+      ]
+    },
+    {
+      "id": "settings-language",
+      "category": "settings",
+      "title": "Choose the interface language",
+      "summary": "Switch CanAI between English and Russian for this device without reopening your board.",
+      "keywords": [
+        "choose the interface language",
+        "English",
+        "Russian",
+        "language"
+      ],
+      "steps": [
+        {
+          "title": "Open Settings",
+          "body": "Open Settings and stay on the General section. Your board remains open while the setting changes.",
+          "image": "/help/settings-language-1.svg",
+          "alt": "Choose the interface language: Open Settings"
+        },
+        {
+          "title": "Choose English or Russian",
+          "body": "In Language, select English or Russian. Labels and system notices update immediately, while board names, prompts, and generated content keep their original language.",
+          "image": "/help/settings-language-2.svg",
+          "alt": "Choose the interface language: Choose English or Russian"
+        },
+        {
+          "title": "Use another window",
+          "body": "The choice is saved on this device and follows other open CanAI windows. It is a personal display preference and is never sent with a board or generation request.",
+          "image": "/help/settings-language-3.svg",
+          "alt": "Choose the interface language: Use another window"
+        }
+      ],
+      "notes": [
+        "Changing the language does not reload or remount the board.",
+        "If browser storage is blocked, the current window still switches language until it closes."
+      ],
+      "related": [
+        "settings-provider",
+        "settings-local"
       ]
     },
     {
@@ -1479,7 +1571,8 @@
         }
       ],
       "notes": [
-        "A provider is contacted only when you start a request."
+        "A provider is contacted only when you start a request.",
+        "The language choice is personal to this device; settings values and provider payloads do not change."
       ],
       "related": [
         "project-files",
@@ -1516,7 +1609,8 @@
       ],
       "notes": [
         "LAN access exposes the local app to devices on that network. It does not include This edition administration.",
-        "When Tablet access is off, tablet sign-in is blocked even at its localhost address. The desktop app remains available."
+        "When Tablet access is off, tablet sign-in is blocked even at its localhost address. The desktop app remains available.",
+        "The tablet uses the same device language preference; board content and access settings remain unchanged."
       ],
       "related": [
         "settings-local",
@@ -1565,7 +1659,8 @@
         "Hold two fingers to undo repeatedly, or hold three fingers to redo repeatedly. Hide the interface with four fingers and tap again to restore it.",
         "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
         "Clip editing keeps a large preview and one timeline. Crop values move beside the video in landscape and collapse on narrow screens.",
-        "Tap a name to visit their cursor or Follow to move with their view. A pan, pinch or zoom stops following."
+        "Tap a name to visit their cursor or Follow to move with their view. A pan, pinch or zoom stops following.",
+        "The tablet uses the same device language preference; board content and access settings remain unchanged."
       ],
       "shortcuts": [
         {
@@ -1628,7 +1723,8 @@
       "notes": [
         "A cancelled job does not resume. Keep the app folder intact so saved boards and tasks remain available.",
         "If both the main state file and its backup are unreadable, CanAI stops with a recovery message instead of replacing your data with an empty state.",
-        "Desktop and tablet errors use English. Your board names, prompts, and content keep their original language. An unfamiliar server error points to Diagnostics."
+        "Desktop and tablet errors use English. Your board names, prompts, and content keep their original language. An unfamiliar server error points to Diagnostics.",
+        "System labels follow the selected interface language; saved results and task state remain unchanged."
       ],
       "related": [
         "pending-jobs",

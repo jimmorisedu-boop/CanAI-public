@@ -1,4 +1,5 @@
 import type { FaceModelsResponse } from '../api'
+import { t } from '../i18n/translate.js'
 
 // Как объяснить словами состояние моделей сравнения лиц. Отдельно от
 // компонента — чтобы формулировки и правило показа кнопки проверялись тестом,
@@ -15,16 +16,16 @@ export interface FaceModelsView {
 
 export function faceModelsView(state: FaceModelsResponse | null): FaceModelsView {
   if (!state) {
-    return { label: 'Checking…', tone: 'neutral', note: null, action: null, busy: true }
+    return { label: t('Checking…'), tone: 'neutral', note: null, action: null, busy: true }
   }
 
   if (state.state === 'ready') {
     return {
-      label: 'Ready',
+      label: t('Ready'),
       tone: 'ok',
       // Про «наружу ничего не уходит» говорим прямо: речь о лицах живых людей,
       // и человек вправе знать, что считает его собственный компьютер.
-      note: 'Models live in the app folder and travel with it. Comparison runs on this computer; images are not uploaded.',
+      note: t('Models live in the app folder and travel with it. Comparison runs on this computer; images are not uploaded.'),
       action: null,
       busy: false,
     }
@@ -34,7 +35,7 @@ export function faceModelsView(state: FaceModelsResponse | null): FaceModelsView
     return {
       label: `${state.percent ?? 0}%`,
       tone: 'neutral',
-      note: 'Downloading models — about 38 MB. You can keep working.',
+      note: t('Downloading models — about 38 MB. You can keep working.'),
       action: null,
       busy: true,
     }
@@ -42,19 +43,19 @@ export function faceModelsView(state: FaceModelsResponse | null): FaceModelsView
 
   if (state.state === 'failed') {
     return {
-      label: 'Download failed',
+      label: t('Download failed'),
       tone: 'danger',
-      note: state.message || 'Could not download models.',
-      action: 'Try again',
+      note: state.message || t('Could not download models.'),
+      action: t('Try again'),
       busy: false,
     }
   }
 
   return {
-    label: 'Not installed',
+    label: t('Not installed'),
     tone: 'warn',
-    note: 'Two models, about 38 MB. They power face similarity in comparison. Without them, comparison keeps its previous behavior.',
-    action: 'Download',
+    note: t('Two models, about 38 MB. They power face similarity in comparison. Without them, comparison keeps its previous behavior.'),
+    action: t('Download'),
     busy: false,
   }
 }

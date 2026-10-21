@@ -28,6 +28,8 @@ import { TabletArrangeControls } from './TabletArrangeControls'
 import { tabletSystemMessage } from './tabletSystemMessage'
 import { useBoardHistory } from './boardHistory'
 import { hits } from '../ui/hotkeys'
+import { useT } from '../i18n/context.js'
+
 
 const ICONS: Record<ContextAction, React.ReactNode> = {
   view: <IconFit size={19} />,
@@ -65,6 +67,7 @@ export function TabletContextBar({
   onAction(action: InspectorAction, items: CanvasItem[]): void
   onDetails?(id: string): void
 }) {
+  const t = useT()
   const history = useBoardHistory()
   const ref = useRef<HTMLDivElement>(null)
   const more = useAnchor()
@@ -163,46 +166,49 @@ export function TabletContextBar({
         ref={ref}
         className={`tablet-context-bar ${box?.side ?? 'below'}`}
         role="toolbar"
-        aria-label={items.length > 1 ? `Actions, selected ${items.length}` : 'Object actions'}
+        aria-label={items.length > 1 ? t('Actions, selected {0}', { 0: items.length }) : t('Object actions')}
         style={box ? { left: box.left, top: box.top } : { left: -9999, top: -9999 }}
       >
         {items.length > 1 && <span className="tablet-context-count">{items.length}</span>}
         {items.length === 1 && (items[0].prompt || items[0].modelId) && onDetails && <button
-          type="button" className="tablet-context-action" aria-label="Generation settings" title="Generation settings"
+          type="button" className="tablet-context-action" aria-label={t('Generation settings')} title={t('Generation settings')}
           onClick={() => onDetails(items[0].id)}><IconMagic size={19} /></button>}
         {primary.slice(0, 3).map((action) => {
           const disabled = false
-          const actionLabel = labelOf(action)
+          const actionLabel = t(labelOf(action))
+          const blockReason = mutationBlockReason.startsWith('Busy: ')
+            ? t('Busy: {0}', { 0: mutationBlockReason.slice('Busy: '.length) })
+            : t(mutationBlockReason)
           return (
           <button
             key={action}
             type="button"
             className="tablet-context-action"
             disabled={disabled}
-            title={disabled ? mutationBlockReason : actionLabel}
-            aria-label={disabled ? `${actionLabel}. ${mutationBlockReason}` : actionLabel}
+            title={disabled ? blockReason : actionLabel}
+            aria-label={disabled ? `${actionLabel}. ${blockReason}` : actionLabel}
             aria-haspopup={action === 'grid' ? 'dialog' : undefined}
             aria-expanded={action === 'grid' ? Boolean(arrange.anchor) : undefined}
             onClick={(event) => run(action, event)}
           >
             {ICONS[action]}
-            <span>{labelOf(action)}</span>
+            <span>{actionLabel}</span>
           </button>
           )
         })}
         {overflow.length > 0 && (
-          <button type="button" className="tablet-context-more" aria-label="More actions" title="More actions" onClick={more.open}>
+          <button type="button" className="tablet-context-more" aria-label={t('More actions')} title={t('More actions')} onClick={more.open}>
             <span aria-hidden="true">•••</span>
           </button>
         )}
-        {busyNote && <span className="tablet-context-progress" role="status">{tabletSystemMessage(busyNote, 'Working…')}</span>}
+        {busyNote && <span className="tablet-context-progress" role="status">{tabletSystemMessage(busyNote, t('Working…'))}</span>}
       </div>
 
       {arrange.anchor && (
         <TabletPopover
           anchor={arrange.anchor}
           align="center"
-          label="Arrange selection"
+          label={t('Arrange selection')}
           fallbackSheet
           avoidRect={selectionRect}
           onClose={closeArrange}
@@ -217,21 +223,25 @@ export function TabletContextBar({
       )}
 
       {more.anchor && (
-        <TabletPopover anchor={more.anchor} align="center" label="More actions" fallbackSheet onClose={more.close}>
+        <TabletPopover anchor={more.anchor} align="center" label={t('More actions')} fallbackSheet onClose={more.close}>
           {overflow.map((action) => (
             (() => {
               const disabled = false
+              const actionLabel = t(ACTION_LABEL[action])
+              const blockReason = mutationBlockReason.startsWith('Busy: ')
+                ? t('Busy: {0}', { 0: mutationBlockReason.slice('Busy: '.length) })
+                : t(mutationBlockReason)
               return (
                 <button
                   key={action}
                   type="button"
                   className={`tablet-menu-item ${action === 'archive' ? 'archive' : ''}`}
                   disabled={disabled}
-                  title={disabled ? mutationBlockReason : undefined}
+                  title={disabled ? blockReason : undefined}
                   onClick={() => { more.close(); run(action) }}
                 >
                   {ICONS[action]}
-                  <span>{ACTION_LABEL[action]}</span>
+                  <span>{actionLabel}</span>
                 </button>
               )
             })()

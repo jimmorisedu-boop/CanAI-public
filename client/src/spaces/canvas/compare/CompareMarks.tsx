@@ -2,6 +2,8 @@ import { Group, Rect, Text } from 'react-konva'
 import type { CanvasItem } from '../konva/types'
 import { CANVAS_MONO_FONT } from '../konva/fonts'
 import type { ComparePicking } from './compareBus'
+import { useT } from '../../../i18n/context.js'
+
 
 // Подсветка на самих объектах во время набора — второй слой подсказок.
 // Пользователь смотрит на холст, а не на плашку, поэтому роль («Исходник») и
@@ -21,6 +23,7 @@ export function CompareMarks({
   items: CanvasItem[]
   scale: number
 }) {
+  const t = useT()
   return (
     <Group listening={false}>
       {items.map((item) => {
@@ -28,7 +31,7 @@ export function CompareMarks({
         const index = session.candidateIds.indexOf(item.id)
         if (!isBaseline && index < 0) return null
 
-        const text = isBaseline ? 'Source' : String(index + 1)
+        const text = isBaseline ? t('Source') : String(index + 1)
         // читаемый экранный размер при отдалении — приём из MarkBadge
         const fontSize = Math.max(11, 13 / scale)
         const height = fontSize * 1.9

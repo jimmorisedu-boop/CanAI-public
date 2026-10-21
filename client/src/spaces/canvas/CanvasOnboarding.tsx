@@ -14,6 +14,8 @@ import {
   type OnboardingView,
 } from './onboardingModel'
 import { onboardingStore, useOnboardingSnapshot } from './onboardingStore'
+import { useT } from '../../i18n/context.js'
+
 
 type CanvasOnboardingMode = 'hidden' | OnboardingView
 
@@ -87,12 +89,13 @@ function OnboardingHeader({
   targetActionRef?: RefObject<HTMLButtonElement>
   actions: OnboardingActionModel
 }) {
-  const viewLabel = expanded ? 'Collapse first steps' : 'Expand first steps'
+  const t = useT()
+  const viewLabel = expanded ? t('Collapse first steps') : t('Expand first steps')
   return (
     <div className="onboarding-heading">
       <div>
-        <strong>First steps</strong>
-        <span className="onboarding-heading-subtitle">A quick, optional tour</span>
+        <strong>{t('First steps')}</strong>
+        <span className="onboarding-heading-subtitle">{t('A quick, optional tour')}</span>
       </div>
       <div className="onboarding-heading-actions">
         <button
@@ -108,8 +111,8 @@ function OnboardingHeader({
         <button
           type="button"
           className="onboarding-icon-action onboarding-close"
-          aria-label="Close first steps"
-          title="Close first steps"
+          aria-label={t('Close first steps')}
+          title={t('Close first steps')}
           onClick={() => actions.setView('dismissed')}
         >
           <IconClose aria-hidden="true" />
@@ -136,16 +139,17 @@ export function CanvasOnboardingView({
   tutorialIndex?: number
   onTutorialIndexChange?: (index: number) => void
 }) {
+  const t = useT()
   const [localIndex, setLocalIndex] = useState(0)
   if (status === 'loading') return null
 
   if (status === 'error') {
     if (!isEmpty) return null
     return (
-      <aside className="canvas-onboarding canvas-onboarding-fallback" aria-label="Getting started in CanAI">
-        <strong>Start here</strong>
-        <p>Take a short tour of importing, references, the assistant, and saved assets.</p>
-        <button type="button" className="onboarding-primary-action" onClick={() => openHelp('quick-start')}>Open Help</button>
+      <aside className="canvas-onboarding canvas-onboarding-fallback" aria-label={t('Getting started in CanAI')}>
+        <strong>{t('Start here')}</strong>
+        <p>{t('Take a short tour of importing, references, the assistant, and saved assets.')}</p>
+        <button type="button" className="onboarding-primary-action" onClick={() => openHelp('quick-start')}>{t('Open Help')}</button>
       </aside>
     )
   }
@@ -164,7 +168,8 @@ export function CanvasOnboardingView({
   if (mode === 'collapsed') {
     return (
       <button ref={targetActionRef} type="button" className="canvas-onboarding onboarding-collapsed" onClick={() => actions.setView('expanded')}>
-        First steps
+
+        {t('First steps')}
       </button>
     )
   }
@@ -183,7 +188,7 @@ export function CanvasOnboardingView({
   return (
     <section
       className={`canvas-onboarding onboarding-tour onboarding-${mode}`}
-      aria-label="CanAI first steps"
+      aria-label={t('CanAI first steps')}
       data-view={mode}
       data-step={done ? 'done' : activeTopic.id}
     >
@@ -192,33 +197,33 @@ export function CanvasOnboardingView({
         <div className="onboarding-tour-done">
           <div className="onboarding-done-mark" aria-hidden="true">✓</div>
           <div>
-            <h3>You’re ready to explore</h3>
-            <p>Come back to Help whenever you want a quick reminder.</p>
+            <h3>{t('You’re ready to explore')}</h3>
+            <p>{t('Come back to Help whenever you want a quick reminder.')}</p>
           </div>
           <div className="onboarding-tour-done-actions">
-            <button type="button" className="onboarding-secondary-action" onClick={() => actions.setView('dismissed')}>Done</button>
-            <button type="button" className="onboarding-primary-action" onClick={() => { actions.setView('dismissed'); openHelp('quick-start') }}>Open Help</button>
+            <button type="button" className="onboarding-secondary-action" onClick={() => actions.setView('dismissed')}>{t('Done')}</button>
+            <button type="button" className="onboarding-primary-action" onClick={() => { actions.setView('dismissed'); openHelp('quick-start') }}>{t('Open Help')}</button>
           </div>
         </div>
       ) : (
         <>
-          <div className="onboarding-tour-progress" aria-label={`Step ${index + 1} of ${TOUR_IDS.length}`}>
-            <span>Step {index + 1} of {TOUR_IDS.length}</span>
+          <div className="onboarding-tour-progress" aria-label={t('Step {0} of {1}', { 0: index + 1, 1: TOUR_IDS.length })}>
+            <span>{t('Step {0} of {1}', { 0: index + 1, 1: TOUR_IDS.length })}</span>
             <span className="onboarding-tour-dots" aria-hidden="true">
               {TOUR_IDS.map((id, dotIndex) => <i key={id} className={dotIndex === index ? 'active' : dotIndex < index ? 'past' : ''} />)}
             </span>
           </div>
           <div className="onboarding-tour-main">
-            {image && <img className="onboarding-tour-image" src={image} alt={activeStep?.alt || activeTopic.title} />}
+            {image && <img className="onboarding-tour-image" src={image} alt={t(activeStep?.alt || activeTopic.title)} />}
             <div className="onboarding-tour-copy">
-              <h3>{activeTopic.id === 'assistant-photos' ? activeStep?.title : activeTopic.title}</h3>
-              <p>{activeBody}</p>
+              <h3>{t(activeTopic.id === 'assistant-photos' ? (activeStep?.title ?? activeTopic.title) : activeTopic.title)}</h3>
+              <p>{t(activeBody)}</p>
             </div>
           </div>
           <div className="onboarding-tour-actions">
-            <button type="button" className="onboarding-secondary-action" disabled={index === 0} onClick={() => setIndex(index - 1)}>Back</button>
-            <button type="button" className="onboarding-secondary-action" onClick={() => actions.setView('dismissed')}>Skip</button>
-            <button type="button" className="onboarding-primary-action" onClick={() => setIndex(index + 1)}>{index === TOUR_IDS.length - 1 ? 'Finish' : 'Next'}</button>
+            <button type="button" className="onboarding-secondary-action" disabled={index === 0} onClick={() => setIndex(index - 1)}>{t('Back')}</button>
+            <button type="button" className="onboarding-secondary-action" onClick={() => actions.setView('dismissed')}>{t('Skip')}</button>
+            <button type="button" className="onboarding-primary-action" onClick={() => setIndex(index + 1)}>{index === TOUR_IDS.length - 1 ? t('Finish') : t('Next')}</button>
           </div>
         </>
       )}
@@ -227,6 +232,7 @@ export function CanvasOnboardingView({
 }
 
 export function CanvasOnboarding({ store }: { store: CanvasStore }) {
+  const t = useT()
   const { status, document } = useOnboardingSnapshot()
   const cardRef = useRef<HTMLDivElement>(null)
   const targetActionRef = useRef<HTMLButtonElement>(null)
@@ -241,9 +247,9 @@ export function CanvasOnboarding({ store }: { store: CanvasStore }) {
     defer: (run) => window.requestAnimationFrame(run),
     focusAction: () => targetActionRef.current?.focus({ preventScroll: true }),
     pulse: () => showOnboardingTarget(cardRef.current, {
-      message: 'This is the first-steps guide.',
+      message: t('This is the first-steps guide.'),
     }),
-  })), [])
+  })), [t])
 
   useEffect(() => {
     const nextView = document?.view ?? null

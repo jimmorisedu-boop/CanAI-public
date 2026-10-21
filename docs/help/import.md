@@ -28,6 +28,7 @@ Paste one HTTPS URL to make a link card, then choose Download to save a local co
 
 - Imported media stays in the local media library. Text pasted into a prompt remains text.
 - All adjustments made while Arrange is open become one Undo step when it closes. Sizes and rotations are preserved. On tablet, select several cards and choose Arrange in the selection actions.
+- System labels follow the selected interface language; board names, prompts, and generated content keep their original language.
 
 ## Related topics
 

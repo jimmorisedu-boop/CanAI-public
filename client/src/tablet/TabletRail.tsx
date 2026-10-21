@@ -3,6 +3,8 @@ import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import type { PinnedAsset } from '../spaces/canvas/konva/types'
 import { useContentVersion } from '../spaces/canvas/konva/useStore'
 import { previewSrc } from './remoteSession'
+import { useT } from '../i18n/context.js'
+
 
 // Полка слева: ассеты и архив.
 //
@@ -22,6 +24,7 @@ export function TabletRail({
   onPickAsset(asset: PinnedAsset): void
   onOpenArchive(): void
 }) {
+  const t = useT()
   useContentVersion(store)
   const assets = store.getAssets()
   const bySlot = new Map(assets.map((asset) => [asset.slot, asset]))
@@ -32,7 +35,7 @@ export function TabletRail({
   const archived = store.getArchive().length
 
   return (
-    <aside className="tablet-rail" aria-label="Assets">
+    <aside className="tablet-rail" aria-label={t('Assets')}>
       <div className="tablet-rail-list tablet-rail-slots">
         {slots.map((slot) => {
           const asset = bySlot.get(slot)
@@ -42,7 +45,7 @@ export function TabletRail({
                 type="button"
                 className={`tablet-slot ${asset ? 'filled' : 'empty'}`}
                 data-asset-slot={slot}
-                aria-label={asset ? `Asset ${slot + 1}: ${asset.name ?? asset.kind}` : `Free slot ${slot + 1}`}
+                aria-label={asset ? t('Asset {0}: {1}', { 0: slot + 1, 1: asset.name ?? asset.kind }) : t('Free slot {0}', { 0: slot + 1 })}
                 onClick={() => { if (asset) onPickAsset(asset) }}
               >
                 {asset ? <AssetFace asset={asset} /> : <span className="tablet-slot-plus" aria-hidden="true">+</span>}
@@ -51,7 +54,7 @@ export function TabletRail({
                 <button
                   type="button"
                   className="tablet-slot-unpin"
-                  aria-label="Unpin"
+                  aria-label={t('Unpin')}
                   onClick={() => store.unpinAsset(slot)}
                 >
                   <IconClose size={12} />
@@ -68,10 +71,10 @@ export function TabletRail({
           className="tablet-rail-btn"
           data-archive-dropzone
           onClick={onOpenArchive}
-          aria-label={archived > 0 ? `Board archive: ${archived}` : 'Board archive'}
+          aria-label={archived > 0 ? t('Board archive: {0}', { 0: archived }) : t('Board archive')}
         >
           <IconArchive size={22} />
-          <span>Archive</span>
+          <span>{t('Archive')}</span>
           {archived > 0 && <em>{archived}</em>}
         </button>
       </div>

@@ -8,6 +8,8 @@ import {
 import { useRef } from 'react'
 import type { CueDirection } from './generationSeriesGeometry'
 import type { GenerationSeriesCueModel } from './useGenerationSeriesReveal'
+import { useT } from '../../../i18n/context.js'
+
 
 interface FocusTarget {
   isConnected?: boolean
@@ -73,6 +75,7 @@ export function GenerationSeriesCues({
   cues: GenerationSeriesCueModel[]
   onShow(launchId: string): void
 }): JSX.Element | null {
+  const t = useT()
   const focusKeeperRef = useRef<ReturnType<typeof createGenerationSeriesCueFocusKeeper> | null>(null)
   if (!focusKeeperRef.current) focusKeeperRef.current = createGenerationSeriesCueFocusKeeper()
   if (cues.length === 0) return null
@@ -94,7 +97,7 @@ export function GenerationSeriesCues({
           }}
         >
           <DirectionIcon direction={cue.direction} />
-          <span>{cue.direction === 'mixed' ? `All ${cue.totalCount}` : `More ${cue.hiddenCount}`}</span>
+          <span>{cue.direction === 'mixed' ? t('All {0}', { 0: cue.totalCount }) : t('More {0}', { 0: cue.hiddenCount })}</span>
         </button>
       ))}
     </>

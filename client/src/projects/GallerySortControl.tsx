@@ -2,6 +2,8 @@ import React, { useEffect, useId, useRef, useState } from 'react'
 import { IconCaretDown, IconDone } from '../ui/icons'
 import type { GallerySort } from './galleryProjectList'
 import { moveGallerySort, SORT_OPTIONS, type GallerySortNavigationKey } from './gallerySortModel'
+import { useT } from '../i18n/context.js'
+
 
 export function GallerySortMenu({
   value,
@@ -12,8 +14,9 @@ export function GallerySortMenu({
   active: GallerySort
   onSelect(value: GallerySort): void
 }) {
+  const t = useT()
   return (
-    <div className="gallery-sort-menu" role="listbox" aria-label="Board sorting">
+    <div className="gallery-sort-menu" role="listbox" aria-label={t('Board sorting')}>
       {SORT_OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -24,7 +27,7 @@ export function GallerySortMenu({
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => onSelect(option.value)}
         >
-          <span>{option.label}</span>
+          <span>{t(option.label)}</span>
           {value === option.value && <IconDone size={16} aria-hidden="true" />}
         </button>
       ))}
@@ -39,12 +42,13 @@ export function GallerySortControl({
   value: GallerySort
   onChange(value: GallerySort): void
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState<GallerySort>(value)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuId = useId()
-  const label = SORT_OPTIONS.find((option) => option.value === value)?.label ?? SORT_OPTIONS[0].label
+  const label = t(SORT_OPTIONS.find((option) => option.value === value)?.label ?? SORT_OPTIONS[0].label)
 
   useEffect(() => {
     if (!open) return
@@ -93,14 +97,14 @@ export function GallerySortControl({
         ref={triggerRef}
         type="button"
         className="gallery-sort-trigger"
-        aria-label="Board sorting"
+        aria-label={t('Board sorting')}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => open ? setOpen(false) : openMenu()}
         onKeyDown={onKeyDown}
       >
-        <span className="gallery-sort-label">Sort</span>
+        <span className="gallery-sort-label">{t('Sort')}</span>
         <strong>{label}</strong>
         <IconCaretDown size={16} aria-hidden="true" />
       </button>

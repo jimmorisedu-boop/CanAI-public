@@ -45,6 +45,7 @@ import {
   mediaTimeBadgeRightReservation,
   mediaTimeBadgeText,
 } from './mediaBadgeLayout'
+import { useT } from '../../../i18n/context.js'
 
 const warmCloudVideo = (_src?: string): void => {}
 
@@ -55,6 +56,7 @@ export const VideoItem = memo(function VideoItem({
   selected,
   viewScale = 1,
 }: ItemProps & { viewScale?: number }) {
+  const t = useT()
   // Одно скругление на кадр, подложку, рамку и полосы — постоянное на экране.
   const radius = mediaCornerRadius(viewScale, item.w, item.h)
   const video = useVideoEl(item.src)
@@ -255,7 +257,7 @@ export const VideoItem = memo(function VideoItem({
       }, boardMediaUploader())
     } catch (err) {
       console.error('[VideoItem] Frame capture error:', err)
-      showErrorToast(err instanceof Error ? err.message : 'Failed to extract a frame from the video')
+      showErrorToast(err instanceof Error ? err.message : t('Failed to extract a frame from the video'))
     } finally {
       setCapturing(false)
     }

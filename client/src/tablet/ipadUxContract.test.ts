@@ -115,9 +115,9 @@ test('контекстное меню становится нижним лист
 
 test('шапка показывает основные действия словами и не возвращает экспорт по меткам', () => {
   const text = source('./TabletTopbar.tsx')
-  assert.match(text, />\s*Add\s*</)
-  assert.match(text, /state\.multiSelect \? 'Done' : 'Select'/)
-  assert.match(text, />\s*Tasks\s*</)
+  assert.match(text, />\s*\{t\('Add'\)\}\s*</)
+  assert.match(text, /state\.multiSelect \? t\('Done'\) : t\('Select'\)/)
+  assert.match(text, />\s*\{t\('Tasks'\)\}\s*</)
   assert.match(text, /label="1:1"/)
   assert.doesNotMatch(text, /hasMarks|Экспорт по меткам/)
 })
@@ -275,7 +275,7 @@ test('у помощника на планшете заводится новый 
   assert.match(prompt, /<TabletAssistantChats/, 'ряд диалогов должен стоять во вкладке помощника')
   assert.match(chats, /promptChatStore\.createConversation/)
   assert.match(chats, /promptChatStore\.selectConversation/)
-  assert.match(chats, /aria-label="New conversation"/)
+  assert.match(chats, /aria-label=\{t\('New conversation'\)\}/)
 })
 
 /**

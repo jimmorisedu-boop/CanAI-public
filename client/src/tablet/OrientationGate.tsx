@@ -10,6 +10,8 @@ import {
   isStandalone,
   shouldShowHomeScreenHint,
 } from './homeScreenHint'
+import { useT } from '../i18n/context.js'
+
 
 // Ворота ландшафта и подсказка про домашний экран.
 //
@@ -60,6 +62,7 @@ function OrientationBlock({ state }: { state: Exclude<OrientationState, 'ok'> })
 }
 
 function HomeScreenHint() {
+  const t = useT()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -76,8 +79,8 @@ function HomeScreenHint() {
   return (
     <div className="tablet-home-hint" role="note">
       <div>
-        <strong>Add CanAI to your home screen</strong>
-        <p>Choose “Share” → “Add to Home Screen”. The tablet stays in landscape, the address bar disappears, and the board gets the full screen.</p>
+        <strong>{t('Add CanAI to your home screen')}</strong>
+        <p>{t('Choose “Share” → “Add to Home Screen”. The tablet stays in landscape, the address bar disappears, and the board gets the full screen.')}</p>
       </div>
       <button
         type="button"

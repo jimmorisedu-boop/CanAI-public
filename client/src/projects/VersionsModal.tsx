@@ -5,6 +5,9 @@ import { useDialogFocus } from '../ui/dialogFocus'
 import { InlineNotice } from '../ui/InlineNotice'
 import { OBJECTS, pluralWithCount } from '../ui/plural'
 import { reportOnboardingSuccess } from '../spaces/canvas/onboardingEvents'
+import { useT } from '../i18n/context.js'
+import { getIntlLocale } from '../i18n/language.js'
+
 
 export async function restoreProjectVersionWithOnboarding<T>(
   restore: () => Promise<T>,
@@ -24,9 +27,10 @@ export async function loadVersionsForModal(
 
 function versionParts(createdAt: number): { date: string; time: string } {
   const value = new Date(createdAt)
+  const locale = getIntlLocale()
   return {
-    date: value.toLocaleDateString('en-US'),
-    time: value.toLocaleTimeString('en-US'),
+    date: value.toLocaleDateString(locale),
+    time: value.toLocaleTimeString(locale),
   }
 }
 
@@ -39,6 +43,7 @@ export function VersionsList({
   busyId: string | null
   onRestore(version: ProjectVersion): void
 }) {
+  const t = useT()
   return (
     <div className="recovery-list versions-list">
       {versions.map((version) => {
@@ -61,14 +66,14 @@ export function VersionsList({
               <span className="version-time">{time}</span>
               <small>
                 {version.items == null
-                  ? 'Contents unknown'
+                  ? t('Contents unknown')
                   : version.items === 0
-                    ? 'Empty board'
+                    ? t('Empty board')
                     : pluralWithCount(version.items, OBJECTS)}
               </small>
             </div>
             <button className="version-action" disabled={busyId !== null} onClick={() => onRestore(version)}>
-              <IconRefresh size={15} /> {busyId === version.id ? 'Restoring…' : 'Restore'}
+              <IconRefresh size={15} /> {busyId === version.id ? t('Restoring…') : t('Restore')}
             </button>
           </article>
         )
@@ -83,6 +88,7 @@ export function VersionsModal({ project, onClose, onRestored, onServiceUnavailab
   onRestored: (project: ProjectMeta) => void
   onServiceUnavailable: () => void
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLElement>(null)
   useDialogFocus(dialogRef, onClose)
   const [versions, setVersions] = useState<ProjectVersion[] | null>(null)
@@ -98,7 +104,7 @@ export function VersionsModal({ project, onClose, onRestored, onServiceUnavailab
         onClose()
         return
       }
-      setError(cause instanceof Error ? cause.message : 'Could not load versions')
+      setError(cause instanceof Error ? cause.message : t('Could not load versions'))
     }
   }
   useEffect(() => { void load() }, [project.id])
@@ -118,7 +124,7 @@ export function VersionsModal({ project, onClose, onRestored, onServiceUnavailab
         onClose()
         return
       }
-      setError(cause instanceof Error ? cause.message : 'Could not restore version')
+      setError(cause instanceof Error ? cause.message : t('Could not restore version'))
     } finally {
       setBusyId(null)
     }
@@ -128,19 +134,19 @@ export function VersionsModal({ project, onClose, onRestored, onServiceUnavailab
     <div className="modal-backdrop" onClick={onClose}>
       <section ref={dialogRef} className="modal-card recovery-modal versions-modal" role="dialog" aria-modal="true" aria-labelledby="versions-title" tabIndex={-1} onClick={(event) => event.stopPropagation()}>
         <header>
-          <div><h2 id="versions-title">Versions of “{project.name}”</h2><p>Restoring creates a new board and leaves the current one unchanged.</p></div>
-          <button className="icon-btn" type="button" aria-label="Close" onClick={onClose}><IconClose /></button>
+          <div><h2 id="versions-title">{t('Versions of “{0}”', { 0: project.name })}</h2><p>{t('Restoring creates a new board and leaves the current one unchanged.')}</p></div>
+          <button className="icon-btn" type="button" aria-label={t('Close')} onClick={onClose}><IconClose /></button>
         </header>
         {error && (
           <InlineNotice
             className="recovery-error"
             tone="error"
             title={error}
-            action={{ label: 'Retry', onClick: () => void load() }}
+            action={{ label: t('Retry'), onClick: () => void load() }}
           />
         )}
         <div className="versions-modal-body">
-          {versions === null ? <p>Loading…</p> : versions.length === 0 ? <p>No backups yet.</p> : (
+          {versions === null ? <p>{t('Loading…')}</p> : versions.length === 0 ? <p>{t('No backups yet.')}</p> : (
             <VersionsList versions={versions} busyId={busyId} onRestore={(version) => void restore(version)} />
           )}
         </div>

@@ -21,6 +21,7 @@ import { showErrorToast } from '../toastBus'
 import { linkCardPresentation } from './linkItemPresentation'
 import { linkItemLayout, linkItemScale } from './linkItemLayout'
 import { CardActionButton } from './CardActionButton'
+import { useT } from '../../../i18n/context.js'
 export { linkCardPresentation } from './linkItemPresentation'
 
 const LINK_CARD_RADIUS = 12
@@ -89,6 +90,7 @@ export const LinkItem = memo(function LinkItem({
   draggable: boolean
   selected: boolean
 }) {
+  const t = useT()
   const groupRef = useRef<Konva.Group>(null)
   const preparingRef = useRef(false)
   const [preparing, setPreparing] = useState(false)
@@ -114,7 +116,7 @@ export const LinkItem = memo(function LinkItem({
       // окно не открылось, и предлагать «Я вошёл» было бы враньём.
       .then(() => setLoginOpened(true))
       .catch((error) => {
-        showErrorToast(error instanceof Error ? error.message : 'Failed to open the sign-in window')
+        showErrorToast(error instanceof Error ? error.message : t('Failed to open the sign-in window'))
       })
       .finally(() => {
         preparingRef.current = false
@@ -131,7 +133,7 @@ export const LinkItem = memo(function LinkItem({
     setPreparing(true)
     void mediaLinkController.downloadLink(store, projectId, item.id)
       .catch((error) => {
-        showErrorToast(error instanceof Error ? error.message : 'Failed to start download')
+        showErrorToast(error instanceof Error ? error.message : t('Failed to start download'))
       })
       .finally(() => {
         preparingRef.current = false
@@ -193,7 +195,7 @@ export const LinkItem = memo(function LinkItem({
             y={Math.max(8, layout.preview.height - 42)}
             width={Math.min(150, layout.preview.width - 24)}
             height={30}
-            label="Retry preview"
+            label={t('Retry preview')}
             textColor={colors.textColor}
             accent={colors.accent}
             accentHover={colors.accentHover}

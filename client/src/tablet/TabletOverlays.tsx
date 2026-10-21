@@ -7,6 +7,8 @@ import { TabletHelp } from './TabletHelp'
 import { TabletSketch } from './TabletSketch'
 import { TabletTextEditor } from './TabletTextEditor'
 import { tabletMediaUploader, type TabletRuntime } from './runtime'
+import { useT } from '../i18n/context.js'
+
 
 const TabletClip = lazy(() => import('./TabletClip').then((module) => ({ default: module.TabletClip })))
 const TabletCompare = lazy(() => import('./TabletCompare').then((module) => ({ default: module.TabletCompare })))
@@ -30,6 +32,7 @@ export function TabletOverlays({ editor, store, projectId, runtime, onClose }: {
   runtime: TabletRuntime
   onClose(): void
 }) {
+  const t = useT()
   if (!editor) return null
   if (editor.kind === 'text') return <TabletTextEditor store={store} itemId={editor.itemId} onClose={onClose} />
   if (editor.kind === 'sketch') return <TabletSketch store={store} itemId={editor.itemId} projectId={projectId} projectSource="local" upload={tabletMediaUploader(runtime, projectId)} onClose={onClose} />
@@ -37,7 +40,7 @@ export function TabletOverlays({ editor, store, projectId, runtime, onClose }: {
   if (editor.kind === 'archive') return <TabletArchive store={store} onClose={onClose} />
   if (editor.kind === 'settings') return <TabletSettings onClose={onClose} />
   if (editor.kind === 'help') return <TabletHelp onClose={onClose} />
-  return <Suspense fallback={<div className="tablet-modal-loading" role="status">Opening…</div>}>
+  return <Suspense fallback={<div className="tablet-modal-loading" role="status">{t('Opening…')}</div>}>
     {editor.kind === 'clip'
       ? <TabletClip store={store} upload={tabletMediaUploader(runtime, projectId)} itemId={editor.itemId} tool={editor.tool} onClose={onClose} />
       : <TabletCompare store={store} baseId={editor.baseId} candidateIds={editor.candidateIds} onClose={onClose} />}

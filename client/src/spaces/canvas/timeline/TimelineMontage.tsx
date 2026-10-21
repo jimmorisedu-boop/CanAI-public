@@ -2,6 +2,8 @@ import { IconCrop, IconDone, IconMagic, IconRestore, IconScissors, IconTrash, Ic
 import { TimelineButton } from './TimelineButton'
 import { segmentAt } from './timelineModel'
 import type { TimelineSession } from './useTimelineSession'
+import { useT } from '../../../i18n/context.js'
+
 
 // Ряд монтажа: разрезать, убрать кусок, кадрировать, найти склейки, отделить
 // звук — слева; итог и главное действие «Применить» — справа. Подписей на
@@ -17,6 +19,7 @@ export function TimelineMontage({
   onToggleCrop(): void
   onExtractAudio(): void
 }) {
+  const t = useT()
   const { facts } = session
   // Кусок под курсором: от него зависит, что делает клавиша C и как называется
   // кнопка. Удалённый кусок с дорожки НЕ пропадает — он перечёркнут.
@@ -25,11 +28,11 @@ export function TimelineMontage({
   const visibleShots = session.shots.filter((shot) => shot.score >= session.threshold).length
 
   return (
-    <section className="tl-montage" aria-label="Editing actions">
+    <section className="tl-montage" aria-label={t('Editing actions')}>
       <div className="tl-montage-row">
         <div className="tl-montage-tools">
           <TimelineButton
-            label="Cut at cursor position"
+            label={t('Cut at cursor position')}
             keys="S"
             shortcut="S"
             placement="top-start"
@@ -39,7 +42,7 @@ export function TimelineMontage({
             <IconScissors size={18} />
           </TimelineButton>
           <TimelineButton
-            label={headDropped ? 'Restore segment to result' : 'Remove segment under cursor'}
+            label={headDropped ? t('Restore segment to result') : t('Remove segment under cursor')}
             keys="C"
             shortcut="C"
             placement="top-start"
@@ -50,7 +53,7 @@ export function TimelineMontage({
             {headDropped ? <IconRestore size={18} /> : <IconTrash size={18} />}
           </TimelineButton>
           <TimelineButton
-            label={session.crop ? 'Disable cropping' : 'Enable cropping'}
+            label={session.crop ? t('Disable cropping') : t('Enable cropping')}
             keys="R"
             shortcut="R"
             placement="top-start"
@@ -61,8 +64,8 @@ export function TimelineMontage({
             <IconCrop size={18} />
           </TimelineButton>
           <TimelineButton
-            label={session.autoBusy ? 'Finding cuts…' : 'Find cuts'}
-            hint="Auto-detect scene changes"
+            label={session.autoBusy ? t('Finding cuts…') : t('Find cuts')}
+            hint={t('Auto-detect scene changes')}
             placement="top-start"
             on={session.autoOn}
             toggle
@@ -73,10 +76,10 @@ export function TimelineMontage({
             <IconMagic size={18} />
           </TimelineButton>
           <TimelineButton
-            label="Separate audio"
+            label={t('Separate audio')}
             keys="A"
             shortcut="A"
-            hint={facts && !facts.hasAudio ? 'This clip has no audio track' : 'Extract audio as a separate object'}
+            hint={facts && !facts.hasAudio ? t('This clip has no audio track') : t('Extract audio as a separate object')}
             placement="top-start"
             disabled={!facts?.hasAudio}
             onClick={onExtractAudio}
@@ -94,7 +97,7 @@ export function TimelineMontage({
                 max={60}
                 step={1}
                 value={session.threshold}
-                aria-label="Cut detection sensitivity"
+                aria-label={t('Cut detection sensitivity')}
                 onChange={(event) => session.setThreshold(Number(event.target.value))}
               />
               <output>{visibleShots} of {session.shots.length}</output>
@@ -107,7 +110,7 @@ export function TimelineMontage({
         <div className="timeline-result" title={session.summary}>{session.summary}</div>
 
         <TimelineButton
-          label="Apply edits"
+          label={t('Apply edits')}
           keys="Enter"
           shortcut="Enter"
           placement="top-end"

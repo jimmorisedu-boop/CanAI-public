@@ -1,9 +1,9 @@
 import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import { assetToRef } from '../spaces/canvas/konva/assetRef'
 import { notify } from '../spaces/canvas/notifications'
-import { plural } from '../ui/plural'
 import { itemToRef } from '../spaces/canvas/konva/selection'
 import { requestAddPromptAsset } from '../spaces/canvas/promptAssetBus'
+import { t } from '../i18n/translate.js'
 
 // Куда можно отпустить объект: полка ассетов и плитка архива.
 //
@@ -63,7 +63,7 @@ export function applyBoardDrop(
       width: item.naturalWidth,
       height: item.naturalHeight,
     })
-    notify({ kind: 'success', message: 'Added to assets' })
+    notify({ kind: 'success', message: t('Added to assets') })
     return true
   }
 
@@ -71,8 +71,11 @@ export function applyBoardDrop(
   if (moved === 0) return false
   notify({
     kind: 'success',
-    message: `Archive: ${moved} ${plural(moved, ['object', 'objects', 'objects'])}`,
-    ...(onUndo ? { action: { label: 'Undo', run: onUndo } } : {}),
+    message: t('Archive: {0} {1}', {
+      0: moved,
+      1: t(Math.abs(moved) === 1 ? 'object' : 'objects'),
+    }),
+    ...(onUndo ? { action: { label: t('Undo'), run: onUndo } } : {}),
   })
   return true
 }

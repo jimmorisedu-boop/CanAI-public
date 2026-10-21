@@ -25,8 +25,8 @@ test('tablet help keeps the complete gesture vocabulary and shared guide entry p
     'Show all',
   ])
   assert.match(source, /role="tablist"/)
-  assert.match(source, />\s*Guides\s*</)
-  assert.match(source, />\s*Gestures\s*</)
+  assert.match(source, />\s*\{t\('Guides'\)\}\s*</)
+  assert.match(source, />\s*\{t\('Gestures'\)\}\s*</)
   assert.match(source, /initialTopicId="tablet-lan"/)
   assert.match(source, /showBoardActions=\{false\}/)
 })

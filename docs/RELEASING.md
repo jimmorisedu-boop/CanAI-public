@@ -114,7 +114,7 @@ released tag or package; increment the version for a subsequent release.
 Pushing code or creating a GitHub Release must not change repository
 visibility. Never use `--mirror` to publish the development checkout.
 
-The current public target is the `0.1.1` release candidate. Use a clean Git
+The current public target is the `0.1.2` release candidate. Use a clean Git
 checkout and record the exact commit for every artifact. Do not add provider
 keys, personal data, local runtime files, or a private Cloud service to an
 archive.

@@ -1,18 +1,21 @@
 import type { TimelineSession } from '../spaces/canvas/timeline/useTimelineSession'
 import { RATIO_PRESETS } from '../spaces/canvas/konva/cropMath'
 import { CropFields } from './CropFields'
+import { useT } from '../i18n/context.js'
+
 
 export function TabletClipCropPanel({ session, open, onOpenChange }: {
   session: TimelineSession
   open: boolean
   onOpenChange(open: boolean): void
 }) {
+  const t = useT()
   if (!session.crop) return null
   return (
     <details className="tablet-clip-crop-panel" open={open} onToggle={event => onOpenChange(event.currentTarget.open)}>
-      <summary>Crop settings</summary>
+      <summary>{t('Crop settings')}</summary>
       <div className="tablet-clip-crop-content">
-        <div className="tablet-clip-ratios" role="group" aria-label="Crop aspect ratio">
+        <div className="tablet-clip-ratios" role="group" aria-label={t('Crop aspect ratio')}>
           {RATIO_PRESETS.map(preset => (
             <button
               key={preset.label}

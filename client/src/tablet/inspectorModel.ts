@@ -95,7 +95,7 @@ export const ACTION_LABEL: Record<InspectorAction, string> = {
   front: 'Bring to front',
   back: 'Send to back',
   download: 'Download',
-  archive: 'Archive',
+  archive: 'Move to archive',
   delete: 'Delete',
 }
 

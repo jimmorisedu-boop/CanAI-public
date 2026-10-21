@@ -19,6 +19,8 @@ import {
   IconVideo,
 } from '../ui/icons'
 import { TabletPopover, useAnchor } from './TabletPopover'
+import { useT } from '../i18n/context.js'
+
 
 // Панель доски.
 //
@@ -59,26 +61,27 @@ export interface TopbarActions {
 }
 
 export function TabletTopbar({ state, actions }: { state: TopbarState; actions: TopbarActions }) {
+  const t = useT()
   const add = useAnchor()
   const more = useAnchor()
   const exporting = useAnchor()
   const [pressedAdd, setPressedAdd] = useState(false)
 
   const note = state.selectionCount > 0
-    ? `selected: ${state.selectionCount}`
-    : state.saveNote
-  const selectLabel = state.multiSelect ? 'Done' : 'Select'
+    ? t('selected: {0}', { 0: state.selectionCount })
+    : t(state.saveNote)
+  const selectLabel = state.multiSelect ? t('Done') : t('Select')
 
   return (
     <header className="tablet-topbar tablet-board-topbar">
       <button
         type="button"
         className="ui-btn quiet tablet-back"
-        aria-label="To boards"
-        title="To boards"
+        aria-label={t('To boards')}
+        title={t('To boards')}
         onClick={actions.onExit}
       >
-        <IconBack size={18} /><span>Boards</span>
+        <IconBack size={18} /><span>{t('Boards')}</span>
       </button>
 
       <button
@@ -86,7 +89,7 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
         className="tablet-title"
         disabled={state.canManage === false}
         onClick={actions.onRename}
-        title={state.canManage === false ? undefined : 'Rename board'}
+        title={state.canManage === false ? undefined : t('Rename board')}
       >
         <strong>{state.boardName}</strong>
         <small>{note}</small>
@@ -99,8 +102,8 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
         {state.canEdit !== false && <button
           type="button"
           className="ui-icon-btn tablet-icon"
-          aria-label="Undo"
-          title="Undo"
+          aria-label={t('Undo')}
+          title={t('Undo')}
           disabled={!state.canUndo}
           onClick={actions.onUndo}
         >
@@ -109,8 +112,8 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
         {state.canEdit !== false && <button
           type="button"
           className="ui-icon-btn tablet-icon"
-          aria-label="Retry"
-          title="Retry"
+          aria-label={t('Retry')}
+          title={t('Retry')}
           disabled={!state.canRedo}
           onClick={actions.onRedo}
         >
@@ -122,20 +125,20 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
         {state.canEdit !== false && <button
           type="button"
           className={`ui-btn quiet tablet-topbar-button tablet-topbar-add ${pressedAdd ? 'on' : ''}`}
-          aria-label="Add to board"
-          title="Add to board"
+          aria-label={t('Add to board')}
+          title={t('Add to board')}
           onClick={(event) => {
             setPressedAdd(true)
             add.open(event)
           }}
         >
-          <IconPlus size={20} /><span>Add</span>
+          <IconPlus size={20} /><span>{t('Add')}</span>
         </button>}
         {state.canEdit !== false && <button
           type="button"
           className={`ui-btn quiet tablet-topbar-button tablet-topbar-select ${state.multiSelect ? 'on' : ''}`}
-          aria-label={state.multiSelect ? `Done${state.selectionCount > 0 ? `, selected ${state.selectionCount}` : ''}` : 'Select multiple'}
-          title={state.multiSelect ? 'Done' : 'Select multiple'}
+          aria-label={state.multiSelect ? t('Done{0}', { 0: state.selectionCount > 0 ? `, selected ${state.selectionCount}` : '' }) : t('Select multiple')}
+          title={state.multiSelect ? t('Done') : t('Select multiple')}
           aria-pressed={state.multiSelect}
           onClick={actions.onToggleSelect}
         >
@@ -144,27 +147,27 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
         <button
           type="button"
           className="ui-btn quiet tablet-topbar-button tablet-topbar-tasks tablet-icon-badged"
-          aria-label={state.activeTasks > 0 ? `Tasks: running ${state.activeTasks}` : 'Tasks'}
-          title={state.activeTasks > 0 ? `Tasks: running ${state.activeTasks}` : 'Tasks'}
+          aria-label={state.activeTasks > 0 ? t('Tasks: running {0}', { 0: state.activeTasks }) : t('Tasks')}
+          title={state.activeTasks > 0 ? t('Tasks: running {0}', { 0: state.activeTasks }) : t('Tasks')}
           onClick={actions.onTasks}
         >
-          <IconTasks size={20} /><span>Tasks</span>
+          <IconTasks size={20} /><span>{t('Tasks')}</span>
           {state.activeTasks > 0 && <span className="tablet-badge">{state.activeTasks}</span>}
         </button>
         <button
           type="button"
           className="ui-btn quiet tablet-topbar-button tablet-topbar-export"
-          aria-label="Export board"
-          title="Export board"
+          aria-label={t('Export board')}
+          title={t('Export board')}
           onClick={exporting.open}
         >
-          <IconExport size={20} /><span>Export</span>
+          <IconExport size={20} /><span>{t('Export')}</span>
         </button>
         <button
           type="button"
           className="ui-icon-btn tablet-icon"
-          aria-label="More"
-          title="More"
+          aria-label={t('More')}
+          title={t('More')}
           onClick={more.open}
         >
           <span className="tablet-more-dots" aria-hidden="true">•••</span>
@@ -174,36 +177,36 @@ export function TabletTopbar({ state, actions }: { state: TopbarState; actions: 
       {state.canEdit !== false && add.anchor && (
         <TabletPopover
           anchor={add.anchor}
-          label="What to add"
+          label={t('What to add')}
           onClose={() => {
             add.close()
             setPressedAdd(false)
           }}
         >
-          <MenuItem icon={<IconImage size={19} />} label="Image" onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('image') }} />
-          <MenuItem icon={<IconVideo size={19} />} label="Video" onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('video') }} />
-          <MenuItem icon={<IconSound size={19} />} label="Sound" onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('audio') }} />
-          <MenuItem icon={<IconText size={19} />} label="Text" onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('text') }} />
+          <MenuItem icon={<IconImage size={19} />} label={t('Image')} onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('image') }} />
+          <MenuItem icon={<IconVideo size={19} />} label={t('Video')} onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('video') }} />
+          <MenuItem icon={<IconSound size={19} />} label={t('Sound')} onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('audio') }} />
+          <MenuItem icon={<IconText size={19} />} label={t('Text')} onClick={() => { add.close(); setPressedAdd(false); actions.onAdd('text') }} />
         </TabletPopover>
       )}
 
       {exporting.anchor && (
-        <TabletPopover anchor={exporting.anchor} label="Download" onClose={exporting.close}>
-          <MenuItem icon={<IconExport size={19} />} label={`Selected objects · ${state.selectionCount}`} disabled={!state.selectionCount || !actions.onExportSelected} onClick={() => { exporting.close(); actions.onExportSelected?.() }} />
-          <MenuItem icon={<IconExport size={19} />} label={`Entire board${state.exportCount === undefined ? '' : ` · ${state.exportCount}`}`} onClick={() => { exporting.close(); actions.onExport() }} />
+        <TabletPopover anchor={exporting.anchor} label={t('Download')} onClose={exporting.close}>
+          <MenuItem icon={<IconExport size={19} />} label={t('Selected objects · {0}', { 0: state.selectionCount })} disabled={!state.selectionCount || !actions.onExportSelected} onClick={() => { exporting.close(); actions.onExportSelected?.() }} />
+          <MenuItem icon={<IconExport size={19} />} label={t('Entire board{0}', { 0: state.exportCount === undefined ? '' : ` · ${state.exportCount}` })} onClick={() => { exporting.close(); actions.onExport() }} />
         </TabletPopover>
       )}
       {more.anchor && (
-        <TabletPopover anchor={more.anchor} label="More" onClose={more.close}>
-          <MenuItem icon={<IconFitAll size={19} />} label="Show all" onClick={() => { more.close(); actions.onFitAll() }} />
+        <TabletPopover anchor={more.anchor} label={t('More')} onClose={more.close}>
+          <MenuItem icon={<IconFitAll size={19} />} label={t('Show all')} onClick={() => { more.close(); actions.onFitAll() }} />
           <MenuItem icon={<IconExact size={19} />} label="1:1" onClick={() => { more.close(); actions.onZoomActual() }} />
-          {actions.onObjects && <MenuItem icon={<IconCursor size={19} />} label="Board objects" onClick={() => { more.close(); actions.onObjects?.() }} />}
-          <MenuItem icon={<span>−</span>} label="Smaller interface" onClick={() => adjustTabletUiScale(-0.1)} />
-          <MenuItem icon={<span>+</span>} label="Larger interface" onClick={() => adjustTabletUiScale(0.1)} />
+          {actions.onObjects && <MenuItem icon={<IconCursor size={19} />} label={t('Board objects')} onClick={() => { more.close(); actions.onObjects?.() }} />}
+          <MenuItem icon={<span>−</span>} label={t('Smaller interface')} onClick={() => adjustTabletUiScale(-0.1)} />
+          <MenuItem icon={<span>+</span>} label={t('Larger interface')} onClick={() => adjustTabletUiScale(0.1)} />
           <span className="tablet-menu-sep" />
-          <MenuItem icon={<IconSun size={19} />} label="Theme" onClick={() => { more.close(); actions.onTheme() }} />
-          <MenuItem icon={<IconHelp size={19} />} label="Help" onClick={() => { more.close(); actions.onHelp() }} />
-          {state.localFeatures !== false && <MenuItem icon={<IconSettings size={19} />} label="Settings" onClick={() => { more.close(); actions.onSettings() }} />}
+          <MenuItem icon={<IconSun size={19} />} label={t('Theme')} onClick={() => { more.close(); actions.onTheme() }} />
+          <MenuItem icon={<IconHelp size={19} />} label={t('Help')} onClick={() => { more.close(); actions.onHelp() }} />
+          {state.localFeatures !== false && <MenuItem icon={<IconSettings size={19} />} label={t('Settings')} onClick={() => { more.close(); actions.onSettings() }} />}
         </TabletPopover>
       )}
     </header>

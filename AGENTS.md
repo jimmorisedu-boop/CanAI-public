@@ -55,6 +55,9 @@ actually ran.
   a user-visible workflow.
 - Preserve API routes, storage keys, IDs, schemas, security checks, and legacy
   compatibility unless the change updates the documented contract.
+- English is the default interface; Russian is selected per device in Settings.
+  Translate application labels through `client/src/i18n/` and preserve user
+  content, model names, API values, and positional placeholders.
 - Keep provider calls explicit and testable. `CANAI_MOCK=1` is opt-in; a
   missing provider key must not silently enable mock behavior.
 - Use focused tests for behavior changes and describe the checks you ran in a

@@ -34,6 +34,8 @@ const react = {
 }
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8')
 const stub = new Proxy({}, { get: (_, key) => key === '__esModule' ? true : () => undefined })
+const identityTranslate = (message: string, params?: Record<string, unknown>) =>
+  params ? message.replace(/\{(\d+)\}/gu, (token, key: string) => Object.hasOwn(params, key) ? String(params[key]) : token) : message
 function load(file: string, mocks: Record<string, any>) {
   const exports = {}
   const code = ts.transpileModule(read(file), { fileName: file,
@@ -57,6 +59,7 @@ const keyboard = load('client/src/spaces/canvas/konva/useCanvasHotkeys.ts', {
 const chipModule = load('client/src/spaces/canvas/RefChip.tsx', {
   'react/jsx-runtime': { jsx: (type: any, props: any) => ({ type, props }), jsxs: (type: any, props: any) => ({ type, props }), Fragment: 'Fragment' },
   './RefChipPreview': { useRefChipPreview: () => ({ anchorRef() {}, hoverProps: {}, preview: null }) },
+  '../../i18n/context.js': { useT: () => identityTranslate },
 })
 
 const brokenSetterCalls: Array<{ index: number; value: any }> = []
@@ -77,6 +80,7 @@ const brokenChipModule = load('client/src/spaces/canvas/RefChip.tsx', {
   './RefChipPreview': { useRefChipPreview: () => ({ anchorRef() {}, hoverProps: {}, preview: null }) },
   './refChipFallback': { refChipFallback, retryRefSrc },
   './konva/screenPreview': { screenPreviewSrc },
+  '../../i18n/context.js': { useT: () => identityTranslate },
 })
 const promptSource = read('client/src/spaces/canvas/PromptBar.tsx')
 const promptTree = ts.createSourceFile('PromptBar.tsx', promptSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)

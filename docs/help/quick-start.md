@@ -29,6 +29,7 @@ Enter a prompt, check the quote, and choose Generate.
 - Generation needs a provider connection. You can still explore boards and edit local content without one.
 - Notices and error tooltips use English. Your own content can use any language.
 - Missing media shows an English notice. Restore the file, then retry loading.
+- System labels follow the selected interface language; board names, prompts, and generated content keep their original language.
 
 ## Related topics
 

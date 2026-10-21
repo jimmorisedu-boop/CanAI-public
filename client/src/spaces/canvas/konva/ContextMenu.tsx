@@ -38,6 +38,8 @@ import { zoomToFit } from './cameraOps'
 import { downloadItemsAsZip } from './zipExport'
 import { api } from '../../../api'
 import { canvasItemFileName } from './mediaFileName'
+import { useT } from '../../../i18n/context.js'
+
 
 export interface MenuState {
   x: number // экранные координаты внутри .konva-wrap
@@ -60,6 +62,7 @@ export function ContextMenu({
   onAdd: (kind: 'image' | 'video' | 'text', world: { x: number; y: number }) => void
   onClose: () => void
 }) {
+  const t = useT()
   useEffect(() => {
     const close = () => onClose()
     window.addEventListener('click', close)
@@ -101,8 +104,8 @@ export function ContextMenu({
 
   async function downloadSelectionZip(): Promise<void> {
     const { ok, failed } = await downloadItemsAsZip(store.getSelectedItems())
-    if (ok === 0) showErrorToast('Failed to download the selection')
-    else if (failed > 0) showToast(`Downloaded ${ok}of ${ok + failed} — some files are unavailable`)
+    if (ok === 0) showErrorToast(t('Failed to download the selection'))
+    else if (failed > 0) showToast(t('Downloaded {0}of {1} — some files are unavailable', { 0: ok, 1: ok + failed }))
   }
 
   const selectedItems = store.getSelectedItems()
@@ -125,13 +128,13 @@ export function ContextMenu({
             <>
               <button className="add-menu-item" onClick={() => run(() => copySelected(store))}>
                 <IconCopy size={16} />
-                <span className="mi-label">Copy</span>
+                <span className="mi-label">{t('Copy')}</span>
                 <kbd>Ctrl+C</kbd>
               </button>
               {item.kind === 'text' && (
                 <button className="add-menu-item" disabled={!canMutateTarget} onClick={() => runOwned([item.id], () => store.autoFitText(item.id))}>
                   <IconFit size={16} />
-                  <span className="mi-label">Expand text</span>
+                  <span className="mi-label">{t('Expand text')}</span>
                 </button>
               )}
               {item.kind === 'image' && item.src && (
@@ -144,16 +147,16 @@ export function ContextMenu({
                     }
                   >
                     <IconOpenExternal size={16} />
-                    <span className="mi-label">Open in editor</span>
+                    <span className="mi-label">{t('Open in editor')}</span>
                     <kbd>F2</kbd>
                   </button>
                   <button className="add-menu-item" disabled={!canMutateTarget} onClick={() => runOwned([item.id], () => setSketchTarget(item.id))}>
                     <IconSketch size={16} />
-                    <span className="mi-label">Sketch overlay</span>
+                    <span className="mi-label">{t('Sketch overlay')}</span>
                   </button>
                   <button className="add-menu-item" disabled={!canMutateTarget} onClick={() => runOwned([item.id], () => setCropTarget(item.id))}>
                     <IconCrop size={16} />
-                    <span className="mi-label">Crop</span>
+                    <span className="mi-label">{t('Crop')}</span>
                   </button>
                 </>
               )}
@@ -161,12 +164,12 @@ export function ContextMenu({
                 <>
                   <button className="add-menu-item" disabled={!canMutateTarget} onClick={() => runOwned([item.id], () => setTimelineTarget(item.id))}>
                     <IconTimeline size={16} />
-                    <span className="mi-label">Clip editing</span>
+                    <span className="mi-label">{t('Clip editing')}</span>
                     <kbd>T</kbd>
                   </button>
                   <button className="add-menu-item" disabled={!canMutateTarget} onClick={() => runOwned([item.id], () => extractAudioFromItem(store, item.id))}>
                     <IconSound size={16} />
-                    <span className="mi-label">Separate audio</span>
+                    <span className="mi-label">{t('Separate audio')}</span>
                   </button>
                 </>
               )}
@@ -175,7 +178,7 @@ export function ContextMenu({
                    правой по той картинке, от которой пляшешь */
                 <button className="add-menu-item" onClick={() => run(() => startComparePicking(item.id))}>
                   <IconCompare size={16} />
-                  <span className="mi-label">Compare with…</span>
+                  <span className="mi-label">{t('Compare with…')}</span>
                   <kbd>Q</kbd>
                 </button>
               )}
@@ -183,16 +186,16 @@ export function ContextMenu({
                 <>
                   <button className="add-menu-item" onClick={() => run(download)}>
                     <IconDownload size={16} />
-                    <span className="mi-label">{item.kind === 'audio' ? 'Download audio' : 'Download'}</span>
+                    <span className="mi-label">{item.kind === 'audio' ? t('Download audio') : t('Download')}</span>
                   </button>
                   <button
                     className="add-menu-item"
                     onClick={() =>
-                      run(() => api.revealFile(item.src!).catch((err) => showErrorToast(err.message || 'Error')))
+                      run(() => api.revealFile(item.src!).catch((err) => showErrorToast(err.message || t('Error'))))
                     }
                   >
                     <IconOpenExternal size={16} />
-                    <span className="mi-label">Show in folder</span>
+                    <span className="mi-label">{t('Show in folder')}</span>
                   </button>
                 </>
               )}
@@ -201,7 +204,7 @@ export function ContextMenu({
           {hasMultiSelection && (
             <button className="add-menu-item" onClick={() => run(() => void downloadSelectionZip())}>
               <IconDownload size={16} />
-              <span className="mi-label">Download selection (ZIP)</span>
+              <span className="mi-label">{t('Download selection (ZIP)')}</span>
             </button>
           )}
           {hasMarkedSelection && (
@@ -211,7 +214,7 @@ export function ContextMenu({
               onClick={() => runOwned([...store.getSelectedIds()], () => store.setMarks([...store.getSelectedIds()], undefined))}
             >
               <IconClose size={16} />
-              <span className="mi-label">Remove label</span>
+              <span className="mi-label">{t('Remove label')}</span>
             </button>
           )}
           {/* Заглушка генерации — не объект: слои её не двигают, а «Удалить»
@@ -224,21 +227,21 @@ export function ContextMenu({
                   плитку — жест, о котором нельзя догадаться (F-16) */}
                <button className="add-menu-item" disabled={!canMutateSelection} onClick={() => runOwned(archiveTargets(store, item.id), () => { archiveSelection(store, archiveTargets(store, item.id)) })}>
                 <IconArchive size={16} />
-                <span className="mi-label">To Archive</span>
+                <span className="mi-label">{t('To Archive')}</span>
                 <kbd>Shift+Del</kbd>
               </button>
                <button className="add-menu-item" disabled={!canMutateSelection} onClick={() => runOwned([...store.getSelectedIds()], () => store.bringToFront([...store.getSelectedIds()]))}>
                 <IconToFront size={16} />
-                <span className="mi-label">Bring to front</span>
+                <span className="mi-label">{t('Bring to front')}</span>
               </button>
                <button className="add-menu-item" disabled={!canMutateSelection} onClick={() => runOwned([...store.getSelectedIds()], () => store.sendToBack([...store.getSelectedIds()]))}>
                 <IconToBack size={16} />
-                <span className="mi-label">Send to back</span>
+                <span className="mi-label">{t('Send to back')}</span>
               </button>
               <div className="add-menu-divider" />
                <button className="add-menu-item danger" disabled={!canMutateSelection} onClick={() => runOwned([...store.getSelectedIds()], () => store.removeSelected())}>
                 <IconTrash size={16} />
-                <span className="mi-label">Delete</span>
+                <span className="mi-label">{t('Delete')}</span>
                 <kbd>Del</kbd>
               </button>
             </>
@@ -253,12 +256,12 @@ export function ContextMenu({
               })}
             >
               <IconStop size={16} />
-              <span className="mi-label">{pending.taskType === 'media-import' ? 'Stop download' : 'Stop generation'}</span>
+              <span className="mi-label">{pending.taskType === 'media-import' ? t('Stop download') : t('Stop generation')}</span>
             </button>
           ) : (
              <button className="add-menu-item danger" disabled={!canMutateTarget} onClick={() => runOwned([...store.getSelectedIds()], () => store.removeSelected())}>
               <IconTrash size={16} />
-              <span className="mi-label">Remove card</span>
+              <span className="mi-label">{t('Remove card')}</span>
               <kbd>Del</kbd>
             </button>
           )}
@@ -267,30 +270,30 @@ export function ContextMenu({
         <>
           <button className="add-menu-item" onClick={() => run(() => onAdd('image', menu.world))}>
             <IconImage size={16} />
-            <span className="mi-label">Add image</span>
+            <span className="mi-label">{t('Add image')}</span>
           </button>
           <button className="add-menu-item" onClick={() => run(() => onAdd('video', menu.world))}>
             <IconVideo size={16} />
-            <span className="mi-label">Add video</span>
+            <span className="mi-label">{t('Add video')}</span>
           </button>
           <button className="add-menu-item" onClick={() => run(() => onAdd('text', menu.world))}>
             <IconText size={16} />
-            <span className="mi-label">Add text</span>
+            <span className="mi-label">{t('Add text')}</span>
           </button>
           <div className="add-menu-divider" />
           <button className="add-menu-item" disabled={!hasClipboard()} onClick={() => run(() => paste(store, menu.world, viewport))}>
             <IconPaste size={16} />
-            <span className="mi-label">Paste</span>
+            <span className="mi-label">{t('Paste')}</span>
             <kbd>Ctrl+V</kbd>
           </button>
           <button className="add-menu-item" onClick={() => run(() => store.selectAll())}>
             <IconSelectAll size={16} />
-            <span className="mi-label">Select all</span>
+            <span className="mi-label">{t('Select all')}</span>
             <kbd>Ctrl+A</kbd>
           </button>
           <button className="add-menu-item" onClick={() => run(() => zoomToFit(store, viewport))}>
             <IconFit size={16} />
-            <span className="mi-label">Show all</span>
+            <span className="mi-label">{t('Show all')}</span>
             <kbd>Shift+1</kbd>
           </button>
         </>

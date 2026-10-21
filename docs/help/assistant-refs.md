@@ -24,6 +24,10 @@ Right-click a thumbnail to remove it from the current references; the Canvas ite
 
 ![Edit multiple Assistant references: Remove one](../../client/public/help/assistant-refs-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
+
 ## Related topics
 
 - [Add photos to Assistant](./assistant-photos.md)

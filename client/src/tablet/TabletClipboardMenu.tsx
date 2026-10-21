@@ -4,6 +4,8 @@ import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import { useDismissOnOutsidePointer } from '../ui/dismissOnOutside'
 import { isActiveModal, useModalFocus } from './modalFocus'
 import type { Point } from './boardGestures'
+import { useT } from '../i18n/context.js'
+
 
 // Меню копирования и вставки — ответ на свайп тремя пальцами вниз.
 //
@@ -38,6 +40,7 @@ export function TabletClipboardMenu({
   onPaste(world: Point): void
   onClose(): void
 }) {
+  const t = useT()
   const ref = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState<{ left: number; top: number } | null>(null)
   useDismissOnOutsidePointer(true, ref, () => {
@@ -72,13 +75,13 @@ export function TabletClipboardMenu({
       role="dialog"
       aria-modal="true"
       tabIndex={-1}
-      aria-label="Copy and paste"
+      aria-label={t('Copy and paste')}
       style={box ? { left: box.left, top: box.top } : { left: -9999, top: -9999 }}
     >
       <p className="tablet-item-menu-title">
-        {selected > 0 ? `Selected: ${selected}` : 'Board clipboard'}
+        {selected > 0 ? t('Selected: {0}', { 0: selected }) : t('Board clipboard')}
       </p>
-      <div role="menu" aria-label="Copy and paste">
+      <div role="menu" aria-label={t('Copy and paste')}>
         {rows.map((row) => (
           <button
             key={row.label}

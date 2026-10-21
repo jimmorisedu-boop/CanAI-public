@@ -4,8 +4,11 @@ import { onToast, type ToastMessage } from '../spaces/canvas/toastBus'
 import { applyToastEvent } from './globalNotificationModel'
 import { AUTO_DISMISS_MS, autoDismissDelay } from './noticeTiming'
 import { useDismissOnOutsidePointer } from './dismissOnOutside'
+import { useT } from '../i18n/context.js'
+
 
 export function GlobalNotifications() {
+  const t = useT()
   const [toasts, setToasts] = useState<ToastMessage[]>([])
   const timersRef = useRef(new Map<string, number>())
   // какой id сейчас занимает каждый replaceKey — чтобы снять его таймер
@@ -105,7 +108,7 @@ export function GlobalNotifications() {
             {staysUntilClosed && (
               <button
                 className="global-toast-close"
-                aria-label="Close"
+                aria-label={t('Close')}
                 onClick={() => removeToast(toast.id)}
               >
                 <IconClose size={13} />

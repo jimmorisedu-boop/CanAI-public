@@ -39,6 +39,8 @@ import { resolveExternalEditNavigation } from './spaces/canvas/externalEditNavig
 import type { ProjectRef } from './types'
 import { activeLocalProject, requestedProjectRef, type ActiveProject } from './projects/activeProject'
 import { projectKey } from './projects/projectRef'
+import { useT } from './i18n/context.js'
+
 
 const NodesSpace = lazy(() => import('./spaces/nodes/NodesSpace').then((module) => ({ default: module.NodesSpace })))
 const CanvasSpace = lazy(() => import('./spaces/canvas/CanvasSpace').then((module) => ({ default: module.CanvasSpace })))
@@ -50,10 +52,11 @@ export function EditorTopbarTasks({ project }: { project: ActiveProject | null }
 }
 
 function SaveIndicator() {
+  const t = useT()
   const [status, setStatus] = useState<SaveStatus>(getSaveStatus())
   useEffect(() => onSaveStatus(setStatus), [])
   if (status === 'idle') return null
-  const text = status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save failed!'
+  const text = status === 'saving' ? t('Saving…') : status === 'saved' ? t('Saved ✓') : t('Save failed!')
   return <span className={`save-indicator ${status}`}>{text}</span>
 }
 
@@ -64,6 +67,7 @@ function FalBalanceIndicator({
   onClick: () => void
   onBalanceUpdate: (balance: number | null, currency: string) => void
 }) {
+  const t = useT()
   const [balance, setBalance] = useState<number | null>(null)
   const [currency, setCurrency] = useState('USD')
   const [loading, setLoading] = useState(false)
@@ -115,7 +119,7 @@ function FalBalanceIndicator({
 
   const presentation = falBalancePresentation({ mockMode, balance, currency, errorMsg })
   return (
-    <Tooltip title="fal.ai balance" hint={`${presentation.tooltip} Click to view spending history.`}>
+    <Tooltip title={t('fal.ai balance')} hint={t('{0} Click to view spending history.', { 0: presentation.tooltip })}>
       <button type="button" className={`fal-balance-btn ${loading ? 'loading' : ''} ${balance == null ? 'no-balance' : ''}`} onClick={onClick}>
         <span className="fal-balance-icon" aria-hidden="true"><IconBalance size={14} weight="fill" /></span>
         <span className="fal-balance-val">{presentation.label}</span>
@@ -125,6 +129,7 @@ function FalBalanceIndicator({
 }
 
 export function App() {
+  const t = useT()
   const compact = useCompactLayout()
   const { attention: topbarHasAttention } = useTopbarAttention()
   const [view, setView] = useState<View>('gallery')
@@ -373,8 +378,8 @@ export function App() {
   )
   const noticeCorner = <div className="notice-corner">{externalEditStatus}<GlobalNotifications /></div>
 
-  if (routeResolving) return <>{noticeCorner}<div className="route-error-page"><div role="status">Opening board…</div></div></>
-  if (routeError) return <><div className="route-error-page"><OperationState title={routeError} detail="Your link is saved. Try connecting again or return to the board list." action={{ label: 'Retry', onClick: () => setRouteAttempt((attempt) => attempt + 1) }} secondary={{ label: 'Boards', onClick: () => { window.history.replaceState(null, '', '/'); setRouteError(null); setView('gallery') } }} /></div>{noticeCorner}</>
+  if (routeResolving) return <>{noticeCorner}<div className="route-error-page"><div role="status">{t('Opening board…')}</div></div></>
+  if (routeError) return <><div className="route-error-page"><OperationState title={routeError} detail={t('Your link is saved. Try connecting again or return to the board list.')} action={{ label: t('Retry'), onClick: () => setRouteAttempt((attempt) => attempt + 1) }} secondary={{ label: t('Boards'), onClick: () => { window.history.replaceState(null, '', '/'); setRouteError(null); setView('gallery') } }} /></div>{noticeCorner}</>
   if (view === 'gallery') return <>
     {noticeCorner}
     <ProjectsScreen
@@ -383,7 +388,7 @@ export function App() {
       theme={theme}
       setTheme={(next) => { if (next === 'light' || next === 'dark') setTheme(next) }}
     />
-    <button type="button" className="help-global-trigger" aria-label="Open Help" title="Open Help (？)" onClick={() => openHelpModal()}>?</button>
+    <button type="button" className="help-global-trigger" aria-label={t('Open Help')} title={t('Open Help (？)')} onClick={() => openHelpModal()}>?</button>
     {settingsOpen && <SettingsModal hint={settingsHint} section={settingsSection} onClose={() => setSettingsOpen(false)} />}
     {shortcutsOpen && <ShortcutsModal onClose={() => { setShortcutsOpen(false); setHelpTopic(undefined) }} editorMounted={false} initialTopicId={helpTopic} />}
   </>
@@ -391,12 +396,12 @@ export function App() {
   return <div className="app-shell">
     {noticeCorner}
     <header className="top-bar" data-compact={compact || undefined}>
-      <button className="brand-back" title="All boards (Ctrl-click to open the gallery in a new tab)" onClick={(event) => event.ctrlKey || event.metaKey ? window.open('/', '_blank', 'noopener') : backToGallery()}>
+      <button className="brand-back" title={t('All boards (Ctrl-click to open the gallery in a new tab)')} onClick={(event) => event.ctrlKey || event.metaKey ? window.open('/', '_blank', 'noopener') : backToGallery()}>
         <IconBack className="brand-back-arrow" size={20} /> <span className="brand">CanAI</span>
       </button>
       {(project || macroEdit) && <div className="top-bar-title-group">
-        {project && <><span className="top-project-name-dot">·</span>{isEditingName ? <input className="top-project-name-input" value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onBlur={commitRename} onKeyDown={(event) => { if (event.key === 'Enter') void commitRename(); if (event.key === 'Escape') cancelRename() }} autoFocus onFocus={(event) => event.target.select()} /> : <button type="button" className="top-project-name editable" title="Click to rename" onClick={() => { setIsEditingName(true); setRenameValue(project.name) }}>{project.name}</button>}</>}
-        {macroEdit && <><span className="top-project-name-dot">·</span><span className="top-project-name">Macro · slot {macroEdit.slot + 1}</span></>}
+        {project && <><span className="top-project-name-dot">·</span>{isEditingName ? <input className="top-project-name-input" value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onBlur={commitRename} onKeyDown={(event) => { if (event.key === 'Enter') void commitRename(); if (event.key === 'Escape') cancelRename() }} autoFocus onFocus={(event) => event.target.select()} /> : <button type="button" className="top-project-name editable" title={t('Click to rename')} onClick={() => { setIsEditingName(true); setRenameValue(project.name) }}>{project.name}</button>}</>}
+        {macroEdit && <><span className="top-project-name-dot">·</span><span className="top-project-name">{t('Macro · slot {0}', { 0: macroEdit.slot + 1 })}</span></>}
       </div>}
       <TopbarActions
         compact={compact}
@@ -413,8 +418,8 @@ export function App() {
       />
     </header>
     <main className="space-host">
-      {project && <div className="space-pane"><ErrorBoundary label="canvas"><Suspense fallback={<div className="canvas-loading">Loading board…</div>}><CanvasSpace key={projectKey(project.ref)} projectRef={project.ref} projectName={project.name} canEdit={project.canEdit} canComment={project.capabilities.canComment} canManage={project.capabilities.canManage} visible={!macroEdit} chatOpen={chatOpen} onChatOpenChange={setChatOpen} /></Suspense></ErrorBoundary></div>}
-      {macroEdit && <div className="space-pane" style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'var(--bg)' }}><ErrorBoundary label="macro editor"><Suspense fallback={<div className="canvas-loading">Loading editor…</div>}><NodesSpace key={`${macroEdit.slot}:${macroEdit.macroId ?? 'new'}`} slot={macroEdit.slot} macroId={macroEdit.macroId} scope={macroEdit.scope ?? 'canvas'} source="local" theme={theme} onClose={(options) => leaveMacroEditor(() => {}, options)} registerLeaveGuard={registerMacroLeaveGuard} /></Suspense></ErrorBoundary></div>}
+      {project && <div className="space-pane"><ErrorBoundary label={t('canvas')}><Suspense fallback={<div className="canvas-loading">{t('Loading board…')}</div>}><CanvasSpace key={projectKey(project.ref)} projectRef={project.ref} projectName={project.name} canEdit={project.canEdit} canComment={project.capabilities.canComment} canManage={project.capabilities.canManage} visible={!macroEdit} chatOpen={chatOpen} onChatOpenChange={setChatOpen} /></Suspense></ErrorBoundary></div>}
+      {macroEdit && <div className="space-pane" style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'var(--bg)' }}><ErrorBoundary label={t('macro editor')}><Suspense fallback={<div className="canvas-loading">{t('Loading editor…')}</div>}><NodesSpace key={`${macroEdit.slot}:${macroEdit.macroId ?? 'new'}`} slot={macroEdit.slot} macroId={macroEdit.macroId} scope={macroEdit.scope ?? 'canvas'} source="local" theme={theme} onClose={(options) => leaveMacroEditor(() => {}, options)} registerLeaveGuard={registerMacroLeaveGuard} /></Suspense></ErrorBoundary></div>}
     </main>
     {settingsOpen && <SettingsModal hint={settingsHint} section={settingsSection} onClose={() => setSettingsOpen(false)} />}
     {shortcutsOpen && <ShortcutsModal onClose={() => { setShortcutsOpen(false); setHelpTopic(undefined) }} editorMounted={Boolean(project)} recoveryTargetRequest={recoveryTargetRequest} initialTopicId={helpTopic} />}

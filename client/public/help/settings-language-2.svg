@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Choose English or Russian</title>
+  <desc id="desc">Language choices with English selected and Russian available.</desc>
+  <rect width="960" height="540" rx="28" fill="#151515"/>
+  <rect x="82" y="56" width="796" height="428" rx="20" fill="#242424" stroke="#3b3b3b"/>
+  <text x="126" y="116" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="28" font-weight="700">Interface language</text>
+  <text x="126" y="154" fill="#a9a9a9" font-family="Arial, sans-serif" font-size="18">Labels update as soon as you select a language.</text>
+  <rect x="126" y="202" width="708" height="86" rx="14" fill="#353535" stroke="#f15a3a" stroke-width="3"/>
+  <circle cx="166" cy="245" r="13" fill="#f15a3a"/>
+  <circle cx="166" cy="245" r="5" fill="#242424"/>
+  <text x="202" y="252" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="24" font-weight="700">English</text>
+  <rect x="126" y="314" width="708" height="86" rx="14" fill="#2c2c2c" stroke="#555"/>
+  <circle cx="166" cy="357" r="13" fill="none" stroke="#999" stroke-width="3"/>
+  <text x="202" y="364" fill="#f2f2f2" font-family="Arial, sans-serif" font-size="24" font-weight="700">Russian</text>
+  <text x="126" y="446" fill="#f15a3a" font-family="Arial, sans-serif" font-size="17">Board names and prompts keep their original language.</text>
+</svg>

@@ -7,6 +7,8 @@ import { ACTION_LABEL, actionSection, type InspectorAction } from './inspectorMo
 import { contextActionsFor } from './contextActionModel'
 import type { Point } from './boardGestures'
 import { isActiveModal, useModalFocus } from './modalFocus'
+import { useT } from '../i18n/context.js'
+
 
 // Меню объекта по долгому нажатию.
 //
@@ -33,6 +35,7 @@ export function TabletItemMenu({
   onAction(action: InspectorAction, items: CanvasItem[]): void
   onClose(): void
 }) {
+  const t = useT()
   const ref = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState<{ left: number; top: number } | null>(null)
   useDismissOnOutsidePointer(true, ref, () => {
@@ -99,13 +102,13 @@ export function TabletItemMenu({
       role="dialog"
       aria-modal="true"
       tabIndex={-1}
-      aria-label="Object actions"
+      aria-label={t('Object actions')}
       style={box ? { left: box.left, top: box.top } : { left: -9999, top: -9999 }}
     >
       <p className="tablet-item-menu-title">
-        {many ? `Selected: ${items.length}` : items[0]!.name || items[0]!.text?.slice(0, 28) || 'Object'}
+        {many ? t('Selected: {0}', { 0: items.length }) : items[0]!.name || items[0]!.text?.slice(0, 28) || t('Object')}
       </p>
-      <div className="tablet-item-menu-actions" role="menu" aria-label="Object actions" onKeyDown={event => {
+      <div className="tablet-item-menu-actions" role="menu" aria-label={t('Object actions')} onKeyDown={event => {
         if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
         const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'))
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement)
@@ -117,7 +120,11 @@ export function TabletItemMenu({
         const section = actionSection(action)
         const previous = index > 0 ? actionSection(actions[index - 1]!) : null
         const disabled = false
-        const disabledReason = disabled ? '' : undefined
+        const rawDisabledReason = disabled ? '' : undefined
+        const disabledReason = rawDisabledReason?.startsWith('Busy: ')
+          ? t('Busy: {0}', { 0: rawDisabledReason.slice('Busy: '.length) })
+          : rawDisabledReason ? t(rawDisabledReason) : undefined
+        const actionLabel = t(ACTION_LABEL[action])
         return (
           <Fragment key={action}>
             {previous && previous !== section && <span className="tablet-menu-sep" aria-hidden="true" />}
@@ -126,14 +133,14 @@ export function TabletItemMenu({
               role="menuitem"
               className={`tablet-menu-item ${action === 'archive' ? 'archive' : ''}`}
               disabled={disabled}
-              title={disabledReason ?? ACTION_LABEL[action]}
-              aria-label={disabledReason ? `${ACTION_LABEL[action]}. ${disabledReason}` : ACTION_LABEL[action]}
+              title={disabledReason ?? actionLabel}
+              aria-label={disabledReason ? `${actionLabel}. ${disabledReason}` : actionLabel}
               onClick={() => {
                 onAction(action, items)
                 onClose()
               }}
             >
-              <span>{ACTION_LABEL[action]}</span>
+              <span>{actionLabel}</span>
             </button>
           </Fragment>
         )

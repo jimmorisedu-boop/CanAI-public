@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { IconGrid } from '../ui/icons'
 import type { CanvasStore } from '../spaces/canvas/konva/canvasStore'
 import type { SelectionAlignment, SelectionArrangement } from '../spaces/canvas/konva/selectionGeometry'
+import { useT } from '../i18n/context.js'
+
 
 const ALIGNMENTS: Array<{ value: SelectionAlignment; label: string }> = [
   { value: 'left', label: 'Left' },
@@ -40,6 +42,7 @@ export function TabletArrangeControls({
   disabled?: boolean
   disabledReason?: string
 }) {
+  const t = useT()
   const [action, setAction] = useState<
     { kind: 'align'; value: SelectionAlignment }
     | { kind: 'layout'; value: SelectionArrangement }
@@ -83,9 +86,9 @@ export function TabletArrangeControls({
   }
 
   return (
-    <div className="tablet-grid-controls" aria-label="Arrange selection">
-      <div className="tablet-arrange-group" role="group" aria-label="Align selection">
-        <span className="tablet-arrange-label">Align</span>
+    <div className="tablet-grid-controls" aria-label={t('Arrange selection')}>
+      <div className="tablet-arrange-group" role="group" aria-label={t('Align selection')}>
+        <span className="tablet-arrange-label">{t('Align')}</span>
         <div className="tablet-arrange-options">
           {ALIGNMENTS.map((entry) => {
             const active = action.kind === 'align' && action.value === entry.value
@@ -95,18 +98,18 @@ export function TabletArrangeControls({
               className={`tablet-arrange-option${active ? ' is-active' : ''}`}
               disabled={disabled}
               aria-pressed={active}
-              title={disabled ? disabledReason : entry.label}
+              title={disabled ? disabledReason : t(entry.label)}
               onClick={() => {
                 const next = { kind: 'align', value: entry.value } as const
                 setAction(next)
                 preview(next)
               }}
-            >{entry.label}</button>
+            >{t(entry.label)}</button>
           })}
         </div>
       </div>
-      <div className="tablet-arrange-group" role="group" aria-label="Layout selection">
-        <span className="tablet-arrange-label"><IconGrid size={16} /> Layout</span>
+      <div className="tablet-arrange-group" role="group" aria-label={t('Layout selection')}>
+        <span className="tablet-arrange-label"><IconGrid size={16} />  {t('Layout')}</span>
         <div className="tablet-arrange-options tablet-arrange-layout">
           {ARRANGEMENTS.map((entry) => {
             const active = action.kind === 'layout' && action.value === entry.value
@@ -116,26 +119,26 @@ export function TabletArrangeControls({
               className={`tablet-arrange-option${active ? ' is-active' : ''}`}
               disabled={disabled}
               aria-pressed={active}
-              title={disabled ? disabledReason : entry.label}
+              title={disabled ? disabledReason : t(entry.label)}
               onClick={() => {
                 const next = { kind: 'layout', value: entry.value } as const
                 setAction(next)
                 preview(next)
               }}
-            >{entry.label}</button>
+            >{t(entry.label)}</button>
           })}
         </div>
       </div>
       <div className="tablet-arrange-fields">
         <label>
-          <span>Columns</span>
+          <span>{t('Columns')}</span>
           <input
             type="number"
             min={1}
             max={ids.length}
             step={1}
             value={columns}
-            aria-label="Columns"
+            aria-label={t('Columns')}
             disabled={disabled || action.kind !== 'layout' || action.value !== 'grid'}
             onChange={(event) => {
               const next = event.target.value
@@ -145,14 +148,14 @@ export function TabletArrangeControls({
           />
         </label>
         <label>
-          <span>Gap</span>
+          <span>{t('Gap')}</span>
           <input
             type="number"
             min={0}
             max={160}
             step={4}
             value={gap}
-            aria-label="Gap"
+            aria-label={t('Gap')}
             disabled={disabled || action.kind !== 'layout'}
             onChange={(event) => {
               const next = event.target.value

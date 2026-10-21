@@ -38,6 +38,7 @@ Two fingers undo, three fingers redo or swipe down to copy and paste, and four f
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
 - Clip editing keeps a large preview and one timeline. Crop values move beside the video in landscape and collapse on narrow screens.
 - Tap a name to visit their cursor or Follow to move with their view. A pan, pinch or zoom stops following.
+- The tablet uses the same device language preference; board content and access settings remain unchanged.
 
 ## Shortcuts
 

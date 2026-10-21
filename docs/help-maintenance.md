@@ -42,6 +42,8 @@ labels, and workflow accuracy.
 [
   {"prefix":"client/src/App.tsx","topics":["quick-start","settings-provider","navigation-shortcuts"]},
   {"prefix":"client/src/main.tsx","topics":["quick-start","navigation-shortcuts"]},
+  {"prefix":"client/src/i18n/","topics":["settings-language"]},
+  {"prefix":"client/src/BillingHistoryModal.tsx","topics":["variants-cost"]},
   {"prefix":"client/src/types.ts","topics":["recovery","pending-jobs"]},
   {"prefix":"client/src/api.ts","topics":["tasks-retry","recovery"]},
   {"prefix":"client/src/ui/systemMessage.ts","topics":["tasks-retry"]},
@@ -49,6 +51,7 @@ labels, and workflow accuracy.
   {"prefix":"client/src/projects/ProjectsScreen.tsx","topics":["library","archive-trash","versions","project-files","recovery"]},
   {"prefix":"client/src/styles/gallery.css","topics":["quick-start","library","archive-trash"]},
   {"prefix":"client/src/settings/FalModelWizard.tsx","topics":["custom-model","settings-provider","models","variants-cost"]},
+  {"prefix":"client/src/settings/LanguageSettingsSection.tsx","topics":["settings-language"]},
   {"prefix":"client/src/settings/","topics":["settings-provider","settings-local","tablet-lan","cloud-boundary","external-editor"]},
   {"prefix":"client/src/projects/CreateBoardDialog.tsx","topics":["quick-start","library"]},
   {"prefix":"client/src/projects/canaiImport.ts","topics":["project-files"]},

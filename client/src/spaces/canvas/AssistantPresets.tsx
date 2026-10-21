@@ -12,6 +12,8 @@ import { askConfirm } from '../../ui/confirmBus'
 import type { ProjectSource } from '../../types'
 import type { LibraryNotice } from './useMacroLibraryActions'
 import { AssistantPicker, type AssistantPickerItem, type AssistantPickerVariant } from './AssistantPicker'
+import { useT } from '../../i18n/context.js'
+
 
 // Ряд помощников — ТА ЖЕ структура, что у макросов в окне промпта: короткая
 // подпись на кнопке, а в конце «⋯» с полным списком (правка, удаление,
@@ -48,6 +50,7 @@ export function AssistantPresets({
 }
 
 function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelectionChanged, manage = true }: { models: CatalogModel[]; variant?: AssistantPickerVariant; onChanged?(): void; onSelectionChanged?(selection: AssistantSelectionInfo): void; manage?: boolean }) {
+  const t = useT()
   const [presets, setPresets] = useState<AssistantPreset[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editing, setEditing] = useState<{ preset: AssistantPreset | null } | null>(null)
@@ -65,14 +68,14 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
         onSelectionChanged?.({
           id: state.activeId,
           versionId: null,
-          name: active?.name ?? (state.activeId ? null : "Universal"),
+          name: active?.name ?? (state.activeId ? null : t('Universal')),
           modelId: active?.modelId ?? null,
         })
       })
       .catch((cause) => {
-        showErrorToast(cause instanceof Error ? cause.message : "Failed to load helpers")
+        showErrorToast(cause instanceof Error ? cause.message : t('Failed to load helpers'))
       })
-  }, [onSelectionChanged])
+  }, [onSelectionChanged, t])
 
   useEffect(reload, [reload])
 
@@ -86,7 +89,7 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
     onSelectionChanged?.({
       id: next,
       versionId: null,
-      name: nextPreset?.name ?? (next ? null : "Universal"),
+      name: nextPreset?.name ?? (next ? null : t('Universal')),
       modelId: nextPreset?.modelId ?? null,
     })
     try {
@@ -96,7 +99,7 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
       onSelectionChanged?.({
         id: active,
         versionId: null,
-        name: confirmed?.name ?? (active ? null : "Universal"),
+        name: confirmed?.name ?? (active ? null : t('Universal')),
         modelId: confirmed?.modelId ?? null,
       })
       onChanged?.()
@@ -106,10 +109,10 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
       onSelectionChanged?.({
         id: previous,
         versionId: null,
-        name: prevPreset?.name ?? (previous ? null : "Universal"),
+        name: prevPreset?.name ?? (previous ? null : t('Universal')),
         modelId: prevPreset?.modelId ?? null,
       })
-      showErrorToast(cause instanceof Error ? cause.message : "Failed to switch assistant")
+      showErrorToast(cause instanceof Error ? cause.message : t('Failed to switch assistant'))
     }
   }
 
@@ -137,7 +140,7 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
       })
       reload()
     } catch (cause) {
-      showErrorToast(cause instanceof Error ? cause.message : "Failed to rename assistant")
+      showErrorToast(cause instanceof Error ? cause.message : t('Failed to rename assistant'))
     }
   }
 
@@ -147,7 +150,7 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
       await api.duplicateAssistant(preset.id)
       reload()
     } catch (cause) {
-      showErrorToast(cause instanceof Error ? cause.message : "Failed to duplicate assistant")
+      showErrorToast(cause instanceof Error ? cause.message : t('Failed to duplicate assistant'))
     }
   }
 
@@ -155,17 +158,17 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
     // Спрашиваем, как при удалении макроса: вместе с помощником пропадут его
     // инструкции и приложенные документы, а вернуть их будет неоткуда.
     const ok = await askConfirm({
-      title: `Delete "${preset.name}"?`,
+      title: t('Delete "{0}"?', { 0: preset.name }),
       detail: preset.docs.length > 0
-        ? `The instructions and ${preset.docs.length} documents will disappear. It will not be possible to return it.`
-        : "The instructions will disappear. It will not be possible to return it.",
-      confirmLabel: "Delete",
-      cancelLabel: "Keep",
+        ? t('The instructions and {0} documents will disappear. It will not be possible to return it.', { 0: preset.docs.length })
+        : t('The instructions will disappear. It will not be possible to return it.'),
+      confirmLabel: t('Delete'),
+      cancelLabel: t('Keep'),
       danger: true,
     })
     if (!ok) return
     await api.deleteAssistant(preset.id).catch((cause) => {
-      showErrorToast(cause instanceof Error ? cause.message : "Failed to remove assistant")
+      showErrorToast(cause instanceof Error ? cause.message : t('Failed to remove assistant'))
     })
     reload()
   }
@@ -177,11 +180,11 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
     try {
       const full = await api.exportAssistant(preset.id)
       saveLibraryFile(libraryFileName(preset.name, 'assistant'), buildAssistantFile(full, models))
-      showToast(`"${preset.name}" saved to file`)
+      showToast(t('"{0}" saved to file', { 0: preset.name }))
     } catch (cause) {
       // Строкой в окне: отказ тут бывает длинным («не помещается в файл —
       // уберите часть документов»), за две секунды всплывашки его не прочесть.
-      setLibraryError(cause instanceof Error ? cause.message : "Failed to save helper to file")
+      setLibraryError(cause instanceof Error ? cause.message : t('Failed to save helper to file'))
     }
   }
 
@@ -202,17 +205,17 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
       reload()
       const notes = [model.note, ...(imported.notes ?? [])].filter((note): note is string => Boolean(note))
       if (notes.length > 0) {
-        setLibraryNotice({ tone: 'info', title: `Assistant "${file.name}" is loaded. What has changed:`, lines: notes })
+        setLibraryNotice({ tone: 'info', title: t('Assistant "{0}" is loaded. What has changed:', { 0: file.name }), lines: notes })
       } else {
-        showToast(`Assistant "${file.name}" loaded`)
+        showToast(t('Assistant "{0}" loaded', { 0: file.name }))
       }
     } catch (cause) {
-      setLibraryError(cause instanceof Error ? cause.message : "Failed to load helper from file")
+      setLibraryError(cause instanceof Error ? cause.message : t('Failed to load helper from file'))
     }
   }
 
   return (
-    <div className="assistant-macros" role="group" aria-label="Assistants">
+    <div className="assistant-macros" role="group" aria-label={t('Assistants')}>
       {variant === 'compact' ? (
         <AssistantPicker
           items={pickerItems}
@@ -220,7 +223,7 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
           variant="compact"
           onSelect={selectCompact}
           onManage={manage ? () => setLibraryOpen(true) : undefined}
-          manageLabel="Configure"
+          manageLabel={t('Configure')}
           manage={manage}
         />
       ) : <div className="macros-inline">
@@ -228,12 +231,12 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
           type="button"
           className={`macros-inline-btn${activeId === null ? ' on' : ''}`}
           aria-pressed={activeId === null}
-          aria-label="Enable Universal Assistant"
-          title="Universal assistant"
+          aria-label={t('Enable Universal Assistant')}
+          title={t('Universal assistant')}
           onClick={() => void selectCompact(null)}
           onMouseDown={(event) => event.preventDefault()}
         >
-          <span className="macro-slot-name">{macroShortLabel("Universal")}</span>
+          <span className="macro-slot-name">{macroShortLabel(t('Universal'))}</span>
         </button>
         {presets.map((preset) => {
           const on = activeId === preset.id
@@ -245,10 +248,10 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
                 aria-pressed={on}
                 title={
                   on
-                    ? `"${preset.name}" is enabled - right click to change`
-                    : `Enable "${preset.name}" - right click to change`
+                    ? t('"{0}" is enabled - right click to change', { 0: preset.name })
+                    : t('Enable "{0}" - right click to change', { 0: preset.name })
                 }
-                aria-label={on ? `Disable assistant ${preset.name}` : `Enable assistant ${preset.name}`}
+                aria-label={on ? t('Disable assistant {0}', { 0: preset.name }) : t('Enable assistant {0}', { 0: preset.name })}
                 onClick={() => void toggle(preset)}
                 onMouseDown={(event) => event.preventDefault()}
                 onKeyDown={(event) => {
@@ -271,8 +274,8 @@ function LocalAssistantPresets({ models, variant = 'shelf', onChanged, onSelecti
           <button
             type="button"
             className="macros-inline-btn more"
-            title="Manage assistants: edit, delete, add"
-            aria-label="Manage assistants"
+            title={t('Manage assistants: edit, delete, add')}
+            aria-label={t('Manage assistants')}
             onClick={() => setLibraryOpen(true)}
           >
             ⋯

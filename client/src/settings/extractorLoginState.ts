@@ -1,3 +1,5 @@
+import { t } from '../i18n/translate.js'
+
 // Формулировки блока «Вход на площадки». Отдельным модулем — по той же
 // причине, что и остальные: правила проверяет тест, а не глаз в модалке.
 
@@ -24,26 +26,26 @@ export function loginStatus(
 ): LoginStatusView {
   if (mode === 'app') {
     return {
-      label: input.signedIn ? 'Through app window' : 'Sign-in window not opened yet',
+      label: input.signedIn ? t('Through app window') : t('Sign-in window not opened yet'),
       tone: input.signedIn ? 'success' : 'idle',
       note: input.signedIn
-        ? 'Downloads use the sign-in saved in the app window. If the site rejects it, the link card will say so.'
-        : 'Click “Sign in”, complete sign-in in the window, and downloads will use your account.',
+        ? t('Downloads use the sign-in saved in the app window. If the site rejects it, the link card will say so.')
+        : t('Click “Sign in”, complete sign-in in the window, and downloads will use your account.'),
     }
   }
   if (mode === 'file') {
     return {
-      label: 'From cookies file',
+      label: t('From cookies file'),
       tone: input.file ? 'success' : 'idle',
       note: input.file
-        ? `Sign-in uses ${input.file}`
-        : 'Choose a cookies file exported by a browser extension.',
+        ? t('Sign-in uses {0}', { 0: input.file })
+        : t('Choose a cookies file exported by a browser extension.'),
     }
   }
   return {
-    label: 'Not set',
+    label: t('Not set'),
     tone: 'idle',
-    note: 'Sites are accessed anonymously. Vimeo does not serve video this way; sign-in is required.',
+    note: t('Sites are accessed anonymously. Vimeo does not serve video this way; sign-in is required.'),
   }
 }
 
@@ -51,7 +53,7 @@ export function loginStatus(
 export function noBrowserNote(available: boolean): string | null {
   return available
     ? null
-    : 'The sign-in window uses Firefox, which is not installed. Install Firefox or choose a cookies file below.'
+    : t('The sign-in window uses Firefox, which is not installed. Install Firefox or choose a cookies file below.')
 }
 
 /**
@@ -95,23 +97,23 @@ export interface LoginBrowserView {
  * к тому, чего не произойдёт.
  */
 export function loginBrowserView(state: LoginBrowserState | null): LoginBrowserView {
-  if (!state) return { label: 'Checking…', tone: 'neutral', note: null, action: null, busy: true }
+  if (!state) return { label: t('Checking…'), tone: 'neutral', note: null, action: null, busy: true }
 
   if (state.state === 'ready') {
     return state.source === 'system'
       ? {
-          label: 'System',
+          label: t('System'),
           tone: 'ok',
           // Та же причина, что у ffmpeg: на своей машине системный найдётся
           // сам, и без этой строчки легко решить, что у покупателя тоже всё есть.
-          note: 'Sign-in opens in Firefox installed on the system. There is no copy in the app folder; download one on another computer.',
-          action: 'Download a copy',
+          note: t('Sign-in opens in Firefox installed on the system. There is no copy in the app folder; download one on another computer.'),
+          action: t('Download a copy'),
           busy: false,
         }
       : {
-          label: 'Ready',
+          label: t('Ready'),
           tone: 'ok',
-          note: 'Lives in the app folder and travels with it.',
+          note: t('Lives in the app folder and travels with it.'),
           action: null,
           busy: false,
         }
@@ -121,7 +123,7 @@ export function loginBrowserView(state: LoginBrowserState | null): LoginBrowserV
     return {
       label: `${state.percent ?? 0}%`,
       tone: 'neutral',
-      note: 'Downloading browser — about 93 MB. You can keep working.',
+      note: t('Downloading browser — about 93 MB. You can keep working.'),
       action: null,
       busy: true,
     }
@@ -129,29 +131,29 @@ export function loginBrowserView(state: LoginBrowserState | null): LoginBrowserV
 
   if (state.state === 'failed') {
     return {
-      label: 'Download failed',
+      label: t('Download failed'),
       tone: 'danger',
-      note: state.message || 'Could not download browser.',
-      action: 'Try again',
+      note: state.message || t('Could not download browser.'),
+      action: t('Try again'),
       busy: false,
     }
   }
 
   if (state.state === 'unsupported') {
     return {
-      label: 'Unavailable',
+      label: t('Unavailable'),
       tone: 'warn',
-      note: 'We do not download a browser for this system. Install Firefox normally and the app will find it.',
+      note: t('We do not download a browser for this system. Install Firefox normally and the app will find it.'),
       action: null,
       busy: false,
     }
   }
 
   return {
-    label: 'Not downloaded',
+    label: t('Not downloaded'),
     tone: 'warn',
-    note: 'Needed to sign in to a site from the app. It downloads from Mozilla and is not bundled.',
-    action: 'Download (≈93 MB)',
+    note: t('Needed to sign in to a site from the app. It downloads from Mozilla and is not bundled.'),
+    action: t('Download (≈93 MB)'),
     busy: false,
   }
 }

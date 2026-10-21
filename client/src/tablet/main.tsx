@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { TabletApp } from './TabletApp'
+import { LanguageProvider } from '../i18n/context'
 import { ErrorBoundary } from '../ui/ErrorBoundary'
 import { ConfirmHost } from '../ui/ConfirmHost'
 import { LiveRegion } from '../ui/LiveRegion'
@@ -44,9 +45,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary label="tablet">
       <IconProvider>
-        <TabletApp />
-        <ConfirmHost />
-        <LiveRegion />
+        <LanguageProvider>
+          <TabletApp />
+          <ConfirmHost />
+          <LiveRegion />
+        </LanguageProvider>
       </IconProvider>
     </ErrorBoundary>
   </React.StrictMode>,

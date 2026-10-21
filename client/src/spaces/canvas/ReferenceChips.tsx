@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { SelectionRef } from './konva/selection'
 import { mediaReferences } from './referenceComposer'
 import { RefChip } from './RefChip'
+import { useT } from '../../i18n/context.js'
+
 
 export function ReferenceChips({
   refs,
@@ -18,6 +20,7 @@ export function ReferenceChips({
   replacingShapeId?: string | null
   gifUsage?: 'frame' | 'unsupported' | 'neutral'
 }) {
+  const t = useT()
   const [expanded, setExpanded] = useState(false)
 
   const MAX_VISIBLE = 15
@@ -58,7 +61,7 @@ export function ReferenceChips({
         <button
           type="button"
           className="ref-chip ref-chip-more"
-          title={`Show ${remainingCount} more objects`}
+          title={t('Show {0} more objects', { 0: remainingCount })}
           onClick={() => setExpanded(true)}
         >
           <span>+{remainingCount}</span>

@@ -2,6 +2,8 @@ import type { ParamSpec } from '../types'
 import { IconDice } from './icons'
 import { ExpandableTextarea } from './ExpandableTextarea'
 import { parameterActive, changeParameter } from '../../../packages/model-catalog/parameterRules'
+import { useT } from '../i18n/context.js'
+
 
 // Рендер настроек модели по её схеме параметров (подход WaveSpeed FormField:
 // виджет выбирается по описанию поля). Компактно — только нужные типы.
@@ -20,16 +22,18 @@ function randomSeed(): number {
 // общий ExpandableTextarea (он же у промптов нод).
 function TextareaField({
   spec,
+  label,
   value,
   onChange,
 }: {
   spec: ParamSpec
+  label: string
   value: unknown
   onChange: (v: unknown) => void
 }) {
   return (
     <ExpandableTextarea
-      label={spec.label}
+      label={label}
       value={String(value ?? spec.default ?? '')}
       onChange={onChange}
       rows={3}
@@ -55,14 +59,16 @@ function Field({
   compactSliderSelect?: boolean
   dense?: boolean
 }) {
-  const common = { className: 'param-input nodrag', 'aria-label': spec.label, onKeyDownCapture: (e: React.KeyboardEvent) => e.stopPropagation() }
+  const t = useT()
+  const label = t(spec.label)
+  const common = { className: 'param-input nodrag', 'aria-label': label, onKeyDownCapture: (e: React.KeyboardEvent) => e.stopPropagation() }
 
   if (spec.widget === 'select') {
     return (
       <select {...common} value={String(value ?? spec.default ?? '')} onChange={(e) => onChange(e.target.value)}>
         {spec.options?.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.label}
+            {t(o.label)}
           </option>
         ))}
       </select>
@@ -74,7 +80,7 @@ function Field({
       <input
         type="checkbox"
         className="param-checkbox nodrag"
-        aria-label={spec.label}
+        aria-label={label}
         checked={Boolean(value ?? spec.default)}
         onChange={(e) => onChange(e.target.checked)}
       />
@@ -96,7 +102,7 @@ function Field({
         />
       )
     }
-    return <TextareaField spec={spec} value={value} onChange={onChange} />
+    return <TextareaField spec={spec} label={label} value={value} onChange={onChange} />
   }
 
   if (spec.widget === 'slider') {
@@ -108,12 +114,12 @@ function Field({
       return (
         <select
           {...common}
-          aria-label={spec.label}
+          aria-label={label}
           value={String(num)}
           onChange={(event) => onChange(Number(event.target.value))}
         >
           {options.map((option) => (
-            <option key={option} value={option}>{option} sec</option>
+            <option key={option} value={option}>{option} {t('sec')}</option>
           ))}
         </select>
       )
@@ -123,7 +129,7 @@ function Field({
         <input
           type="range"
           className="nodrag"
-          aria-label={spec.label}
+          aria-label={label}
           min={spec.min}
           max={spec.max}
           step={spec.step ?? 1}
@@ -145,7 +151,7 @@ function Field({
           value={Number(value ?? spec.default ?? -1)}
           onChange={(e) => onChange(Number(e.target.value))}
         />
-        <button className="param-dice nodrag icon-btn" title="Random seed" onClick={() => onChange(randomSeed())}>
+        <button className="param-dice nodrag icon-btn" title={t('Random seed')} onClick={() => onChange(randomSeed())}>
           <IconDice size={15} />
         </button>
       </div>
@@ -201,6 +207,7 @@ export function ParamControls({
   visibleNames?: readonly string[]
   compactLabels?: boolean
 }) {
+  const t = useT()
   if (params.length === 0) return null
   const visibleParams = visibleNames
     ? visibleNames.flatMap(name => params.filter(spec => spec.name === name))
@@ -215,7 +222,7 @@ export function ParamControls({
         const sliderIsSelect = spec.widget === 'slider'
           && (compactSliderSelect || compactSliderSelectNames?.includes(spec.name))
         const hideLabel = compact && !comfortable && !compactLabels && (spec.widget === 'select' || sliderIsSelect)
-        const visibleLabel = dense && spec.name === 'enable_safety_checker' ? 'Filter' : spec.label
+        const visibleLabel = dense && spec.name === 'enable_safety_checker' ? t('Filter') : t(spec.label)
         // текст занимает всю ширину: подпись сверху, поле под ней — в две
         // колонки длинному промпту оставалась половина и без того узкой ноды
         const wide = !compact && spec.widget === 'textarea'
@@ -224,7 +231,7 @@ export function ParamControls({
             className={`param-row widget-${spec.widget}${wide ? ' wide' : ''}`}
             key={spec.name}
             data-param-name={spec.name}
-            title={compact ? (spec.widget === 'seed' ? 'Seed: -1 = random' : spec.label) : undefined}
+            title={compact ? (spec.widget === 'seed' ? t('Seed: -1 = random') : t(spec.label)) : undefined}
           >
             {!hideLabel && <span className="param-label">{visibleLabel}</span>}
             <Field

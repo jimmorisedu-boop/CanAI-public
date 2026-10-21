@@ -24,6 +24,10 @@ Reopen a board to restore its completed image, video, audio, and text jobs in Ta
 
 ![Track pending jobs: Open Tasks](../../client/public/help/pending-jobs-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; saved results and task state remain unchanged.
+
 ## Related topics
 
 - [Retry a failed job](./tasks-retry.md)

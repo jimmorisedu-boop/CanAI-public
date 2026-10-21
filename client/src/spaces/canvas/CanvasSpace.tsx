@@ -38,6 +38,8 @@ import { browserExternalEditRegistry } from './externalEditRegistry'
 import { deliverExternalEditSession } from './externalEditApply'
 import { registerMediaImportSink } from './mediaImportRegistry'
 import { mediaLinkController, refreshUnsettledLinkPreviews, registerMediaLinkRetryHandler } from './konva/mediaLinkController'
+import { useT } from '../../i18n/context.js'
+
 
 const GENERATION_FOCUS_MS = 2200
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -55,6 +57,7 @@ export function CanvasSpace({ projectRef, projectName, canEdit, canComment: _can
   chatOpen: boolean
   onChatOpenChange(open: boolean): void
 }) {
+  const t = useT()
   const projectId = projectRef.id
   const [store] = useState(() => new CanvasStore())
   const [loadState, setLoadState] = useState<ProjectLoadState>('loading')
@@ -200,9 +203,9 @@ export function CanvasSpace({ projectRef, projectName, canEdit, canComment: _can
   const discardConflictCopy = async () => { const id = conflict?.recoveryProject?.id; if (!id) return; setDiscardingCopy(true); try { await api.deleteProject(id); window.location.reload() } catch (cause) { setDiscardingCopy(false); notify({ kind: 'error', message: cause instanceof Error ? cause.message : 'Failed to remove copy' }) } }
   const openConflictCopy = () => { const id = conflict?.recoveryProject?.id; if (id) window.location.assign(`?project=${encodeURIComponent(`local:${id}`)}`) }
   const boardLoaded = loadState === 'ready'
-  return <div className={`canvas-space ${sketching ? 'sketching' : ''} ${timelineSession && !timelinePeek ? 'timeline' : ''}`} aria-label={`Board "${projectName}"`} style={visible ? undefined : { display: 'none' }}><div className="canvas-main">
-    {boardLoaded && !handoff ? <><KonvaCanvas store={store} projectId={projectId} projectRef={projectRef} readOnly={!canEdit} sketching={sketching} sketchBusy={sketchBusy} onSketchDone={() => void finishSketch()} onSketchCancel={cancelSketch} visible={visible} /><>{canEdit && <CanvasOnboarding store={store} />}</>{timelineSession && <TimelineOverlay session={timelineSession} store={store} />}<PromptBar store={store} projectId={projectId} projectSource="local" projectName={projectName} ready chatOpen={chatOpen} onChatOpenChange={onChatOpenChange} /><ArchiveBar store={store} /><AssetBar store={store} />{compareSession?.phase === 'picking' && <ComparePickerBar store={store} session={compareSession} />}{compareSession?.phase === 'viewing' && <CompareViewer store={store} session={compareSession} />}<ImportQueuePanel /></> : loadState === 'loading' ? <div className="canvas-loading" role="status">Loading board…</div> : null}
-    {loadState === 'error' && <OperationState title="Board failed to load" detail="The server is unavailable or the file cannot be read. An empty canvas will not be saved over the data." action={{ label: 'Retry', onClick: () => setLoadAttempt((attempt) => attempt + 1) }} />}
+  return <div className={`canvas-space ${sketching ? 'sketching' : ''} ${timelineSession && !timelinePeek ? 'timeline' : ''}`} aria-label={t('Board "{0}"', { 0: projectName })} style={visible ? undefined : { display: 'none' }}><div className="canvas-main">
+    {boardLoaded && !handoff ? <><KonvaCanvas store={store} projectId={projectId} projectRef={projectRef} readOnly={!canEdit} sketching={sketching} sketchBusy={sketchBusy} onSketchDone={() => void finishSketch()} onSketchCancel={cancelSketch} visible={visible} /><>{canEdit && <CanvasOnboarding store={store} />}</>{timelineSession && <TimelineOverlay session={timelineSession} store={store} />}<PromptBar store={store} projectId={projectId} projectSource="local" projectName={projectName} ready chatOpen={chatOpen} onChatOpenChange={onChatOpenChange} /><ArchiveBar store={store} /><AssetBar store={store} />{compareSession?.phase === 'picking' && <ComparePickerBar store={store} session={compareSession} />}{compareSession?.phase === 'viewing' && <CompareViewer store={store} session={compareSession} />}<ImportQueuePanel /></> : loadState === 'loading' ? <div className="canvas-loading" role="status">{t('Loading board…')}</div> : null}
+    {loadState === 'error' && <OperationState title={t('Board failed to load')} detail={t('The server is unavailable or the file cannot be read. An empty canvas will not be saved over the data.')} action={{ label: 'Retry', onClick: () => setLoadAttempt((attempt) => attempt + 1) }} />}
     {handoff && <BoardHandoffState holder={handoff} returning={returningBoard} onReturn={() => void returnBoardHere()} />}
     {(loadState === 'conflict-saving' || loadState === 'conflict') && <ProjectConflictState phase={loadState === 'conflict-saving' ? 'saving' : 'conflict'} conflict={conflict} retrying={conflictRetrying} discarding={discardingCopy} onOpenCopy={openConflictCopy} onUseServer={() => void discardConflictCopy()} onRetry={() => void retryConflictRecovery()} onRepair={() => syncHandle?.resumeInvalidSnapshot()} onDownload={() => conflict && downloadProjectSnapshot(conflict.local)} />}
   </div></div>

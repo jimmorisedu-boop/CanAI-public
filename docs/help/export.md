@@ -28,6 +28,7 @@ Choose Download selected or export a ZIP folder to a real local destination.
 
 - Export copies user content. It does not publish a board or grant provider rights.
 - Markers are selection metadata for grouped export; 0 clears the marker.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Related topics
 

@@ -12,6 +12,8 @@ import {
   type Size,
 } from './compareLayout'
 import { useSharedZoom } from '../../../ui/useSharedZoom'
+import { useT } from '../../../i18n/context.js'
+
 
 // Наложение — совмещение двух кадров в одном прямоугольнике. Три способа
 // смотреть, каждый отдельной кнопкой (раньше «переключение» было спрятано в
@@ -98,6 +100,7 @@ export function CompareOverlayView({
   // режим переключения: что сейчас на экране (кто есть кто — пишет шапка)
   showBaseline: boolean
 }) {
+  const t = useT()
   const [wipe, setWipe] = useState(50)
   const frameRef = useRef<HTMLDivElement>(null)
   // 0 — кандидат (нижний слой), 1 — исходник (верхний); порядок для плеера не
@@ -197,7 +200,8 @@ export function CompareOverlayView({
 
       {zoomed && (
         <button className="compare-zoom-reset" onClick={reset}>
-          Fit
+
+          {t('Fit')}
         </button>
       )}
 

@@ -4,6 +4,8 @@ import { isGifReference, type SelectionRef } from './konva/selection'
 import { screenPreviewSrc } from './konva/screenPreview'
 import { useRefChipPreview } from './RefChipPreview'
 import { refChipFallback, retryRefSrc } from './refChipFallback'
+import { useT } from '../../i18n/context.js'
+
 
 export function shortText(text: string, max = 40): string {
   const oneLine = text.replace(/\s+/g, ' ').trim()
@@ -40,14 +42,15 @@ export function RefChip({
   readOnly?: boolean
   gifUsage?: 'frame' | 'unsupported' | 'neutral'
 }) {
+  const t = useT()
   const tagTimerRef = useRef<number | null>(null)
   const isText = refItem.kind === 'text'
   const gifFrame = isGifReference(refItem)
   const gifHint = !gifFrame ? '' : gifUsage === 'frame'
-    ? "Generation uses the first GIF frame, not the animation"
+    ? t('Generation uses the first GIF frame, not the animation')
     : gifUsage === 'unsupported'
-      ? "Online Assistant does not accept GIFs. Take a frame using the GIF button."
-      : "GIF reference"
+      ? t('Online Assistant does not accept GIFs. Take a frame using the GIF button.')
+      : t('GIF reference')
   // ⚠️ Сорвавшийся запрос миниатюры — обычное дело (браузер держит к одному
   // адресу шесть соединений), поэтому вместо значка битого файла показываем
   // плитку с именем и даём повторить. Подробности — в refChipFallback.ts.
@@ -101,7 +104,7 @@ export function RefChip({
       )}
 
       {isText && <span className="ref-chip-label">{shortText(refItem.label, 24)}</span>}
-      {gifFrame && <span className="ref-chip-gif">{gifUsage === 'frame' ? "GIF frame" : 'GIF'}</span>}
+      {gifFrame && <span className="ref-chip-gif">{gifUsage === 'frame' ? t('GIF frame') : 'GIF'}</span>}
       {/* Имя показываем именно у сорвавшегося чипа: у остальных его место
           занимает сама миниатюра, а тут занять его нечем. */}
       {broken && <span className="ref-chip-label">{shortText(broken.name, 24)}</span>}
@@ -113,7 +116,7 @@ export function RefChip({
   // Пока миниатюра не загрузилась, чип отвечает на «почини», а не на «вставь
   // тег»: так и написано на самой плитке. Вернулась картинка — вернулось и
   // обычное поведение.
-  const brokenLabel = broken ? refChipFailureLabel(broken) : ''
+  const brokenLabel = broken ? refChipFailureLabel({ ...broken, reason: t(broken.reason), action: t(broken.action) }) : ''
 
   if (readOnly) {
     // ⚠️ В ленте помощника повтор нужен не меньше — именно там человек и увидел
@@ -144,18 +147,16 @@ export function RefChip({
       tabIndex={0}
       aria-label={
         broken
-          ? `${brokenLabel} Delete with Delete or Backspace`
-          : `${refItem.label}. ${gifHint ? `${gifHint}. ` : ''}${num ? `Insert @${num} with Enter. ` : ''}${onReplace ? "Replace by double clicking or Shift+Enter." : ''}Delete with Delete or Backspace`
+          ? t('{0} Delete with Delete or Backspace', { 0: brokenLabel })
+          : t('{0}. {1}{2}{3}Delete with Delete or Backspace', { 0: refItem.label, 1: gifHint ? `${gifHint}. ` : '', 2: num ? t('Insert @{0} with Enter. ', { 0: num }) : '', 3: onReplace ? t('Replace by double clicking or Shift+Enter.') : '' })
       }
       title={
-        broken
-          ? `${broken.reason}
-Left-click to retry loading${onReplace ? "Double click - replace reference" : ''}
-Right-click to remove from references`
-          : num
-            ? `${gifHint ? `${gifHint}\n` : ''}Left-click to insert @${num} in the prompt${onReplace ? "Double click - replace reference" : ''}
-Right-click to remove from references`
-            : `${gifHint ? `${gifHint}\n` : ''}${onReplace ? "Double click - replace reference" : ''}Right-click to remove from references`
+        [
+          broken ? t(broken.reason) : gifHint,
+          broken ? t('Left-click to retry loading') : num ? t('Left-click to insert @{0} in the prompt', { 0: num }) : '',
+          onReplace ? t('Double click - replace reference') : '',
+          t('Right-click to remove from references'),
+        ].filter(Boolean).join('\n')
       }
       onClick={(e) => {
         if (e.button !== 0) return

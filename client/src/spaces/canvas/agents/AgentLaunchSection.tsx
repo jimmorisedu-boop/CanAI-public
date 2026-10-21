@@ -47,6 +47,8 @@ import {
 import { makeAgentRequestId } from './useAgentPanel'
 import type { AgentPanelController } from './agentPanelController'
 import type { AgentPresentationCapability } from './agentCapabilities'
+import { useT } from '../../../i18n/context.js'
+
 
 export function AgentLaunchSection({
   controller,
@@ -89,6 +91,7 @@ export function AgentLaunchSection({
   onTaskTypeChange(value: string): void
   onInputChange(key: string, value: unknown): void
 }) {
+  const t = useT()
   const llmInfo = useMemo(() => capability?.billing === 'none'
     ? null
     : llmLaunchInfo(selectedPackage, projectRef, llmCatalog), [capability?.billing, llmCatalog, projectRef, selectedPackage])
@@ -325,7 +328,7 @@ export function AgentLaunchSection({
   return (
     <section className={`agent-panel-section agent-panel-launch${compact ? ' agent-panel-launch--compact' : ''}`} aria-labelledby="agent-launch-title">
       <div className="agent-panel-section-head">
-        <span id="agent-launch-title">New task</span>
+        <span id="agent-launch-title">{t('New task')}</span>
         <span className="agent-panel-kicker">{capability?.label ?? 'On this computer'}</span>
       </div>
       {selectedPackage ? (

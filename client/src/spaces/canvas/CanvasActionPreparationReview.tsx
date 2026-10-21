@@ -1,6 +1,8 @@
 import type { CanvasActionPreparationState } from './useCanvasActionPreparation'
 import { formatPriceAmount } from '../../ui/quotePresentation'
 import { systemErrorMessage, systemStatusMessage } from '../../ui/systemMessage'
+import { useT } from '../../i18n/context.js'
+
 
 export function CanvasActionPreparationReview({
   state,
@@ -15,6 +17,7 @@ export function CanvasActionPreparationReview({
   onCancel(): void
   onDismiss(): void
 }) {
+  const t = useT()
   if (state.phase === 'idle') return null
   const quoteAmount = state.quote
     ? formatPriceAmount(state.quote.amountUsd, state.quote.pricingMode, state.quote.meteredUncapped)
@@ -22,9 +25,9 @@ export function CanvasActionPreparationReview({
   if (state.phase === 'quote') {
     return (
       <div className="action-dock-preparation action-dock-preparation-quote" role="alert">
-        <span>Assistant preparation · {quoteAmount ?? '$—'}</span>
-        <button type="button" className="ui-btn primary" onClick={onConfirmQuote}>Confirm</button>
-        <button type="button" className="ui-btn quiet" onClick={onDismiss}>Cancel</button>
+        <span>{t('Assistant preparation · {0}', { 0: quoteAmount ?? '$—' })}</span>
+        <button type="button" className="ui-btn primary" onClick={onConfirmQuote}>{t('Confirm')}</button>
+        <button type="button" className="ui-btn quiet" onClick={onDismiss}>{t('Cancel')}</button>
       </div>
     )
   }
@@ -32,11 +35,11 @@ export function CanvasActionPreparationReview({
     return (
       <div className="action-dock-preparation action-dock-preparation-review" role="status" aria-live="polite">
         <div className="action-dock-preparation-copy">
-          <span className="action-dock-preparation-label">Assistant's draft</span>
+          <span className="action-dock-preparation-label">{t('Assistant\'s draft')}</span>
           <span>{state.resultText}</span>
         </div>
-        <button type="button" className="ui-btn primary" onClick={() => onAccept(state.resultText ?? '')}>Use prompt</button>
-        <button type="button" className="ui-btn quiet" onClick={onDismiss}>Cancel</button>
+        <button type="button" className="ui-btn primary" onClick={() => onAccept(state.resultText ?? '')}>{t('Use prompt')}</button>
+        <button type="button" className="ui-btn quiet" onClick={onDismiss}>{t('Cancel')}</button>
       </div>
     )
   }
@@ -44,7 +47,7 @@ export function CanvasActionPreparationReview({
     return (
       <div className="action-dock-preparation action-dock-preparation-error" role="alert">
         <span>{systemErrorMessage(state.error, "Failed to prepare request")}</span>
-        <button type="button" className="ui-btn quiet" onClick={onDismiss}>Close</button>
+        <button type="button" className="ui-btn quiet" onClick={onDismiss}>{t('Close')}</button>
       </div>
     )
   }
@@ -54,7 +57,7 @@ export function CanvasActionPreparationReview({
       <span className="action-dock-preparation-price">
         {quoteAmount ?? "price based on token consumption"}
       </span>
-      <button type="button" className="ui-btn quiet" onClick={onCancel}>Stop</button>
+      <button type="button" className="ui-btn quiet" onClick={onCancel}>{t('Stop')}</button>
     </div>
   )
 }

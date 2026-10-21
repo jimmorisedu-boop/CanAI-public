@@ -364,7 +364,14 @@ export async function createProject(name: string, initialSnapshot?: unknown): Pr
       }
       return publicProjectMeta(meta)
     } catch (error) {
-      await fs.rm(destination, { recursive: true, force: true }).catch(() => {})
+      // Windows может кратко держать свежий файл (антивирус/индексатор).
+      // Повторы не дают откату оставить неиндексированную папку UUID.
+      await fs.rm(destination, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 50,
+      }).catch(() => {})
       throw error
     }
   })

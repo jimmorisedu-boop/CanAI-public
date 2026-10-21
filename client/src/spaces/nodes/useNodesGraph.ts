@@ -3,6 +3,7 @@ import { useEdgesState, useNodesState, type XYPosition } from '@xyflow/react'
 import { ApiError, api, type MacroScope } from '../../api'
 import { askConfirm } from '../../ui/confirmBus'
 import { notify } from '../canvas/toastBus'
+import { useT } from '../../i18n/context.js'
 import {
   cleanMacroGraph,
   macroLoadState,
@@ -69,6 +70,7 @@ export function useNodesGraph(
   scope: MacroScope = 'canvas',
   _source: ProjectSource = 'local',
 ) {
+  const t = useT()
   const [nodes, setNodes, onNodesChange] = useNodesState<CanaiNode>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanaiEdge>([])
   const [loaded, setLoaded] = useState(false)
@@ -374,7 +376,7 @@ export function useNodesGraph(
   // (тот же replaceKey, что у холста: два ответа на один вопрос не нужны).
   const undo = useCallback(() => {
     if (undoStack.current.length < 2) {
-      notify({ kind: 'info', message: 'Nothing left to undo', replaceKey: 'history' })
+      notify({ kind: 'info', message: t('Nothing left to undo'), replaceKey: 'history' })
       return
     }
     const current = undoStack.current.pop()! // текущее состояние → в повтор
@@ -386,12 +388,12 @@ export function useNodesGraph(
     setNodes(prev.nodes)
     setEdges(prev.edges)
     // Молчим об удачной отмене — граф на экране уже всё сказал.
-  }, [setNodes, setEdges])
+  }, [setNodes, setEdges, t])
 
   const redo = useCallback(() => {
     const popped = redoStack.current.pop()
     if (!popped) {
-      notify({ kind: 'info', message: 'Nothing left to redo', replaceKey: 'history' })
+      notify({ kind: 'info', message: t('Nothing left to redo'), replaceKey: 'history' })
       return
     }
     const next = stampRestored(popped)
@@ -400,7 +402,7 @@ export function useNodesGraph(
     restoredSnapshotRef.current = next
     setNodes(next.nodes)
     setEdges(next.edges)
-  }, [setNodes, setEdges])
+  }, [setNodes, setEdges, t])
 
   // выход из редактора: пустой граф освобождает слот, непустой — проверяем изменения
   const finalize = useCallback(async (): Promise<void> => {

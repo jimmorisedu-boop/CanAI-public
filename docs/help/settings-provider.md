@@ -28,6 +28,7 @@ Review a new model’s parameters and cost before it becomes available for gener
 
 - Generation stays unavailable until a provider is connected. Review the estimate before confirming a request.
 - Connection errors use English. If the message asks for details, open Diagnostics to inspect the original server response.
+- The language choice is personal to this device; settings values and provider payloads do not change.
 
 ## Related topics
 

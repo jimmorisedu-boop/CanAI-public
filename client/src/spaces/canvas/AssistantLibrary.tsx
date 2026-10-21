@@ -6,6 +6,8 @@ import { useDialogFocus } from '../../ui/dialogFocus'
 import { InlineNotice } from '../../ui/InlineNotice'
 import { pluralWithCount } from '../../ui/plural'
 import type { LibraryNotice } from './useMacroLibraryActions'
+import { useT } from '../../i18n/context.js'
+
 
 // «⋯» в конце ряда помощников — то же окно, что у макросов холста
 // (.modal-card .macro-lib): список, действия в строке и кнопка добавления.
@@ -50,6 +52,7 @@ export function AssistantLibrary({
   onExport(preset: AssistantPreset): void
   onImport(): void
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useDialogFocus(dialogRef, onClose)
   const [renamingId, setRenamingId] = useState<string | null>(null)
@@ -80,13 +83,13 @@ export function AssistantLibrary({
         className="modal-card macro-lib"
         role="dialog"
         aria-modal="true"
-        aria-label="All assistants"
+        aria-label={t('All assistants')}
         onClick={(event) => event.stopPropagation()}
       >
         <header className="macro-lib-head">
-          <h3>All assistants</h3>
+          <h3>{t('All assistants')}</h3>
           <span className="macro-lib-count">{presets.length}</span>
-          <button className="macro-lib-close" type="button" aria-label="Close" onClick={onClose}>
+          <button className="macro-lib-close" type="button" aria-label={t('Close')} onClick={onClose}>
             <IconClose size={16} />
           </button>
         </header>
@@ -103,7 +106,7 @@ export function AssistantLibrary({
         )}
 
         {presets.length === 0 ? (
-          <p className="macro-lib-note">Nothing here yet. An assistant combines instructions, a model, and documents.</p>
+          <p className="macro-lib-note">{t('Nothing here yet. An assistant combines instructions, a model, and documents.')}</p>
         ) : (
           presets.map((preset) => (
             <div className={`macro-lib-row${activeId === preset.id ? ' active' : ''}`} key={preset.id}>
@@ -115,8 +118,8 @@ export function AssistantLibrary({
               <button
                 type="button"
                 className="macro-lib-open"
-                aria-label={`Open "${preset.name}"`}
-                title="Open assistant"
+                aria-label={t('Open "{0}"', { 0: preset.name })}
+                title={t('Open assistant')}
                 onClick={() => onEdit(preset)}
               />
               <div className="macro-lib-text">
@@ -126,7 +129,7 @@ export function AssistantLibrary({
                     value={renameValue}
                     autoFocus
                     maxLength={80}
-                    aria-label="New name"
+                    aria-label={t('New name')}
                     onChange={(event) => setRenameValue(event.target.value)}
                     onBlur={() => commitRename(preset)}
                     onKeyDown={(event) => {
@@ -138,15 +141,15 @@ export function AssistantLibrary({
                   <strong>{preset.name}</strong>
                 )}
                 <small>
-                  {preset.docs.length > 0 ? pluralWithCount(preset.docs.length, ["document", "document", "documents"]) : "no documents"}
-                  {activeId === preset.id ? " · enabled" : ''}
+                  {preset.docs.length > 0 ? pluralWithCount(preset.docs.length, ["document", "document", "documents"]) : t('no documents')}
+                  {activeId === preset.id ? t(' · enabled') : ''}
                 </small>
               </div>
               <button
                 type="button"
                 className="icon-btn macro-lib-act"
-                aria-label={`Rename ${preset.name}`}
-                title="Rename"
+                aria-label={t('Rename {0}', { 0: preset.name })}
+                title={t('Rename')}
                 onClick={() => startRename(preset)}
               >
                 <IconEdit size={15} />
@@ -154,8 +157,8 @@ export function AssistantLibrary({
               <button
                 type="button"
                 className="icon-btn macro-lib-act"
-                aria-label={`Duplicate ${preset.name}`}
-                title="Duplicate"
+                aria-label={t('Duplicate {0}', { 0: preset.name })}
+                title={t('Duplicate')}
                 onClick={() => onDuplicate(preset)}
               >
                 <IconDuplicate size={15} />
@@ -163,8 +166,8 @@ export function AssistantLibrary({
               <button
                 type="button"
                 className="icon-btn macro-lib-act"
-                aria-label={`Save ${preset.name} to file`}
-                title="Save to a file — you can share it with a colleague"
+                aria-label={t('Save {0} to file', { 0: preset.name })}
+                title={t('Save to a file — you can share it with a colleague')}
                 onClick={() => onExport(preset)}
               >
                 <IconDownload size={15} />
@@ -172,8 +175,8 @@ export function AssistantLibrary({
               <button
                 type="button"
                 className="icon-btn macro-lib-act danger"
-                aria-label={`Delete ${preset.name}`}
-                title="Delete"
+                aria-label={t('Delete {0}', { 0: preset.name })}
+                title={t('Delete')}
                 onClick={() => onDelete(preset)}
               >
                 <IconTrash size={15} />
@@ -184,10 +187,10 @@ export function AssistantLibrary({
 
         <footer className="macro-lib-footer">
           <button className="macro-lib-add" type="button" onClick={onCreate}>
-            <IconPlus size={15} />Add assistant
+            <IconPlus size={15} />{t('Add assistant')}
           </button>
-          <button className="macro-lib-add" type="button" title="Upload assistant from file" onClick={onImport}>
-            <IconUpload size={15} />From file
+          <button className="macro-lib-add" type="button" title={t('Upload assistant from file')} onClick={onImport}>
+            <IconUpload size={15} />{t('From file')}
           </button>
         </footer>
       </div>

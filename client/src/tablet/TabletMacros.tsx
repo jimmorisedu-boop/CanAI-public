@@ -7,11 +7,14 @@ import { useSelectionRefs } from '../spaces/canvas/konva/useStore'
 import { bindMacroRunToBoard, dismissUnusedSlots, macroRunSummary, planMacroRun, startMacroRun, trackMacroJobs, watchMacroRun, type MacroRunState } from '../spaces/canvas/macroRunClient'
 import { newId } from '../ui/ids'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+import { t as translate } from '../i18n/translate.js'
+
 
 interface MacroButton { id: string; name: string; slot?: number }
 function macroNote(note: string, name: string): string {
   const prefix = `${name}: `
-  return note.startsWith(prefix) ? `${name}: ${tabletSystemMessage(note.slice(prefix.length), 'Macro failed.')}` : tabletSystemMessage(note, 'Macro status unavailable.')
+  return note.startsWith(prefix) ? `${name}: ${tabletSystemMessage(note.slice(prefix.length), translate('Macro failed.'))}` : tabletSystemMessage(note, translate('Macro status unavailable.'))
 }
 function renderedMacroNote(note: string, macros: readonly MacroButton[]): string {
   const macro = macros.find((entry) => note.startsWith(`${entry.name}: `))
@@ -19,6 +22,7 @@ function renderedMacroNote(note: string, macros: readonly MacroButton[]): string
 }
 
 export function TabletMacros({ store, projectId, disabled, projectSource = 'local' }: { store: CanvasStore; projectId: string; disabled?: boolean; projectSource?: ProjectSource }) {
+  const t = useT()
   const [macros, setMacros] = useState<MacroButton[]>([])
   const [note, setNote] = useState<string | null>(null)
   const [busy, setBusy] = useState<Record<string, string>>({})
@@ -51,9 +55,9 @@ export function TabletMacros({ store, projectId, disabled, projectSource = 'loca
         },
       }, 'local')
       if (finished) { dismissUnusedSlots(finished, store, 'local'); setNote(macroRunSummary(finished)) }
-    } catch (cause) { setNote(tabletSystemMessage(cause, 'Could not run macro')) }
+    } catch (cause) { setNote(tabletSystemMessage(cause, t('Could not run macro'))) }
     finally { setBusy((current) => { const next = { ...current }; delete next[macro.id]; return next }) }
-  }, [disabled, projectId, refs, store])
+  }, [disabled, projectId, refs, store, t])
 
   const stop = useCallback((macroId: string) => {
     const runId = busy[macroId]
@@ -64,10 +68,10 @@ export function TabletMacros({ store, projectId, disabled, projectSource = 'loca
 
   return <div className="tablet-macros tablet-macro-strip">
     {note && <p className="tablet-macros-note">{renderedMacroNote(note, macros)}</p>}
-    <span className="tablet-inline-label">Macros</span>
-    <div className="tablet-macros-row" role="group" aria-label="Macros">
-      {macros.length === 0 ? <span className="tablet-inline-empty">None yet — build a custom macro on your computer and it will appear here</span> : macros.slice(0, expanded ? macros.length : 5).map((macro) => <span className="tablet-macro" key={macro.id}><button type="button" className="ui-btn" disabled={disabled || Boolean(busy[macro.id])} onClick={() => void run(macro)} title={macro.name}>{macro.name}</button>{busy[macro.id] && <button type="button" className="ui-btn danger tablet-macro-stop" onClick={() => stop(macro.id)}>Stop</button>}</span>)}
-      {macros.length > 5 && <button type="button" className="ui-btn quiet tablet-macros-all" onClick={() => setExpanded((value) => !value)}>{expanded ? 'Hide' : 'All macros'}</button>}
+    <span className="tablet-inline-label">{t('Macros')}</span>
+    <div className="tablet-macros-row" role="group" aria-label={t('Macros')}>
+      {macros.length === 0 ? <span className="tablet-inline-empty">{t('None yet — build a custom macro on your computer and it will appear here')}</span> : macros.slice(0, expanded ? macros.length : 5).map((macro) => <span className="tablet-macro" key={macro.id}><button type="button" className="ui-btn" disabled={disabled || Boolean(busy[macro.id])} onClick={() => void run(macro)} title={macro.name}>{macro.name}</button>{busy[macro.id] && <button type="button" className="ui-btn danger tablet-macro-stop" onClick={() => stop(macro.id)}>{t('Stop')}</button>}</span>)}
+      {macros.length > 5 && <button type="button" className="ui-btn quiet tablet-macros-all" onClick={() => setExpanded((value) => !value)}>{expanded ? t('Hide') : t('All macros')}</button>}
     </div>
   </div>
 }

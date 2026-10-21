@@ -5,6 +5,8 @@ import { itemAabb } from './geometry'
 import { boardNavigatorCameraAt, boardNavigatorLayout, boardNavigatorWorldPoint } from './boardNavigatorMath'
 import type { BoardNavigatorLayout } from './boardNavigatorMath'
 import { useCameraVersion, useContentVersion } from './useStore'
+import { useT } from '../../../i18n/context.js'
+
 
 const MAP = { w: 208, h: 124 }
 const SESSION_KEY = 'canai:board-navigator-collapsed'
@@ -14,6 +16,7 @@ function initiallyCollapsed(): boolean {
 }
 
 export function BoardNavigator({ store, viewport }: { store: CanvasStore; viewport: { w: number; h: number } }) {
+  const t = useT()
   const contentVersion = useContentVersion(store)
   const cameraVersion = useCameraVersion(store)
   const [collapsed, setCollapsed] = useState(initiallyCollapsed)
@@ -98,14 +101,14 @@ export function BoardNavigator({ store, viewport }: { store: CanvasStore; viewpo
   return (
     <div className={`board-navigator${collapsed ? ' is-collapsed' : ''}`}>
       {collapsed ? (
-        <button type="button" className="board-navigator-restore" onClick={toggle} aria-label="Show board minimap" aria-expanded={false} title="Show minimap">
+        <button type="button" className="board-navigator-restore" onClick={toggle} aria-label={t('Show board minimap')} aria-expanded={false} title={t('Show minimap')}>
           <IconMap size={18} />
         </button>
       ) : (
         <>
           <div className="board-navigator-header">
-            <span><IconMap size={16} /> Board map</span>
-            <button type="button" onClick={toggle} aria-label="Collapse minimap" aria-expanded={true} title="Collapse minimap">
+            <span><IconMap size={16} />  {t('Board map')}</span>
+            <button type="button" onClick={toggle} aria-label={t('Collapse minimap')} aria-expanded={true} title={t('Collapse minimap')}>
               <IconCollapse size={16} />
             </button>
           </div>
@@ -113,7 +116,7 @@ export function BoardNavigator({ store, viewport }: { store: CanvasStore; viewpo
             className="board-navigator-map"
             role="button"
             tabIndex={shapes.length ? 0 : -1}
-            aria-label="Board minimap: click or drag to navigate; arrow keys move the view"
+            aria-label={t('Board minimap: click or drag to navigate; arrow keys move the view')}
             onMouseDown={(event) => event.stopPropagation()}
             onPointerDown={(event) => {
               if (event.button !== 0 || !layout || shapes.length === 0) return
@@ -151,7 +154,7 @@ export function BoardNavigator({ store, viewport }: { store: CanvasStore; viewpo
             }}
           >
             <canvas ref={canvasRef} className="board-navigator-canvas" aria-hidden="true" />
-            {shapes.length === 0 && <span className="board-navigator-empty">No objects yet</span>}
+            {shapes.length === 0 && <span className="board-navigator-empty">{t('No objects yet')}</span>}
           </div>
         </>
       )}

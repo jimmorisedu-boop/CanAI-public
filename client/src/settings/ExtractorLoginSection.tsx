@@ -10,6 +10,8 @@ import {
   type LoginBrowserState,
 } from './extractorLoginState'
 import { systemErrorMessage } from '../ui/systemMessage'
+import { useT } from '../i18n/context.js'
+
 
 const POLL_MS = 900
 
@@ -35,6 +37,7 @@ export function ExtractorLoginSection({
   onModeChange(value: CookieMode): void
   onFileChange(value: string | null): void
 }) {
+  const t = useT()
   const [available, setAvailable] = useState(true)
   const [signedIn, setSignedIn] = useState(false)
   const [browser, setBrowser] = useState<LoginBrowserState | null>(null)
@@ -88,7 +91,7 @@ export function ExtractorLoginSection({
       .catch((error: unknown) => {
         setBrowser({
           state: 'failed',
-          message: error instanceof Error ? error.message : 'Could not download browser',
+          message: error instanceof Error ? error.message : t('Could not download browser'),
         })
       })
   }
@@ -103,9 +106,9 @@ export function ExtractorLoginSection({
       await api.openExtractorLogin(provider)
       setSignedIn(true)
       onModeChange('app')
-      setNotice('The window is open — sign in there, then downloads can start.')
+      setNotice(t('The window is open — sign in there, then downloads can start.'))
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Could not open sign-in window')
+      setNotice(error instanceof Error ? error.message : t('Could not open sign-in window'))
     } finally {
       setBusy(false)
     }
@@ -118,9 +121,9 @@ export function ExtractorLoginSection({
       await api.forgetExtractorLogin()
       setSignedIn(false)
       onModeChange('none')
-      setNotice('Sign-in forgotten: the window profile was removed.')
+      setNotice(t('Sign-in forgotten: the window profile was removed.'))
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Could not forget sign-in')
+      setNotice(error instanceof Error ? error.message : t('Could not forget sign-in'))
     } finally {
       setBusy(false)
     }
@@ -135,7 +138,7 @@ export function ExtractorLoginSection({
       onModeChange('file')
     } catch (error) {
       // Отмена — тоже ответ, и это не поломка приложения.
-      setNotice(error instanceof Error ? error.message : 'Could not choose file')
+      setNotice(error instanceof Error ? error.message : t('Could not choose file'))
     } finally {
       setBusy(false)
     }
@@ -145,8 +148,8 @@ export function ExtractorLoginSection({
     <section className="settings-section" aria-labelledby="extractor-login-title">
       <div className="settings-section-heading">
         <div>
-          <h3 id="extractor-login-title">Site sign-in</h3>
-          <p>Needed when a site only serves video to signed-in users, currently Vimeo.</p>
+          <h3 id="extractor-login-title">{t('Site sign-in')}</h3>
+          <p>{t('Needed when a site only serves video to signed-in users, currently Vimeo.')}</p>
         </div>
         <span
           className="settings-connection"
@@ -161,7 +164,7 @@ export function ExtractorLoginSection({
       {browserNote && <p className="settings-note">{browserNote}</p>}
 
       <div className="settings-editor-summary">
-        <strong>Sign-in browser</strong>
+        <strong>{t('Sign-in browser')}</strong>
         <span className="settings-connection" {...(browserView.tone === 'ok' ? { 'data-tone': 'success' } : browserView.tone === 'danger' ? { 'data-tone': 'warning' } : {})} role="status">
           {browserView.label}
         </span>
@@ -201,22 +204,24 @@ export function ExtractorLoginSection({
             disabled={disabled || busy || (mode !== 'app' && !signedIn)}
             onClick={() => { void forget() }}
           >
-            Forget sign-in
+
+            {t('Forget sign-in')}
           </button>
         </div>
       )}
 
       <details className="settings-technical">
-        <summary>Another option: cookies file</summary>
+        <summary>{t('Another option: cookies file')}</summary>
         <label className="settings-label" htmlFor="extractor-cookies-file">
-          File exported by a browser extension
+
+          {t('File exported by a browser extension')}
         </label>
         <div className="settings-editor-row">
           <input
             id="extractor-cookies-file"
             type="text"
             value={file ?? ''}
-            placeholder="Path to cookies file"
+            placeholder={t('Path to cookies file')}
             disabled={disabled || busy}
             onChange={(event) => {
               onFileChange(event.target.value)
@@ -229,7 +234,8 @@ export function ExtractorLoginSection({
             disabled={disabled || busy}
             onClick={() => { void pickFile() }}
           >
-            Choose file
+
+            {t('Choose file')}
           </button>
         </div>
       </details>

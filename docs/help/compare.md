@@ -24,6 +24,10 @@ Turn on Sync video to keep playback position aligned between the two cards.
 
 ![Compare versions and results: Sync video](../../client/public/help/compare-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; edit operations preserve the source content.
+
 ## Shortcuts
 
 - **Q** — Start a candidate set

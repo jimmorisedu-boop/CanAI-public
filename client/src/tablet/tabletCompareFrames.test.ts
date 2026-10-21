@@ -8,6 +8,9 @@ import * as frameStep from '../spaces/canvas/compare/compareFrameStep.js'
 import * as compareSync from '../spaces/canvas/compare/compareSync.js'
 import * as layout from '../spaces/canvas/compare/compareLayout.js'
 
+const identityTranslate = (message: string, params?: Record<string, unknown>) =>
+  params ? message.replace(/\{(\d+)\}/gu, (token, key: string) => Object.hasOwn(params, key) ? String(params[key]) : token) : message
+
 // Executes the actual TabletCompare render, its video ref callbacks, and the
 // actual shared player effects. Only React scheduling and media decoding are
 // substituted, so omitting the hook or forgetting a Panel→Media ref fails here.
@@ -58,6 +61,7 @@ for (const baselineKind of ['image', 'video']) {
       '../spaces/canvas/compare/useComparePlayer': player,
       './modalFocus': { isActiveModal: () => active },
       '../ui/MediaPlaybackControls': { MediaPlaybackControls: playbackControls },
+      '../i18n/context.js': { useT: () => identityTranslate },
     })
     const listeners = new Set<(event: any) => void>()
     const saved = ['window', 'requestAnimationFrame', 'cancelAnimationFrame'].map(name => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const)

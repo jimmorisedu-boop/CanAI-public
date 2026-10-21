@@ -25,6 +25,7 @@ import { isOrphanedLaunch, ORPHANED_LAUNCH } from '../pendingLaunchState'
 import { useImageEl } from './media'
 import { mediaCornerRadius } from './canvasLayout'
 import { systemErrorMessage, systemStatusMessage } from '../../../ui/systemMessage'
+import { useT } from '../../../i18n/context.js'
 
 function formatBytes(value: number): string {
   if (value < 1024 * 1024) return `${Math.max(0, Math.round(value / 1024))}KB`
@@ -60,6 +61,7 @@ export const PendingItem = memo(function PendingItem({
   selected: boolean
   viewScale?: number
 }) {
+  const t = useT()
   const groupRef = useRef<Konva.Group>(null)
   const arcRef = useRef<Konva.Arc>(null)
   const [elapsed, setElapsed] = useState(0)
@@ -275,7 +277,7 @@ export const PendingItem = memo(function PendingItem({
               width={68 * scale}
               height={26 * scale}
               fontSize={11 * scale}
-              label={taskFinished ? 'Remove' : 'Stop'}
+              label={taskFinished ? t('Remove') : t('Stop')}
               textColor={tc.errorText}
               accent={tc.accent}
               accentHover={tc.accentHover}
@@ -340,7 +342,7 @@ export const PendingItem = memo(function PendingItem({
               width={error.btnW}
               height={error.btnH}
               fontSize={11 * scale}
-              label="Retry"
+              label={t('Retry')}
               textColor={tc.errorText}
               accent={tc.accent}
               accentHover={tc.accentHover}
@@ -358,7 +360,7 @@ export const PendingItem = memo(function PendingItem({
                   })
                     .then((admitted) => { if (!admitted) showErrorToast(PENDING_LEASE_REFUSED) })
                     .catch((error) =>
-                      showErrorToast(error instanceof Error ? error.message : 'Failed to retry'),
+                      showErrorToast(error instanceof Error ? error.message : t('Failed to retry')),
                     )
                 }
               }}
@@ -370,7 +372,7 @@ export const PendingItem = memo(function PendingItem({
             width={error.btnW}
             height={error.btnH}
             fontSize={11 * scale}
-            label="Remove"
+            label={t('Remove')}
             textColor={tc.errorText}
             accent={tc.accent}
             accentHover={tc.accentHover}

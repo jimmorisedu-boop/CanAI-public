@@ -33,6 +33,7 @@ Drag the top handle to resize Assistant. Use − to collapse it; click the botto
 ## Notes
 
 - Assistant errors and status labels use English. Chat messages and your own instructions keep their original language.
+- System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics
 

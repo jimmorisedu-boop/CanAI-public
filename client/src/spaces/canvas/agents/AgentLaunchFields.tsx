@@ -3,6 +3,8 @@ import { AgentTaskForm } from './AgentTaskForm'
 import type { AgentTaskInputErrors, AgentTaskInputValues } from './agentPackageModel'
 import type { AgentPanelController } from './agentPanelController'
 import { packageIsDemo } from './agentLaunchHelpers'
+import { useT } from '../../../i18n/context.js'
+
 
 export function AgentLaunchFields({
   controller,
@@ -29,43 +31,47 @@ export function AgentLaunchFields({
   onInputChange(key: string, value: unknown): void
   onInstructionChange(value: string): void
 }) {
+  const t = useT()
   const hasTaskFields = Boolean(selectedType?.inputSchema?.fields.length)
   return <>
     <div className="agent-launch-choice-row">
       {readyPackages.length > 1 ? (
         <label className="agent-panel-label">
-          Agent
+
+          {t('Agent')}
           <select value={selectedPackage.id} onChange={(event) => onPackageChange(event.target.value)}>
-            {readyPackages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name}{packageIsDemo(pkg.id, pkg.name) ? ' · demo' : ''}</option>)}
+            {readyPackages.map((pkg) => <option key={pkg.id} value={pkg.id}>{pkg.name}{packageIsDemo(pkg.id, pkg.name) ? t(' · demo') : ''}</option>)}
           </select>
         </label>
       ) : (
-        <div className="agent-panel-value" aria-label="Agent"><span>Agent</span><strong>{selectedPackage.name}{packageIsDemo(selectedPackage.id, selectedPackage.name) ? ' · demo' : ''}</strong></div>
+        <div className="agent-panel-value" aria-label={t('Agent')}><span>{t('Agent')}</span><strong>{selectedPackage.name}{packageIsDemo(selectedPackage.id, selectedPackage.name) ? t(' · demo') : ''}</strong></div>
       )}
       {(selectedPackage.taskTypes ?? []).length > 1 ? (
         <label className="agent-panel-label">
-          Task type
+
+          {t('Task type')}
           <select value={selectedType?.id ?? ''} onChange={(event) => onTaskTypeChange(event.target.value)}>
             {(selectedPackage.taskTypes ?? []).map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
           </select>
         </label>
       ) : (
-        <div className="agent-panel-value" aria-label="Task type"><span>Task type</span><strong>{selectedType?.label ?? '—'}</strong></div>
+        <div className="agent-panel-value" aria-label={t('Task type')}><span>{t('Task type')}</span><strong>{selectedType?.label ?? '—'}</strong></div>
       )}
     </div>
     <label className="agent-panel-label">
-      Instructions
+
+      {t('Instructions')}
       <textarea
-        aria-label="Instructions for the agent"
+        aria-label={t('Instructions for the agent')}
         value={controller.instruction}
         onChange={(event) => onInstructionChange(event.target.value)}
-        placeholder="What should be done…"
+        placeholder={t('What should be done…')}
         rows={3}
       />
     </label>
     {hasTaskFields && (compact ? (
       <details className="agent-task-advanced" open={Object.keys(inputErrors).length > 0}>
-        <summary>Additional parameters{Object.keys(inputErrors).length > 0 ? ' · required' : ''}</summary>
+        <summary>{t('Additional parameters')}{Object.keys(inputErrors).length > 0 ? t(' · required') : ''}</summary>
         <AgentTaskForm schema={selectedType?.inputSchema} values={taskInput} errors={inputErrors} onChange={onInputChange} />
       </details>
     ) : (

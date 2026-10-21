@@ -35,6 +35,8 @@ import { createPortal } from 'react-dom'
 import { usePortalTarget } from '../ui/usePortalTarget'
 import { createGestureAdmission } from '../spaces/canvas/konva/gestureAdmission'
 import { bindBoardPointerRecovery, releaseBoardPointers } from './boardPointerRecovery'
+import { useT } from '../i18n/context.js'
+
 
 // Доска пальцами.
 //
@@ -75,6 +77,7 @@ export function BoardCanvas({
   onGestureStart?(): void
   onResizeGesture?(itemId: string, at: Point): void
 }) {
+  const t = useT()
   const hostRef = useRef<HTMLDivElement>(null)
   const history = useBoardHistory()
   const [viewport, setViewport] = useState({ w: 1024, h: 768 })
@@ -656,7 +659,7 @@ export function BoardCanvas({
       className="tablet-board"
       tabIndex={0}
       role="region"
-      aria-label="Canvas. Arrow keys select objects, Shift selects a range, Space toggles selection, Enter opens actions"
+      aria-label={t('Canvas. Arrow keys select objects, Shift selects a range, Space toggles selection, Enter opens actions')}
       onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -673,7 +676,7 @@ export function BoardCanvas({
     >
       {showObjects && !chromeHidden && <BoardObjectNavigator store={store} readOnly={readOnly} reveal={reveal} onActivate={activate} />}
       <span className="tablet-board-selection-status" role="status" aria-live="polite">
-        {selected.size === 1 && selectedItem ? boardObjectLabel(selectedItem) : `Selected: ${selected.size}`}
+        {selected.size === 1 && selectedItem ? boardObjectLabel(selectedItem) : t('Selected: {0}', { 0: selected.size })}
       </span>
       <div
         className="tablet-board-world"

@@ -9,6 +9,8 @@ import {
   type NormalizedPoint,
   normalizedPoint,
 } from './clipPreviewGeometry'
+import { useT } from '../i18n/context.js'
+
 
 const CORNERS: CropCorner[] = ['nw', 'ne', 'sw', 'se']
 
@@ -61,6 +63,7 @@ export function TabletClipCrop({
   frameRef: RefObject<HTMLDivElement | null>
   sourceSize: ClipSize
 }) {
+  const t = useT()
   const sessionRef = useRef(session)
   sessionRef.current = session
   const sourceRef = useRef(sourceSize)
@@ -160,7 +163,7 @@ export function TabletClipCrop({
   return (
     <div
       className="tablet-clip-preview-crop"
-      aria-label="Crop frame"
+      aria-label={t('Crop frame')}
       onPointerMove={(event) => { event.stopPropagation(); applyPointer(event) }}
       onPointerUp={(event) => { event.stopPropagation(); endDrag(event) }}
       onPointerCancel={(event) => { event.stopPropagation(); endDrag(event) }}
@@ -176,7 +179,7 @@ export function TabletClipCrop({
         style={cropBox}
         role="group"
         tabIndex={0}
-        aria-label="Move crop frame with arrow keys"
+        aria-label={t('Move crop frame with arrow keys')}
         onPointerDown={startDrag('move')}
         onKeyDown={moveByKey}
       >

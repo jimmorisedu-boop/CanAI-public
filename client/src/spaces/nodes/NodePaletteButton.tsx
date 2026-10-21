@@ -2,6 +2,8 @@ import type { DragEvent, KeyboardEvent, ReactElement } from 'react'
 import { beginNodePaletteDrag } from './nodePaletteDnd'
 import { NODE_META } from './ports'
 import type { NodeKind } from './types'
+import { useT } from '../../i18n/context.js'
+
 
 interface NodePaletteButtonProps {
   kind: NodeKind
@@ -16,6 +18,7 @@ export function NodePaletteButton({
   loaded,
   onAdd,
 }: NodePaletteButtonProps): ReactElement {
+  const t = useT()
   const NodeIcon = NODE_META[kind].icon
   return (
     <button
@@ -23,7 +26,7 @@ export function NodePaletteButton({
       className="node-add-btn node-palette-item icon-tab"
       draggable={loaded}
       disabled={!loaded}
-      title={`Click or drag “${label}” onto the canvas`}
+      title={t('Click or drag “{0}” onto the canvas', { 0: t(label) })}
       onClick={() => onAdd(kind)}
       onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
         if (event.repeat || (event.key !== 'Enter' && event.key !== ' ')) return
@@ -33,7 +36,7 @@ export function NodePaletteButton({
       onDragStart={(event: DragEvent<HTMLButtonElement>) =>
         beginNodePaletteDrag(event.dataTransfer, kind)}
     >
-      <NodeIcon size={16} /> {label}
+      <NodeIcon size={16} /> {t(label)}
     </button>
   )
 }

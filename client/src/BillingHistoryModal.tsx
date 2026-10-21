@@ -3,6 +3,8 @@ import { api } from './api'
 import { IconBalance, IconClose, IconRefresh } from './ui/icons'
 import { useDialogFocus } from './ui/dialogFocus'
 import { InlineNotice } from './ui/InlineNotice'
+import { getIntlLocale } from './i18n/language'
+import { useT } from './i18n'
 
 export interface BillingEvent {
   id: string
@@ -37,11 +39,15 @@ export function formatModelName(endpoint: string): string {
   return endpoint.replace(/^fal-ai\//, '').replace(/[-/]/g, ' ')
 }
 
-function formatTime(isoStr: string): string {
+// Only labels selected from known endpoint families are system UI. A fallback
+// endpoint may be a user/configured model name and must remain untouched.
+const LOCALIZABLE_MODEL_ENDPOINT = /ideogram|sam-3|any-llm|openrouter\/router|flux|hunyuan|minimax|kling/i
+
+function formatTime(isoStr: string, locale: string = getIntlLocale()): string {
   try {
     const d = new Date(isoStr)
     if (isNaN(d.getTime())) return isoStr
-    return d.toLocaleString('en-US', {
+    return d.toLocaleString(locale, {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -64,6 +70,7 @@ export function BillingHistoryModal({
   onClose: () => void
   onRefreshBalance: () => void
 }) {
+  const t = useT()
   const dialogRef = useRef<HTMLDivElement>(null)
   useDialogFocus(dialogRef, onClose)
   const [events, setEvents] = useState<BillingEvent[]>([])
@@ -101,8 +108,8 @@ export function BillingHistoryModal({
       const message = err instanceof Error && err.message
         ? err.message
         : append
-          ? 'Could not load more transactions'
-          : 'Could not load transaction history'
+          ? t('Could not load more transactions')
+          : t('Could not load transaction history')
       if (append) setLoadMoreError(message)
       else setError(message)
     } finally {
@@ -113,7 +120,7 @@ export function BillingHistoryModal({
         setLoading(false)
       }
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     void loadHistory()
@@ -148,16 +155,16 @@ export function BillingHistoryModal({
             <span className="modal-title-icon" aria-hidden="true">
               <IconBalance size={18} weight="fill" />
             </span>
-            <span id="billing-history-title">Transaction history</span>
+            <span id="billing-history-title">{t('Transaction history')}</span>
           </div>
-          <button className="modal-close-btn icon-btn" onClick={onClose} title="Close (Esc)" aria-label="Close">
+          <button className="modal-close-btn icon-btn" onClick={onClose} title={t('Close (Esc)')} aria-label={t('Close')}>
             <IconClose size={16} />
           </button>
         </div>
 
         <div className="billing-summary-card">
           <div className="billing-summary-info">
-            <span className="billing-summary-label">Current balance:</span>
+            <span className="billing-summary-label">{t('Current balance:')}</span>
             <span className="billing-summary-val">
               {balance != null ? `${symbol}${balance.toFixed(2)} ${currency}` : '—'}
             </span>
@@ -170,10 +177,10 @@ export function BillingHistoryModal({
               onRefreshBalance()
             }}
             disabled={loading}
-            title="Refresh balance and history"
+            title={t('Refresh balance and history')}
           >
             <IconRefresh size={14} className="billing-refresh-icon" />
-            <span>{loading ? 'Refreshing…' : 'Refresh'}</span>
+            <span>{loading ? t('Refreshing…') : t('Refresh')}</span>
           </button>
         </div>
 
@@ -181,10 +188,10 @@ export function BillingHistoryModal({
           className="billing-events-list"
           onScroll={handleHistoryScroll}
           aria-busy={loading || loadingMore}
-          aria-label="fal.ai transactions"
+          aria-label={t('fal.ai transactions')}
         >
           {loading ? (
-            <div className="billing-loading">Loading fal.ai transactions…</div>
+            <div className="billing-loading">{t('Loading fal.ai transactions…')}</div>
           ) : error ? (
             /* раньше это была просто красная строка: диктор о провале молчал,
                а повторить загрузку было нечем — тупик посреди модалки */
@@ -192,10 +199,10 @@ export function BillingHistoryModal({
               className="billing-error"
               tone="error"
               title={error}
-              action={{ label: 'Retry', onClick: () => void loadHistory() }}
+              action={{ label: t('Retry'), onClick: () => void loadHistory() }}
             />
           ) : events.length === 0 ? (
-            <div className="billing-empty">No transactions yet</div>
+            <div className="billing-empty">{t('No transactions yet')}</div>
           ) : (
             <>
               {events.map((item) => {
@@ -203,8 +210,12 @@ export function BillingHistoryModal({
                 return (
                   <div key={item.id} className="billing-event-row">
                     <div className="billing-event-info">
-                      <span className="billing-event-name">{formatModelName(item.endpoint)}</span>
-                      <span className="billing-event-time">{formatTime(item.time)}</span>
+                      <span className="billing-event-name">
+                        {LOCALIZABLE_MODEL_ENDPOINT.test(item.endpoint)
+                          ? t(formatModelName(item.endpoint))
+                          : formatModelName(item.endpoint)}
+                      </span>
+                      <span className="billing-event-time">{formatTime(item.time, getIntlLocale())}</span>
                     </div>
                     <div className={`billing-event-cost ${isZero ? 'zero' : 'spent'}`}>
                       {isZero ? '$0.000' : `-${symbol}${item.cost.toFixed(4)}`}
@@ -212,13 +223,13 @@ export function BillingHistoryModal({
                   </div>
                 )
               })}
-              {loadingMore && <div className="billing-loading-more" role="status">Loading more…</div>}
+              {loadingMore && <div className="billing-loading-more" role="status">{t('Loading more…')}</div>}
               {loadMoreError && (
                 <InlineNotice
                   className="billing-more-error"
                   tone="error"
                   title={loadMoreError}
-                  action={{ label: 'Retry', onClick: () => void loadHistory(nextCursor) }}
+                  action={{ label: t('Retry'), onClick: () => void loadHistory(nextCursor) }}
                 />
               )}
             </>

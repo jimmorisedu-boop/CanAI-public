@@ -13,6 +13,8 @@ import { previewSrc } from './remoteSession'
 import { SketchPrompt } from './SketchPrompt'
 import type { TabletMediaUploader } from './runtime'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Скетч поверх картинки.
 //
@@ -38,6 +40,7 @@ export function TabletSketch({
   upload: TabletMediaUploader
   onClose(): void
 }) {
+  const t = useT()
   useContentVersion(store)
   const item = store.getItem(itemId)
   const [color, setColor] = useState(SWATCHES[0]!)
@@ -100,11 +103,11 @@ export function TabletSketch({
     setError(null)
     try {
       const baked = await bakeSketchToNewImage(store, itemId, upload)
-      if (!baked) notify({ kind: 'info', message: 'Nothing to draw — the image has no strokes' })
+      if (!baked) notify({ kind: 'info', message: t('Nothing to draw — the image has no strokes') })
       store.clearStrokes()
       onClose()
     } catch (error) {
-      setError(tabletSystemMessage(error, 'Could not build sketch'))
+      setError(tabletSystemMessage(error, t('Could not build sketch')))
     } finally {
       busyRef.current = false
       setBusy(false)
@@ -119,7 +122,7 @@ export function TabletSketch({
 
   return (
     <TabletFullScreen
-      title="Sketch overlay"
+      title={t('Sketch overlay')}
       onCancel={close}
       tone="dark"
       center={
@@ -130,7 +133,7 @@ export function TabletSketch({
               type="button"
               className={`tablet-swatch ${color === swatch && tool === 'draw' ? 'on' : ''}`}
               style={{ background: swatch }}
-              aria-label={`Color ${swatch}`}
+              aria-label={t('Color {0}', { 0: swatch })}
               aria-pressed={color === swatch && tool === 'draw'}
               onClick={() => {
                 setColor(swatch)
@@ -144,7 +147,7 @@ export function TabletSketch({
               key={value}
               type="button"
               className={`tablet-brush-size ${size === value ? 'on' : ''}`}
-              aria-label={`Thickness ${value}`}
+              aria-label={t('Thickness {0}', { 0: value })}
               aria-pressed={size === value}
               onClick={() => setSize(value)}
             >
@@ -155,7 +158,7 @@ export function TabletSketch({
           <button
             type="button"
             className={`ui-icon-btn ${tool === 'erase' ? 'on' : ''}`}
-            aria-label="Eraser"
+            aria-label={t('Eraser')}
             aria-pressed={tool === 'erase'}
             onClick={() => setTool(tool === 'erase' ? 'draw' : 'erase')}
           >
@@ -164,7 +167,7 @@ export function TabletSketch({
           <button
             type="button"
             className="ui-icon-btn"
-            aria-label="Undo stroke"
+            aria-label={t('Undo stroke')}
             disabled={!store.canUndoStroke()}
             onClick={() => store.undoStroke()}
           >
@@ -174,12 +177,12 @@ export function TabletSketch({
       }
       primary={
         <button type="button" className="ui-btn primary" disabled={busy} onClick={() => void done()}>
-          {busy ? 'Building…' : 'Done'}
+          {busy ? t('Building…') : t('Done')}
         </button>
       }
       footer={<SketchPrompt store={store} projectId={projectId} projectSource={projectSource} itemId={itemId} onDirtyChange={setPromptDirty} />}
     >
-      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, 'Could not build sketch')} onDismiss={() => setError(null)} />}
+      {error && <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, t('Could not build sketch'))} onDismiss={() => setError(null)} />}
       <div className="tablet-sketch-stage" ref={stageRef}>
         <div
           className="tablet-sketch-frame"

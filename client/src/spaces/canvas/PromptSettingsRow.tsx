@@ -7,6 +7,8 @@ import { executorCompatibilityError } from '../../../../packages/model-catalog/v
 import { autoOptionLabel } from './smartModelMessages'
 import { AUTO_MODEL_ID, isAutoModelId } from './smartModelSelection'
 import { promptParamPresentation } from './promptParamPresentation'
+import { useT } from '../../i18n/context.js'
+
 
 const MAX_COUNT = 4
 
@@ -50,6 +52,7 @@ export function PromptSettingsRow({
   /** Подсказка списка: полное имя запускаемой модели либо причина отказа. */
   modelTitle?: string
 }) {
+  const t = useT()
   const inline = layout === 'inline'
   const presentation = promptParamPresentation(panel, params)
   const isText = (name: string) => presentation.displayParams.some(spec => spec.name === name && spec.widget === 'textarea')
@@ -68,6 +71,11 @@ export function PromptSettingsRow({
     modelName: autoModelName,
     catalogReady: models.length > 0,
   })
+  const localizedAutoModelLabel = autoModelLabel === 'Auto'
+    ? t('Auto')
+    : autoModelLabel === 'Auto · no model'
+      ? t('Auto · no model')
+      : `${t('Auto')} · ${autoModelLabel.slice('Auto · '.length)}`
   return (
     <div
       className={`gen-controls-secondary ${inline ? 'is-inline' : 'is-stacked'}`}
@@ -82,26 +90,26 @@ export function PromptSettingsRow({
     >
       <select
         className="gen-select"
-        title={modelTitle || "Model"}
-        aria-label="Generation model"
+        title={modelTitle || t('Model')}
+        aria-label={t('Generation model')}
         value={selectedValue}
         onChange={(event) => onModelChange(event.target.value)}
       >
-        {autoEnabled && <option value={AUTO_MODEL_ID}>{autoModelLabel}</option>}
-        {modelId && !isAutoModelId(modelId) && !baseModels(models, kind).some(model => model.id === modelId) && <option value={modelId} disabled>{models.find(model => model.id === modelId)?.name ?? modelId} · saved choice</option>}
+        {autoEnabled && <option value={AUTO_MODEL_ID}>{localizedAutoModelLabel}</option>}
+        {modelId && !isAutoModelId(modelId) && !baseModels(models, kind).some(model => model.id === modelId) && <option value={modelId} disabled>{models.find(model => model.id === modelId)?.name ?? modelId}{t(' · saved choice')}</option>}
         {baseModels(models, kind).map((model) => (
           <option key={model.id} value={model.id} disabled={Boolean(executorCompatibilityError(model)) || (hasGifRef && !acceptsGifFrame(models, kind, model.id))}>
-            {model.name}{executorCompatibilityError(model) ? " · update CanAI" : hasGifRef && !acceptsGifFrame(models, kind, model.id) ? " · no image reference" : ''}
+            {model.name}{executorCompatibilityError(model) ? t(' · update CanAI') : hasGifRef && !acceptsGifFrame(models, kind, model.id) ? " · no image reference" : ''}
           </option>
         ))}
       </select>
 
       {kind === 'image' && (
-        <div className="gen-count" title="Number of variants">
+        <div className="gen-count" title={t('Number of variants')}>
           <button
             type="button"
             className="icon-btn"
-            aria-label="Decrease variants"
+            aria-label={t('Decrease variants')}
             disabled={count <= 1}
             onClick={() => onCountChange(Math.max(1, count - 1))}
           >
@@ -111,7 +119,7 @@ export function PromptSettingsRow({
           <button
             type="button"
             className="icon-btn"
-            aria-label="Increase variants"
+            aria-label={t('Increase variants')}
             disabled={count >= MAX_COUNT}
             onClick={() => onCountChange(Math.min(MAX_COUNT, count + 1))}
           >
@@ -138,14 +146,15 @@ export function PromptSettingsRow({
           className="gen-params-more"
           aria-expanded={expanded}
           aria-controls={advancedId}
-          title="Additional model parameters"
+          title={t('Additional model parameters')}
           onClick={() => setExpanded(value => !value)}
         >
-          More{presentation.changedSecondary > 0 && <span className="gen-params-changed" title="Changed additional parameters">{presentation.changedSecondary}</span>}
+
+          {t('More')}{presentation.changedSecondary > 0 && <span className="gen-params-changed" title={t('Changed additional parameters')}>{presentation.changedSecondary}</span>}
         </button>
       )}
       {presentation.secondaryNames.length > 0 && expanded && (
-        <div id={advancedId} className="gen-params-expanded" role="group" aria-label="Additional model parameters">
+        <div id={advancedId} className="gen-params-expanded" role="group" aria-label={t('Additional model parameters')}>
           {/* ⚠️ Теми же пилюлями, что и ряд над ними: раньше «More» раскрывал
               форму «подпись + широкий список» в две колонки, и вёрстка
               промпт-бара слетала (жалоба 19.10.2026 со снимком). Текстовые

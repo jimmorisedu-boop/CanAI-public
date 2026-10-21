@@ -8,6 +8,8 @@ import { useModelSelection } from '../spaces/canvas/useModelSelection'
 import { useTabletGeneration } from './useTabletGeneration'
 import type { ProjectSource } from '../types'
 import { tabletSystemMessage } from './tabletSystemMessage'
+import { useT } from '../i18n/context.js'
+
 
 // Промпт внутри режима скетча.
 //
@@ -28,6 +30,7 @@ export function SketchPrompt({
   itemId: string
   onDirtyChange?(dirty: boolean): void
 }) {
+  const t = useT()
   const [prompt, setPrompt] = useState('')
   useEffect(() => onDirtyChange?.(prompt.length > 0), [prompt, onDirtyChange])
   const { models } = useCatalogModels()
@@ -49,11 +52,11 @@ export function SketchPrompt({
   return (
     <>
       {error && (
-        <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, 'Could not start generation')} onDismiss={() => setError(null)} />
+        <InlineNotice className="tablet-error" tone="error" title={tabletSystemMessage(error, t('Could not start generation'))} onDismiss={() => setError(null)} />
       )}
       <select
         className="ui-field tablet-sketch-model"
-        aria-label="Model"
+        aria-label={t('Model')}
         value={modelId ?? ''}
         onChange={(event) => chooseModel(event.target.value)}
       >
@@ -63,8 +66,8 @@ export function SketchPrompt({
       </select>
       <input
         className="ui-field tablet-sketch-input"
-        aria-label="What to add from the sketch"
-        placeholder="What should be added from the sketch?"
+        aria-label={t('What to add from the sketch')}
+        placeholder={t('What should be added from the sketch?')}
         value={prompt}
         onChange={(event) => setPrompt(event.target.value)}
       />
@@ -92,7 +95,7 @@ export function SketchPrompt({
           })
         }}
       >
-        Create {price != null && <em className="tablet-price">${price.toFixed(2)}</em>}
+        {t('Create')} {price != null && <em className="tablet-price">${price.toFixed(2)}</em>}
       </button>
     </>
   )

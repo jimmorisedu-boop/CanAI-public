@@ -58,6 +58,11 @@ function renderLaunch(props: React.ComponentProps<typeof AgentLaunchSection>) {
         if (!sameDeps(effects[index]?.deps, deps)) pending.push({ index, effect })
         effects[index] = { deps }
       },
+      useContext: (context: any) => context._currentValue,
+      useSyncExternalStore: (_subscribe: unknown, getSnapshot: () => unknown) => {
+        cursor++
+        return getSnapshot()
+      },
     }
     try { tree = AgentLaunchSection(props) } finally { internals.ReactCurrentDispatcher.current = previous }
     return tree!

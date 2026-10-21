@@ -1,4 +1,5 @@
 import { systemErrorMessage } from './systemMessage'
+import { t } from '../i18n/translate.js'
 
 type FalBalancePresentationInput = {
   mockMode: boolean
@@ -14,8 +15,8 @@ export function falBalancePresentation({
 }: FalBalancePresentationInput): { label: string; tooltip: string } {
   if (mockMode) {
     return {
-      label: 'Demo',
-      tooltip: 'Demo mode: paid fal.ai calls are disabled',
+      label: t('Demo'),
+      tooltip: t('Demo mode: paid fal.ai calls are disabled'),
     }
   }
 
@@ -23,28 +24,28 @@ export function falBalancePresentation({
   if (balance != null) {
     return {
       label: `${symbol}${balance.toFixed(2)}`,
-      tooltip: `fal.ai balance: ${symbol}${balance.toFixed(2)} ${currency} (click for spending history)`,
+      tooltip: t('fal.ai balance: {0}{1} {2} (click for spending history)', { 0: symbol, 1: balance.toFixed(2), 2: currency }),
     }
   }
 
   if (errorMsg?.includes('not permitted')) {
     return {
-      label: 'No billing',
-      tooltip: `fal.ai: ${systemErrorMessage(errorMsg)} (click for details)`,
+      label: t('No billing'),
+      tooltip: t('fal.ai: {0} (click for details)', { 0: systemErrorMessage(errorMsg) }),
     }
   }
 
   if (errorMsg?.includes('не установлен') || errorMsg?.includes('not configured') || errorMsg?.includes('not set')) {
     return {
-      label: 'No key',
-      tooltip: `fal.ai: ${systemErrorMessage(errorMsg)} (click for details)`,
+      label: t('No key'),
+      tooltip: t('fal.ai: {0} (click for details)', { 0: systemErrorMessage(errorMsg) }),
     }
   }
 
   return {
-    label: '—',
+    label: t('—'),
     tooltip: errorMsg
-      ? `fal.ai: ${systemErrorMessage(errorMsg)} (click for details)`
-      : 'Checking fal.ai balance…',
+      ? t('fal.ai: {0} (click for details)', { 0: systemErrorMessage(errorMsg) })
+      : t('Checking fal.ai balance…'),
   }
 }

@@ -29,6 +29,7 @@ Delete sends a board to Trash. Permanent deletion removes its stored data after 
 - Assets belong inside a board. Archive and Trash act on whole boards, not individual references.
 - Connection and sign-in notices use English. Board names keep their original language.
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Related topics
 

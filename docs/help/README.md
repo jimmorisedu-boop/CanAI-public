@@ -82,6 +82,7 @@ Open the `?` Help button in CanAI to view the same illustrated tasks.
 
 - [Add a custom fal.ai model](./custom-model.md) — Link a fal.ai model, review its setup and price, run a confirmed test, then add the result to the catalog.
 - [Configure providers and models](./settings-provider.md) — Provider keys, catalog models, and price confirmations stay explicit.
+- [Choose the interface language](./settings-language.md) — Switch CanAI between English and Russian for this device without reopening your board.
 - [Keep the local app portable](./settings-local.md) — Keep boards, media, and settings together under the local app folder.
 - [Use the tablet client on a LAN](./tablet-lan.md) — The tablet surface can connect to the local app on your network with deliberate access limits.
 - [Use tablet touch gestures](./tablet-gestures.md) — Select, pan, zoom, resize, and manage history with the tablet’s touch controls.

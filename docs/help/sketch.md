@@ -27,6 +27,7 @@ Press Esc or choose Cancel to leave the source image unchanged.
 ## Notes
 
 - Sketch Apply creates a new image beside the source; the source stays clean.
+- System labels follow the selected interface language; edit operations preserve the source content.
 
 ## Related topics
 

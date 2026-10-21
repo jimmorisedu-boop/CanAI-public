@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Rect } from '../spaces/canvas/konva/cropMath'
 import { cropFieldBounds, editCropField } from './cropFieldModel'
+import { useT } from '../i18n/context.js'
+
 
 export function CropFields({ rect, bounds, onChange, minimum = 24, ratio = null, disabled = false, unit = '' }: {
   rect: Rect
@@ -11,8 +13,9 @@ export function CropFields({ rect, bounds, onChange, minimum = 24, ratio = null,
   disabled?: boolean
   unit?: string
 }) {
+  const t = useT()
   return <fieldset className="tablet-crop-fields" disabled={disabled}>
-    <legend>Crop area{unit ? `, ${unit}` : ''}</legend>
+    <legend>{t('Crop area')}{unit ? `, ${unit}` : ''}</legend>
     {([['x', 'X'], ['y', 'Y'], ['w', 'Width'], ['h', 'Height']] as const).map(([field, label]) => {
       const limits = cropFieldBounds(rect, field, bounds, minimum)
       return <CropNumber key={field} label={label} value={rect[field]} min={limits.min} max={limits.max}

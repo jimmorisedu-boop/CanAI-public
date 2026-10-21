@@ -27,6 +27,7 @@ Confirm the model supports your image, video, audio, or text request before runn
 ## Notes
 
 - Unsupported references are reported instead of silently removed. GIF references use their first frame when a model accepts images.
+- System labels follow the selected interface language; model IDs, API values, and prompt text are preserved.
 
 ## Related topics
 

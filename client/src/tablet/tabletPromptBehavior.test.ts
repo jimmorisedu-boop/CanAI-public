@@ -152,7 +152,7 @@ test('клавиатуру поднимает только её кнопка, а
   assert.match(prompt, /readOnly=\{!typingArmed\}/u, 'поле закрыто для ввода, пока его не открыли')
   assert.doesNotMatch(prompt, /onBlur=\{\(\) => setTypingArmed\(false\)\}/u, 'временный уход фокуса к системной клавиатуре не закрывает ввод')
   assert.doesNotMatch(prompt, /addEventListener\('pointerdown', leaveEditor/u, 'системное управление клавиатурой не должно выключать редактируемость глобальным обработчиком')
-  assert.match(prompt, /aria-label="Model for this conversation"/u)
+  assert.match(prompt, /aria-label=\{t\('Model for this conversation'\)\}/u)
   assert.match(prompt, /promptChatStore\.setModel\(promptChatProjectId, event.target.value\)/u)
   const keyboardStart = prompt.indexOf('tablet-prompt-keyboard')
   const keyboardButton = prompt.slice(keyboardStart, prompt.indexOf('<IconKeyboard', keyboardStart))

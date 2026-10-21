@@ -24,6 +24,10 @@ Edit the prompt or model, review the quote, and choose Generate for a new job.
 
 ![Restore a generation setup: Adjust before running](../../client/public/help/restore-generation-3.svg)
 
+## Notes
+
+- System labels follow the selected interface language; model IDs, API values, and prompt text are preserved.
+
 ## Related topics
 
 - [Pick Auto or a model](./models.md)

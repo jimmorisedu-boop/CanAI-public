@@ -12,6 +12,8 @@ import {
   validateTaskInput,
   type AgentTaskInputValues,
 } from './agentPackageModel'
+import { useT } from '../../../i18n/context.js'
+
 
 const packageByProject = new Map<string, string>()
 const taskByProject = new Map<string, string>()
@@ -44,6 +46,7 @@ export function AgentLaunchComposer({
   /** Persist optimistic local board state before native media capture. */
   flushBoardBeforeCapture?: () => Promise<{ revision: number }>
 }) {
+  const t = useT()
   const key = projectKey(projectRef)
   const [packageId, setPackageId] = useState(() => packageByProject.get(key) ?? '')
   const [taskType, setTaskType] = useState(() => taskByProject.get(key) ?? '')
@@ -88,10 +91,10 @@ export function AgentLaunchComposer({
   const canLaunch = capability?.canLaunch === true
   if (!canLaunch) {
     return (
-      <div className="agent-launch-composer agent-launch-composer--unavailable" aria-label="Agent runs">
+      <div className="agent-launch-composer agent-launch-composer--unavailable" aria-label={t('Agent runs')}>
         <InlineNotice
           tone="info"
-          title="Running is unavailable in this mode"
+          title={t('Running is unavailable in this mode')}
           detail={capability?.reason ?? 'The transport did not grant permission to run a shared task.'}
         />
       </div>
@@ -99,7 +102,7 @@ export function AgentLaunchComposer({
   }
 
   return (
-    <div className="agent-launch-composer" aria-label="New agent task">
+    <div className="agent-launch-composer" aria-label={t('New agent task')}>
       <AgentLaunchSection
         controller={controller}
         packages={packages}

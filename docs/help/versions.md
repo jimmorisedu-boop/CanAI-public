@@ -27,6 +27,7 @@ Keep the current board open while you compare the restored copy.
 ## Notes
 
 - Restoring a version never overwrites the current board. Use Undo for a single recent edit.
+- System labels follow the selected interface language; source filenames and clip names remain as entered.
 
 ## Shortcuts
 

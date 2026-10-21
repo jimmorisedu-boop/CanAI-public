@@ -27,6 +27,7 @@ Keep your provider key and board data private; do not include them in screenshot
 ## Notes
 
 - A provider is contacted only when you start a request.
+- The language choice is personal to this device; settings values and provider payloads do not change.
 
 ## Related topics
 
