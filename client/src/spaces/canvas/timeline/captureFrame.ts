@@ -22,9 +22,6 @@ export async function captureVideoFrameAt(
   if (!item.src) return
   const src = item.src
   try {
-    // ⚠️ На сетевой доске файл обязан уехать на сервер команды и получить
-    // assetId — см. boardUploader. Ожидание при этом видно карточкой:
-    // captureFrameToCanvas ставит её до снимка и заменяет готовым кадром.
     const id = await captureFrameToCanvas(
       store,
       item,

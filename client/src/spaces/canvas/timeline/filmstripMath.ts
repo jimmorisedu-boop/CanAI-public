@@ -31,14 +31,25 @@ export function filmstripCellCount(trackWidth: number, trackHeight: number, aspe
  * назад. Не дальше конца клипа (перемотка точно в конец часто отдаёт чёрный
  * кадр) и не раньше нуля.
  */
-export function filmstripCellTimes(duration: number, count: number): number[] {
-  if (!isPositive(duration) || !Number.isFinite(count)) return []
+export function filmstripRangeTimes(
+  start: number,
+  end: number,
+  duration: number,
+  count: number,
+): number[] {
+  if (!isPositive(duration) || !Number.isFinite(count) || !Number.isFinite(start) || !Number.isFinite(end)) return []
+  const span = end - start
+  if (span <= 0) return []
   const cells = Math.floor(count)
   if (cells < 1) return []
   const last = Math.max(0, duration - 0.001)
   return Array.from({ length: cells }, (_, index) => (
-    Math.min(last, Math.max(0, ((index + 0.5) / cells) * duration))
+    Math.min(last, Math.max(0, start + ((index + 0.5) / cells) * span))
   ))
+}
+
+export function filmstripCellTimes(duration: number, count: number): number[] {
+  return filmstripRangeTimes(0, duration, duration, count)
 }
 
 /**

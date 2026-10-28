@@ -2,7 +2,7 @@
   "format": "canai-public-source",
   "version": 1,
   "edition": "local",
-  "sourceRevision": "c6c102f2c841f7234d602fde3ab71e623262fc10",
+  "sourceRevision": "d75b430ff791241628630d62d9ed218ac35b8121",
   "files": [
     {
       "path": ".gitattributes",
@@ -61,8 +61,8 @@
     {
       "path": "CHANGELOG.md",
       "mode": "100644",
-      "bytes": 2528,
-      "sha256": "d16eb503a38b529eb3dfd9ba5d0457c176e46745defee95735b2a7e33a907577"
+      "bytes": 3426,
+      "sha256": "58ca3324d15ded3c028654f72c55f445c5bb65b02735e5129e0b6c93439d4ef8"
     },
     {
       "path": "client/index.html",
@@ -79,8 +79,8 @@
     {
       "path": "client/package.json",
       "mode": "100644",
-      "bytes": 18011,
-      "sha256": "e808e718614aa25d9b7c71a2f56faf16fa759d1a69a1cf44d979f074bd16f960"
+      "bytes": 18063,
+      "sha256": "1bd7558f5f23af85389cb8c75d8c63e2a02d12e957377c550aa448835af8e4c4"
     },
     {
       "path": "client/public/favicon.svg",
@@ -883,8 +883,8 @@
     {
       "path": "client/public/help/timeline-2.svg",
       "mode": "100644",
-      "bytes": 3390,
-      "sha256": "de5ce4f5ea1a6e1576c3f2d9b6a9b1d896fa7d45a95a0e31e4fecec6210fd72e"
+      "bytes": 5401,
+      "sha256": "e01683b619bdb074b83f4c044243968e5c3bfa38873bb0619550f9c882b215d4"
     },
     {
       "path": "client/public/help/timeline-3.svg",
@@ -895,8 +895,8 @@
     {
       "path": "client/public/help/timeline-4.svg",
       "mode": "100644",
-      "bytes": 2927,
-      "sha256": "cbc413fe0e9be91225c8aefdafcd534e760413597ce7955878603504452b7401"
+      "bytes": 2884,
+      "sha256": "e319616c84518289db26ef98647801cbd85e9e6e75b9d99a70b3dc388f2c9a0c"
     },
     {
       "path": "client/public/help/timeline-5.svg",
@@ -1051,8 +1051,8 @@
     {
       "path": "client/src/help/content/guide.json",
       "mode": "100644",
-      "bytes": 71280,
-      "sha256": "5b44d7b05db1f6aa5b2ab801e7f28cbbcb96ab48ea4c2173b664356bb382673c"
+      "bytes": 72092,
+      "sha256": "8f657a8568255483d90377eb18a8664b54dd8463a5ec84ec594b2b67a923be0b"
     },
     {
       "path": "client/src/help/content/index.ts",
@@ -1117,8 +1117,8 @@
     {
       "path": "client/src/i18n/ru.ts",
       "mode": "100644",
-      "bytes": 346309,
-      "sha256": "81fb4cd29abbfb62aa22d9ecd357106a448153b2cc086bf9a1c178d7a0bca11e"
+      "bytes": 355639,
+      "sha256": "3ae841a3d963b297e44c67e9d6839b1978d9b410ae9118af7018c846c7801fd6"
     },
     {
       "path": "client/src/i18n/translate.ts",
@@ -5047,8 +5047,8 @@
     {
       "path": "client/src/spaces/canvas/timeline/captureFrame.ts",
       "mode": "100644",
-      "bytes": 2310,
-      "sha256": "2e5f86c14d936c58497550bedc0741f36498124ad7b216f94c65edae505fe0f4"
+      "bytes": 1960,
+      "sha256": "86f7c771114b4a255cd6750ad592397ed3debb9c88ebb62e921235809a6b7e52"
     },
     {
       "path": "client/src/spaces/canvas/timeline/captureWorker.test.ts",
@@ -5071,8 +5071,8 @@
     {
       "path": "client/src/spaces/canvas/timeline/filmstripMath.ts",
       "mode": "100644",
-      "bytes": 4947,
-      "sha256": "3452e96cf81b5a4d9cfca07874dced5e749f66fc09d0e1c3d7e3fe1ffeab66c2"
+      "bytes": 5239,
+      "sha256": "442f0cee70f9d2ae29909392cdd8dde8b70d6561b1d1d491717e3a8ce2ad6d19"
     },
     {
       "path": "client/src/spaces/canvas/timeline/frameCaptureQueue.test.ts",
@@ -5102,19 +5102,19 @@
       "path": "client/src/spaces/canvas/timeline/SavedFramesDrawer.tsx",
       "mode": "100644",
       "bytes": 5313,
-      "sha256": "e9cf084a69636ffb8c5056b9a9bc98a7ce0212ec4ff515fb179f27246b0b890f"
+      "sha256": "62927c09a3ed559f6c21999a934274261daad094d1d6676e62ad3f54e8e851b3"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineApply.test.ts",
       "mode": "100644",
-      "bytes": 5952,
-      "sha256": "0eef629095d977f3baeb9d8f36cfc0be24bab1b39e4620962f80e809c2d354e7"
+      "bytes": 7940,
+      "sha256": "b9604d7e5720c3d8f818e46cc904197957556da0554b5c286e452bad1a021c03"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineBarLayout.test.ts",
       "mode": "100644",
-      "bytes": 3735,
-      "sha256": "140b511613d707c25dfda355902feaa324376c19848c63e37a310a26b680c1bb"
+      "bytes": 5674,
+      "sha256": "abe8c396aa4f5e15dc3c7e04eff508aba9400e4d67bb14f14e1de21fd78e8af4"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineBus.test.ts",
@@ -5131,8 +5131,8 @@
     {
       "path": "client/src/spaces/canvas/timeline/TimelineButton.tsx",
       "mode": "100644",
-      "bytes": 2961,
-      "sha256": "99f5ba6d69776daf1fbeb4b3a3456b6b32b28f13f7b436170e0721afb616ff58"
+      "bytes": 3356,
+      "sha256": "63d69eb52ff8ed96cc3b548149659fac59cfbff0f37bc96d6381572a9be314ea"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineCanvasHotkeys.test.ts",
@@ -5155,14 +5155,14 @@
     {
       "path": "client/src/spaces/canvas/timeline/timelineCommands.test.ts",
       "mode": "100644",
-      "bytes": 3967,
-      "sha256": "7ae73ad0d7dd12e51c4476ccaac656a9ef948d157b770c6da396133dd8f458c5"
+      "bytes": 4768,
+      "sha256": "ac05f3ac4d8a34de2c44cd5ed97aaff25107a8026dd7b30f115ad15de6ff4594"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineCommands.ts",
       "mode": "100644",
-      "bytes": 3181,
-      "sha256": "676b1b4cf5b8beb39643d3640d607574e34888045525da11263a904fcf440a0f"
+      "bytes": 3612,
+      "sha256": "554ff45f8faf91c8e83990319a2781da5dde9f2a578ff2dd6f97b42f35442b37"
     },
     {
       "path": "client/src/spaces/canvas/timeline/TimelineCropFrame.tsx",
@@ -5179,26 +5179,26 @@
     {
       "path": "client/src/spaces/canvas/timeline/TimelineFramesShelf.tsx",
       "mode": "100644",
-      "bytes": 10839,
-      "sha256": "0aa6e1f3f8557857db51dc40a65d0242440c139ccfc476bc9be1b8a7b81836b2"
+      "bytes": 10253,
+      "sha256": "77bbda552ef3486ec8107e89838a698d3d3f254b600cef0ce0d54034251d4541"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineKeys.test.ts",
       "mode": "100644",
-      "bytes": 5284,
-      "sha256": "4939978cd2a0a9e2e4ab8f52ccbe2e65d6519ee4c8451589eaab103a35e76411"
+      "bytes": 6324,
+      "sha256": "9d41818f32e2ff5b1aeabf53bb60d4846f892964cae10c83f9a20023eb8dc9d5"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineKeys.ts",
       "mode": "100644",
-      "bytes": 4461,
-      "sha256": "103944a7af91115f8744ccea849ffcbd166dce395ed097cf88360836c6fc624d"
+      "bytes": 5021,
+      "sha256": "060226e843d5249a6ca5fab94784d5c655d0be091184903800acbfb7b28d3bce"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineLeaveGuard.test.ts",
       "mode": "100644",
-      "bytes": 9024,
-      "sha256": "affce3115f96d35221b163e24c5a26348e7f7a08c60b25678a65d72f0475a6b0"
+      "bytes": 7898,
+      "sha256": "47aa55c95c69a4e2558a9d480c667003e1279587cf7fc1a891dbfdd26c636bc8"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineLeaveGuard.ts",
@@ -5209,20 +5209,20 @@
     {
       "path": "client/src/spaces/canvas/timeline/timelineModel.test.ts",
       "mode": "100644",
-      "bytes": 7966,
-      "sha256": "87f1a25687c0c70e59ab168c2076d08e8339a14f9912d94634a9118cc0b02aaf"
+      "bytes": 12152,
+      "sha256": "0f2c1e38f03feaa10403a5a5985d506266738a7c2c2d60c4b6e0cb7bdaa2fbd4"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineModel.ts",
       "mode": "100644",
-      "bytes": 8120,
-      "sha256": "fbf2cdf75d674ac170f16854ae874362e0c0669b545ea997cbdc51b5172cd159"
+      "bytes": 12110,
+      "sha256": "a3155376a77ab927dde37877882f42e45b899992d072d75fb79be7ebfcd6f40a"
     },
     {
       "path": "client/src/spaces/canvas/timeline/TimelineMontage.tsx",
       "mode": "100644",
-      "bytes": 5169,
-      "sha256": "da1b5ba5fcba1f570730718b6590514837f93bc5dc50412e150a72f014876f6e"
+      "bytes": 5988,
+      "sha256": "29366a84ee489c08f57b261a9f588d5b56ff7f3ef274cbed24d1428bbc870237"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineNotice.test.ts",
@@ -5239,26 +5239,26 @@
     {
       "path": "client/src/spaces/canvas/timeline/TimelineOverlay.tsx",
       "mode": "100644",
-      "bytes": 11446,
-      "sha256": "1723f68d3b243ada74e040595f40dcdd668610a1c0d84a041a14054547018788"
+      "bytes": 8898,
+      "sha256": "f777b0ea96216ef0e8f9da03917ef893948f1bc39b34578b867e8dbc6966e9c5"
     },
     {
       "path": "client/src/spaces/canvas/timeline/TimelinePreview.tsx",
       "mode": "100644",
-      "bytes": 5151,
-      "sha256": "f47adaedf17373fa004b5b1e31a7b1772df14528cebf26e169a0bcc5a352271b"
+      "bytes": 4053,
+      "sha256": "b853e43395607c9b3b6cb6fd0c30cd5d862c1ac9d1fd76aaa533f3a9cd115c4d"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineStatus.test.ts",
       "mode": "100644",
-      "bytes": 6543,
-      "sha256": "67c23b59e8840c179db564a2d8feaec52b1a03b3bd99a5cdeb3bd74c7f9e4d33"
+      "bytes": 6616,
+      "sha256": "cc87d158e74db882efc4577bf30a03a6b50538d4ffe00ef789d18695ff1d6cc5"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineStatus.ts",
       "mode": "100644",
       "bytes": 7298,
-      "sha256": "99b5fd3af786cfa33260373edf7e5953c19c1404cdc35a20e2ccfbcce06b1f89"
+      "sha256": "abf220fac5d91d39b1d62b30dfb02ad97c56ed14fa650fa9b759b2c3fae764c7"
     },
     {
       "path": "client/src/spaces/canvas/timeline/timelineTimecode.test.ts",
@@ -5273,28 +5273,52 @@
       "sha256": "b7d9166b42d6dd322e5390b29cd6b82890936c9d14ff9e39f17635694c188c47"
     },
     {
+      "path": "client/src/spaces/canvas/timeline/timelineTimeZoom.test.ts",
+      "mode": "100644",
+      "bytes": 5565,
+      "sha256": "39da325fe4bc758746424f687f8f7ae466323b7ed02d7daf54f771ef5a8453bd"
+    },
+    {
+      "path": "client/src/spaces/canvas/timeline/timelineTimeZoom.ts",
+      "mode": "100644",
+      "bytes": 6789,
+      "sha256": "766161a8de94a36c4fb3667729cd3cd81e46e7e5caa20dcb147e88ac31ed1d39"
+    },
+    {
       "path": "client/src/spaces/canvas/timeline/TimelineTrack.tsx",
       "mode": "100644",
-      "bytes": 12318,
-      "sha256": "b6cbda7ce53b2c0438cf4413b69f36970e5c0be9d713808eb71076717535e51e"
+      "bytes": 15765,
+      "sha256": "019d8a3857b437e38c7af3aa8f9f9c79eaf2c60d5326447a49a12d6408532598"
     },
     {
       "path": "client/src/spaces/canvas/timeline/TimelineTransport.tsx",
       "mode": "100644",
-      "bytes": 3277,
-      "sha256": "6b060cd79f91683d56645a5355890668535e62f91210976c7648f0cefd16f94f"
+      "bytes": 4450,
+      "sha256": "9269816077a482ebd21e7f7b1c9518da7cec987653121cbe1c3f28569b21fdfc"
+    },
+    {
+      "path": "client/src/spaces/canvas/timeline/TimelineZoomScrollbar.tsx",
+      "mode": "100644",
+      "bytes": 2359,
+      "sha256": "bb0f07e9ec92e34a83aea79e11aa1665c0df7496cd183f0c87513727cc8f6ca2"
+    },
+    {
+      "path": "client/src/spaces/canvas/timeline/useClipAudioPeaks.ts",
+      "mode": "100644",
+      "bytes": 1504,
+      "sha256": "f6249800ad245a74fe27e79cc26edc4bb09dd840f0dc97ff6aebd1a928f217b8"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useFilmstrip.test.ts",
       "mode": "100644",
-      "bytes": 17244,
-      "sha256": "88edbc7ce2f725feb5b95e5a93f3cced7f6de2d269714024738acab38ad9c8c4"
+      "bytes": 17641,
+      "sha256": "2b952e1acf6bc27439413061ee1c33ed3525dc33db9ed8718dd761a04651527d"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useFilmstrip.ts",
       "mode": "100644",
-      "bytes": 4625,
-      "sha256": "cb89cdb276f5bf44fb8247dfdc89a3fd3194d520d1def36299d424296d76422d"
+      "bytes": 4904,
+      "sha256": "83591e48de6585cab076d0c32ba4a383ca4e84bf76ae099ebbf8a7dc7d1947c5"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useFrameCapture.ts",
@@ -5311,20 +5335,26 @@
     {
       "path": "client/src/spaces/canvas/timeline/useTimelinePlayback.ts",
       "mode": "100644",
-      "bytes": 5111,
-      "sha256": "ae8849ecccd26c58c27ea478b74b6d295c5c51aade657750005d5095a2612822"
+      "bytes": 5485,
+      "sha256": "06f6d9ac3af4bf190401d678db3e36c440d172a10ba600cf442deb74fb932e1e"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useTimelineSession.ts",
       "mode": "100644",
-      "bytes": 20778,
-      "sha256": "fe6d70fbd616564a80bfaa90c714eb3e08082c504ffa921d3ff4bc6639cd2be4"
+      "bytes": 22079,
+      "sha256": "a3533b5d0741ddb5cf0f0ac7db465c239892dc994540d22e559ac3f746b44b5f"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useTimelineStatus.ts",
       "mode": "100644",
       "bytes": 2128,
       "sha256": "03218b1e6eab5e7da4eb10681fbccb80d8fe7c4359786222aac10261d2905a36"
+    },
+    {
+      "path": "client/src/spaces/canvas/timeline/useTimelineTimeZoom.ts",
+      "mode": "100644",
+      "bytes": 4235,
+      "sha256": "01cbb35012d11a57a715302f0f6746d6ec520d055df18463ac1d8d28420819d0"
     },
     {
       "path": "client/src/spaces/canvas/timeline/useTimelineZoom.ts",
@@ -5947,8 +5977,8 @@
     {
       "path": "client/src/styles/timeline.css",
       "mode": "100644",
-      "bytes": 35228,
-      "sha256": "c93305b2bcf553b005724d65bd3fc3605e38727778cb8cf61add606f8c353caa"
+      "bytes": 31106,
+      "sha256": "4ecc90a28afb7d787e7ebf5ce7e688d0d8cb185c2ff3ab988267de5de5e03983"
     },
     {
       "path": "client/src/styles/tokens.css",
@@ -6115,8 +6145,8 @@
     {
       "path": "client/src/tablet/clipTrack.test.tsx",
       "mode": "100644",
-      "bytes": 2484,
-      "sha256": "1e50d16aeef90a59c1b3585927353c3e1afd756cfa0a861fc58fdc807e71c159"
+      "bytes": 2558,
+      "sha256": "977196abf23d395158005977cea50e032844cf21d45ed6a32af731aea9ad31e1"
     },
     {
       "path": "client/src/tablet/ClipTrack.tsx",
@@ -6979,14 +7009,14 @@
     {
       "path": "client/src/ui/hotkeys.ts",
       "mode": "100644",
-      "bytes": 11721,
-      "sha256": "960d1fcd533ba84eb3571b7720dc61b78084099fb1465285e65bcbcddea6bb65"
+      "bytes": 13289,
+      "sha256": "69223759aa6f01a73b1cdaa02210a06e18d8c1203018e1220445582520a981a4"
     },
     {
       "path": "client/src/ui/icons.tsx",
       "mode": "100644",
-      "bytes": 4097,
-      "sha256": "110846b18b04389d8b7b47193507c73542ba83ecf7524626e6db0a75c22f62ce"
+      "bytes": 4165,
+      "sha256": "10d5d42ea229e51632ace656f72f1e6e0e4ff43bfb0fee14f423a10d2afcc72b"
     },
     {
       "path": "client/src/ui/ids.ts",
@@ -7237,14 +7267,14 @@
     {
       "path": "client/src/ui/useSharedZoom.test.ts",
       "mode": "100644",
-      "bytes": 2572,
-      "sha256": "6c85fa5296bba1e34be47ed3036daeca0835a5460d706b6966ee4506fb83063e"
+      "bytes": 2887,
+      "sha256": "66f075f42aabfa5fc0fb4f9851fe9c8cc015260455f1b5358973bc1de1b1ee11"
     },
     {
       "path": "client/src/ui/useSharedZoom.ts",
       "mode": "100644",
-      "bytes": 8259,
-      "sha256": "b359dffd393a8e5c925f6329c1a11600b889d6bc3c337427792ed1accd0f0749"
+      "bytes": 8543,
+      "sha256": "d0570134290ef08426d190ce4c18ab3e5ff0f02b56175ad65a730d0435fdf61c"
     },
     {
       "path": "client/src/ui/viewTransition.test.ts",
@@ -7369,8 +7399,8 @@
     {
       "path": "docs/help-maintenance.md",
       "mode": "100644",
-      "bytes": 8544,
-      "sha256": "f4f8399bdb472748a02920cef2aebcf0fd5fb2f7d227626a33858c90f802d45a"
+      "bytes": 8566,
+      "sha256": "888228c18738f1e37cd059d636061425d99af0a04ea241b53f122f3d829ee50d"
     },
     {
       "path": "docs/help/archive-trash.md",
@@ -7603,8 +7633,8 @@
     {
       "path": "docs/help/timeline.md",
       "mode": "100644",
-      "bytes": 2840,
-      "sha256": "f786735b897b513c6072416e0394cd0d81cbf491301bf77502705a90871aa438"
+      "bytes": 3382,
+      "sha256": "8568257a5fa781068dd3c8eab0105999c4f10390b223e51145a17482d8bdc9b9"
     },
     {
       "path": "docs/help/variants-cost.md",
@@ -7772,13 +7802,13 @@
       "path": "package-lock.json",
       "mode": "100644",
       "bytes": 11152,
-      "sha256": "6e16d933bbcfb58a0d125d46741875e01279702ae8f605e1233b6c33bdfaed21"
+      "sha256": "097b137e356ae70a148a9dcc34de879bc6cba718cdbcc29a810c594bed464f36"
     },
     {
       "path": "package.json",
       "mode": "100644",
       "bytes": 3329,
-      "sha256": "ef5a98b844976a7f15d6633d1a8e176c6f53a796740e457578a3e9dacadda3b1"
+      "sha256": "27adb2495c5dd18bf64b4309df1de790c4d3521afffb1f069e850809bbc49e14"
     },
     {
       "path": "packages/agent-protocol/index.ts",
@@ -8089,14 +8119,14 @@
     {
       "path": "scripts/local-edition-client.mjs",
       "mode": "100644",
-      "bytes": 38985,
-      "sha256": "2273ff40dde594fd4328f5900a541b5eabfabebc4b32a60914ba939b91d18158"
+      "bytes": 40368,
+      "sha256": "ab189392be84e7fabba350e2515ad144de4ba9a940b7092092a0e4212b6afe21"
     },
     {
       "path": "scripts/local-edition-client.test.mjs",
       "mode": "100644",
-      "bytes": 11336,
-      "sha256": "c7b00db174a98e8c8857b4d0f0331d3d8f973d4c73e81d9ad4ebf5a2d02ee614"
+      "bytes": 12602,
+      "sha256": "f071401a0679f004ed39f795ca2a09565e8ffeb2655fc9599caf2f53dcf8c3f3"
     },
     {
       "path": "scripts/local-edition-runtime.test.mjs",

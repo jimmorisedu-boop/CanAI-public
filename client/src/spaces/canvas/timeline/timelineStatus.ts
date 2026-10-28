@@ -85,7 +85,7 @@ export function frameTransitionNotice(
   return null
 }
 
-export const NO_FRAMES_MESSAGE = 'No frames yet — press F'
+export const NO_FRAMES_MESSAGE = 'No frames yet — press S'
 
 export type FrameTargetResult =
   | { ok: true; record: FrameCaptureRecord }

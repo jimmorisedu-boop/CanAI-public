@@ -1,28 +1,30 @@
-import type { CSSProperties, DOMAttributes, RefObject } from 'react'
+import type { CSSProperties, DOMAttributes, ReactNode, RefObject } from 'react'
 import { IconClose, IconFrameFit } from '../../../ui/icons'
 import { zoomTransform, type ZoomState } from '../../../ui/useSharedZoom'
 import { RATIO_PRESETS } from '../konva/cropMath'
 import { TimelineButton } from './TimelineButton'
 import { TimelineCropFrame } from './TimelineCropFrame'
+import { TimelineFramesShelf } from './TimelineFramesShelf'
+import type { FrameCaptureRecord } from './frameCaptureQueue'
 import type { TimelineSession } from './useTimelineSession'
-import { systemErrorMessage } from '../../../ui/systemMessage'
-import { useT, type Translate } from '../../../i18n/context.js'
+import { useT } from '../../../i18n/context.js'
 
+// Превью правки клипа: видео вписано в окно без плашки заголовка поверх кадра;
+// в правом верхнем углу — компактные кнопки «вписать кадр» и выход, снизу при
+// необходимости открываются пропорции кадрирования и всплывающая полка кадров.
 
-// Превью правки клипа: видео вписано в окно, поверх него — стеклянные плашки
-// (имя клипа, «вписать кадр», выход, пропорции кадрирования).
-// Всё, что поверх видео, лежит РЯДОМ с областью просмотра, а не внутри неё:
-// нажатие по плашке не должно начинать панораму кадра и захватывать указатель.
-
-function describe(session: TimelineSession, t: Translate): string {
-  const { facts } = session
-  if (!facts) return systemErrorMessage(session.error, 'Reading video…')
-  return t('{0} s · {1}×{2} · {3}', {
-    0: facts.duration.toFixed(1),
-    1: facts.width ?? '?',
-    2: facts.height ?? '?',
-    3: t(facts.hasAudio ? 'with audio' : 'without audio'),
-  })
+export interface TimelineShelfProps {
+  records: readonly FrameCaptureRecord[]
+  selectedId: string | null
+  open: boolean
+  toggleRef: RefObject<HTMLButtonElement>
+  onToggle(): void
+  onSelect(record: FrameCaptureRecord): void
+  onRetry(id: string): void
+  onCancel(id: string): void
+  onRemove(id: string): void
+  onShow(id: string): void
+  onDownload(id: string): void
 }
 
 export function TimelinePreview({
@@ -34,6 +36,7 @@ export function TimelinePreview({
   zoomed,
   viewportProps,
   onFit,
+  shelf,
 }: {
   session: TimelineSession
   videoRef: RefObject<HTMLVideoElement>
@@ -43,6 +46,8 @@ export function TimelinePreview({
   zoomed: boolean
   viewportProps: Pick<DOMAttributes<HTMLDivElement>, 'onPointerDown' | 'onPointerMove' | 'onPointerUp' | 'onPointerCancel' | 'onDoubleClick'>
   onFit(): void
+  shelf?: TimelineShelfProps
+  children?: ReactNode
 }) {
   const t = useT()
   const { facts } = session
@@ -57,13 +62,8 @@ export function TimelinePreview({
           className="timeline-stage"
           ref={stageRef}
           style={{
-            // Пропорция кадра — числом: от неё CSS считает размер сцены так,
-            // чтобы кадр вписывался в окно по обеим осям (contain) и при этом
-            // ЗАПОЛНЯЛ его — маленький клип не остаётся крошечным по центру.
             ...(facts?.width && facts?.height ? { '--tl-ratio': facts.width / facts.height } : null),
             transform: zoomTransform(zoom),
-            // Ручки и обводки делят на этот множитель: иначе при пятикратном
-            // приближении они выросли бы в пять раз вместе с кадром.
             '--tl-zoom': zoom.scale,
           } as CSSProperties}
         >
@@ -73,10 +73,6 @@ export function TimelinePreview({
       </div>
 
       <div className="tl-preview-top">
-        <div className="tl-glass tl-name">
-          <strong>{session.item.name || t('clip')}</strong>
-          <span>{describe(session, t)}</span>
-        </div>
         <div className="tl-preview-actions">
           <TimelineButton
             glass
@@ -89,8 +85,6 @@ export function TimelinePreview({
           >
             <IconFrameFit size={18} />
           </TimelineButton>
-          {/* Выход — обычная кнопка канона с подписью, та же, что в сравнении:
-              из полноэкранного режима выход должен быть виден словами. */}
           <button type="button" className="timeline-close" onClick={session.close} aria-keyshortcuts="Escape">
             <IconClose size={14} />{t('Esc — exit')}
           </button>
@@ -105,8 +99,6 @@ export function TimelinePreview({
               type="button"
               className={session.cropRatio === preset.value ? 'is-on' : undefined}
               aria-pressed={session.cropRatio === preset.value}
-              // Без размеров кадра пропорцию не пересчитать: кнопка нажалась бы,
-              // подсветилась и ничего не сделала.
               disabled={!facts?.width || !facts?.height}
               onClick={() => session.setCropRatio(preset.value)}
             >
@@ -116,6 +108,12 @@ export function TimelinePreview({
         </div>
       )}
 
+      {shelf && (
+        <TimelineFramesShelf
+          {...shelf}
+          abovePresets={Boolean(session.crop)}
+        />
+      )}
     </div>
   )
 }

@@ -3,7 +3,6 @@ import { IconBack } from '../../../ui/icons'
 import { useDialogFocus } from '../../../ui/dialogFocus'
 import { extractAudioFromItem } from '../konva/extractAudio'
 import type { CanvasStore } from '../konva/canvasStore'
-import { TimelineFramesShelf } from './TimelineFramesShelf'
 import { TimelineMontage } from './TimelineMontage'
 import { TimelinePreview } from './TimelinePreview'
 import { TimelineTrack } from './TimelineTrack'
@@ -11,24 +10,24 @@ import { TimelineTransport } from './TimelineTransport'
 import { runTimelineCommand } from './timelineCommands'
 import { setTimelinePresentation } from './timelineBus'
 import { dispatchTimelineKey } from './timelineKeys'
+import { keptSegments, totalLength } from './timelineModel'
 import { notifyInTimeline } from './timelineNotice'
 import { timecode } from './timelineTimecode'
 import type { FrameCaptureRecord } from './frameCaptureQueue'
 import type { TimelineSession } from './useTimelineSession'
+import { useClipAudioPeaks } from './useClipAudioPeaks'
 import { useFrameCapture } from './useFrameCapture'
 import { useTimelineFrameActions } from './useTimelineFrameActions'
 import { useTimelinePlayback } from './useTimelinePlayback'
 import { useTimelineStatus } from './useTimelineStatus'
+import { useTimelineTimeZoom } from './useTimelineTimeZoom'
 import { useTimelineZoom } from './useTimelineZoom'
 import { useWindowKeydown } from './useWindowKeydown'
 import { useT } from '../../../i18n/context.js'
 
-
 // Оверлей правки клипа. Вся арифметика — в timelineModel и useTimelineSession,
-// здесь только сборка: плеер (превью + транспорт), плёнка и ряд монтажа.
-// Раскладка сверху вниз — по утверждённому макету: видео занимает всё свободное
-// место над полкой кадров; полка, транспорт, плёнка и монтаж стоят отдельными
-// строками и не перекрывают вписанное видео.
+// здесь только сборка: единый плеер (превью со всплывающей полкой + центрированный
+// транспорт), двухэтажная дорожка с зумом времени (Alt + колесо) и ряд монтажа.
 
 export function TimelineOverlay({ session, store }: { session: TimelineSession; store: CanvasStore }) {
   const t = useT()
@@ -36,27 +35,24 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
   const videoRef = useRef<HTMLVideoElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
   const shelfToggleRef = useRef<HTMLButtonElement>(null)
-  // Что показывает превью, пока тянут ручку или стык (null — голову).
   const [previewTime, setPreviewTime] = useState<number | null>(null)
-  // Презентация режима (§9.1 ТЗ). overlay — видимая правка клипа; canvas —
-  // оверлей спрятан, и человек видит настоящий CanvasItem на доске. Сеанс при
-  // этом ЖИВОЙ: очередь кадров, резы, кроп и зум никуда не деваются, Escape
-  // возвращает в оверлей с тем же моментом.
   const [presentation, setPresentation] = useState<'overlay' | 'canvas'>('overlay')
   const inCanvas = presentation === 'canvas'
 
   const { facts, inPoint, outPoint, head } = session
   const duration = facts?.duration || 1
-  // Шаг стрелки — ровно кадр. Без известной частоты берём 25: это ближе к
-  // правде, чем произвольная доля секунды, и хотя бы предсказуемо.
   const frameStep = 1 / (facts?.fps || 25)
   const shownTime = previewTime ?? head
+  const keptDuration = totalLength(keptSegments(session.segments, session.dropped))
 
   const frames = useFrameCapture(store, session.item)
   const status = useTimelineStatus(frames.records)
   const playback = useTimelinePlayback(videoRef, session, shownTime)
   const zoom = useTimelineZoom(viewportRef, stageRef)
+  const timeZoom = useTimelineTimeZoom(dialogRef, trackRef, duration, head)
+  const peaks = useClipAudioPeaks(session.item.src, facts?.hasAudio, session.item.peaks)
 
   function backToVideo(): void {
     setPresentation('overlay')
@@ -69,25 +65,16 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
     openOnCanvas: () => setPresentation('canvas'),
   })
 
-  // Презентацию публикуем в шину, чтобы канвас снял режимную рамку (prompt-dock
-  // и остальные плашки холста снова видны), пока человек смотрит на CanvasItem.
   useEffect(() => {
     setTimelinePresentation(inCanvas ? 'canvas' : 'overlay')
     return () => setTimelinePresentation('overlay')
   }, [inCanvas])
 
-  // Фокус не должен уходить из режима по Tab на кнопки холста под затемнением:
-  // они там есть, но нажимать их сейчас нельзя. Пока презентация «canvas»,
-  // Escape принадлежит возврату на оверлей (см. обработчик клавиш), а закрытию
-  // режима — нет.
   useDialogFocus(dialogRef, () => {
     if (inCanvas) return
     session.close()
   })
-  // Окно берёт фокус на себя, а не на первую кнопку: первой в разметке стоит
-  // «Вписать кадр», и при входе с клавиатуры она встречала бы кольцом фокуса и
-  // подсказкой, которых никто не просил. Эффект стоит ПОСЛЕ useDialogFocus —
-  // тот ставит фокус на первую кнопку, этот его перебивает.
+
   useEffect(() => {
     dialogRef.current?.focus({ preventScroll: true })
   }, [])
@@ -95,8 +82,6 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
   function toggleShelf(): void {
     const next = !frames.open
     frames.setOpen(next)
-    // Закрыли — фокус остаётся на шевроне: он и открывалка, и закрывалка, а
-    // карточка, на которой мог стоять фокус, исчезает вместе с лентой.
     if (!next) shelfToggleRef.current?.focus({ preventScroll: true })
   }
 
@@ -105,8 +90,8 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
     if (!outcome) return
     const at = timecode(outcome.record.requestedTime)
     notifyInTimeline(outcome.kind === 'duplicate'
-      ? { kind: 'info', tone: 'warn', message: `This moment is already saved: ${at}`, replaceKey: 'timeline-capture' }
-      : { kind: 'info', message: `Frame ${at} — saving…`, replaceKey: 'timeline-capture' })
+      ? { kind: 'info', tone: 'warn', message: t('This moment is already saved: {0}', { 0: at }), replaceKey: 'timeline-capture' }
+      : { kind: 'info', message: t('Frame {0} — saving…', { 0: at }), replaceKey: 'timeline-capture' })
   }
 
   function toggleCrop(): void {
@@ -114,13 +99,11 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
     session.toggleCrop()
     notifyInTimeline({
       kind: 'info',
-      message: willBeOn ? 'Crop frame enabled' : 'Cropping disabled',
+      message: willBeOn ? t('Crop frame enabled') : t('Cropping disabled'),
       replaceKey: 'timeline-crop',
     })
   }
 
-  /** Клик по метке на плёнке или по миниатюре на полке: выбрать кадр и поставить
-   *  головку ровно в его время. */
   function selectFrame(record: FrameCaptureRecord): void {
     playback.pause()
     session.setHead(record.requestedTime)
@@ -137,9 +120,6 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
   }
 
   useWindowKeydown((event) => {
-    // Пока человек в «показано на холсте», таймлайн-клавиши молчат — иначе F
-    // съедал бы кадр, а Enter применял, невидимо для полуприкрытой доски.
-    // Живой только Escape: он возвращает презентацию в overlay (§9.1 ТЗ).
     if (inCanvas) {
       if (event.code === 'Escape' || event.key === 'Escape') {
         event.preventDefault()
@@ -167,6 +147,7 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
       head,
       inPoint,
       outPoint,
+      cuts: session.cuts.map((cut) => cut.time),
       duration,
       frameStep,
       targetIsButton: Boolean(target && target.tagName === 'BUTTON'),
@@ -178,6 +159,8 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
       setHead: session.setHead,
       cut: session.addCut,
       toggleDrop: session.toggleDropAtHead,
+      trimLeft: session.trimLeftAtHead,
+      trimRight: session.trimRightAtHead,
       markIn: session.moveIn,
       markOut: session.moveOut,
       capture: captureHere,
@@ -209,26 +192,31 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
           zoomed={zoom.zoomed}
           viewportProps={zoom.viewportProps}
           onFit={zoom.reset}
-        />
-        <TimelineFramesShelf
-          records={frames.records}
-          selectedId={frames.selectedId}
-          open={frames.open}
-          toggleRef={shelfToggleRef}
-          onToggle={toggleShelf}
-          onSelect={selectFrame}
-          onRetry={frames.retry}
-          onCancel={frames.cancel}
-          onRemove={frameActions.remove}
-          onShow={frameActions.show}
-          onDownload={frameActions.download}
+          shelf={{
+            records: frames.records,
+            selectedId: frames.selectedId,
+            open: frames.open,
+            toggleRef: shelfToggleRef,
+            onToggle: toggleShelf,
+            onSelect: selectFrame,
+            onRetry: frames.retry,
+            onCancel: frames.cancel,
+            onRemove: frameActions.remove,
+            onShow: frameActions.show,
+            onDownload: frameActions.download,
+          }}
         />
         <TimelineTransport
           playing={playback.playing}
           muted={playback.muted}
           ready={Boolean(facts)}
           time={shownTime}
+          keptDuration={keptDuration}
           status={status}
+          frameCount={frames.records.length}
+          shelfOpen={frames.open}
+          shelfToggleRef={shelfToggleRef}
+          onToggleShelf={toggleShelf}
           onStepBack={() => stepBy(-frameStep)}
           onPlay={playback.togglePlay}
           onStepForward={() => stepBy(frameStep)}
@@ -239,6 +227,9 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
 
       <TimelineTrack
         session={session}
+        trackRef={trackRef}
+        timeZoom={timeZoom}
+        peaks={peaks}
         frames={frames.records}
         selectedFrameId={frames.selectedId}
         playing={playback.playing}
@@ -249,9 +240,6 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
 
       <TimelineMontage session={session} onToggleCrop={toggleCrop} onExtractAudio={extractAudio} />
 
-      {/* После «показать на холсте» оверлей спрятан целиком, а вернуться из
-          презентации иначе нечем, кроме клавиши. Плашка — единственное, что
-          остаётся видимым (см. .tl-back в timeline.css). */}
       {inCanvas && (
         <button type="button" className="ui-btn tl-back" aria-keyshortcuts="Escape" onClick={backToVideo}>
           <IconBack size={14} />{t('Return to video · Esc')}

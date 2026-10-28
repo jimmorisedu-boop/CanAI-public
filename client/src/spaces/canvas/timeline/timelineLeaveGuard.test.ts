@@ -166,25 +166,3 @@ for (const root of navigationRoots) {
   })
 }
 
-test('cloud tablet session expiry preserves the draft until leave is confirmed', {
-  skip: !fs.readFileSync(new URL('../../../tablet/TabletApp.tsx', import.meta.url), 'utf8').includes('const updateSession ='),
-}, async t => {
-  const f = fixture(t)
-  const screens: unknown[] = []
-  const sessions: unknown[] = []
-  const update = new Function('requestTimelineLeave', 'setScreen', 'setSession', navigationCallback('../../../tablet/TabletApp.tsx', 'updateSession'))(requestTimelineLeave, (value: unknown) => screens.push(value), (value: unknown) => sessions.push(value))
-  update({ authorized: false })
-  f.questions[0]!.resolve(false)
-  await new Promise<void>(resolve => setImmediate(resolve))
-  assert.equal(screens.length, 0)
-  assert.equal(sessions.length, 0)
-  assert.equal(f.state.closed, 0)
-  update({ authorized: false })
-  await new Promise<void>(resolve => setImmediate(resolve))
-  assert.equal(f.questions.length, 2)
-  f.questions[1]!.resolve(true)
-  await new Promise<void>(resolve => setImmediate(resolve))
-  assert.equal(screens.length, 1)
-  assert.equal(sessions.length, 1)
-  assert.equal(f.state.closed, 1)
-})

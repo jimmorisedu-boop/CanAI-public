@@ -231,3 +231,25 @@ test('local archive override removes Cloud assets while retaining local media an
   assert.match(local, /entry\.kind === 'text'/)
   assert.match(local, /isSafeCanvasLinkData\(entry\.link\)/)
 })
+
+test('exported timeline modules and tests contain no network or Cloud references', () => {
+  assert.equal(isLocalClientSourcePath('client/src/spaces/canvas/timeline/cloudClipTools.test.ts'), false)
+  for (const name of [
+    'client/src/spaces/canvas/timeline/timelineApply.test.ts',
+    'client/src/spaces/canvas/timeline/timelineLeaveGuard.test.ts',
+    'client/src/spaces/canvas/timeline/useTimelineSession.ts',
+    'client/src/spaces/canvas/timeline/captureFrame.ts',
+    'client/src/spaces/canvas/timeline/TimelineOverlay.tsx',
+    'client/src/spaces/canvas/timeline/TimelineTrack.tsx',
+    'client/src/spaces/canvas/timeline/TimelinePreview.tsx',
+    'client/src/spaces/canvas/timeline/TimelineTransport.tsx',
+    'client/src/spaces/canvas/timeline/TimelineMontage.tsx',
+    'client/src/spaces/canvas/timeline/TimelineZoomScrollbar.tsx',
+    'client/src/spaces/canvas/timeline/useClipAudioPeaks.ts',
+    'client/src/spaces/canvas/timeline/useTimelineTimeZoom.ts',
+  ]) {
+    assert.equal(isLocalClientSourcePath(name), true, name)
+    const exported = transformLocalClientSource(name, readFileSync(name, 'utf8'))
+    assert.doesNotMatch(exported, /cloud-assets|cloud tablet|network:|сетевой доске|сервер команды|team/iu, name)
+  }
+})

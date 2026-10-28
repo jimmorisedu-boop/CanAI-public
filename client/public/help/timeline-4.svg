@@ -1,41 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
-  <title id="title">Saved frames below the video</title>
-  <desc id="desc">The entire portrait video fits above a separate saved-frame strip. A selected thumbnail shows its time and a three-dot menu with To canvas, Download, and Delete actions. Applying without video edits closes the viewer without creating a video copy.</desc>
-  <rect width="640" height="360" rx="12" fill="#202326"/>
+  <title id="title">Saved frames popover over the video preview</title>
+  <desc id="desc">Frame (S) and Frames (B) sit on the left of the transport. Opening Saved frames floats a glass popover over the lower-left preview without shifting the transport or timeline.</desc>
+  <rect width="640" height="360" rx="12" fill="#141416"/>
   <g font-family="Arial,sans-serif">
-    <rect x="12" y="12" width="616" height="196" rx="8" fill="#101214"/>
-    <rect x="226" y="16" width="106" height="188" fill="#244653"/>
-    <path d="m226 152 42-58 26 27 20-13 18 44v52H226Z" fill="#3c6673"/>
-    <rect x="240" y="172" width="78" height="22" rx="4" fill="#101214"/>
-    <text x="279" y="187" text-anchor="middle" font-size="11" fill="#f1f1ed">Full frame</text>
-    <text x="24" y="34" font-size="11" fill="#a5a8a4">Video preview</text>
-    <path d="M12 213h616" stroke="#4b4e51"/>
-    <path d="m22 225 4 4 4-4" fill="none" stroke="#a5a8a4" stroke-width="1.5"/>
-    <text x="44" y="233" font-size="11" fill="#f1f1ed">6</text>
-    <text x="62" y="233" font-size="11" fill="#a5a8a4">Saved frames</text>
-    <g fill="#244653" stroke="#4b4e51">
-      <rect x="20" y="244" width="88" height="54" rx="6"/>
-      <rect x="116" y="244" width="88" height="54" rx="6"/>
-      <rect x="212" y="244" width="88" height="54" rx="6" stroke="#ef6545" stroke-width="2"/>
-      <rect x="308" y="244" width="88" height="54" rx="6"/>
-      <rect x="404" y="244" width="88" height="54" rx="6"/>
-      <rect x="500" y="244" width="88" height="54" rx="6"/>
+    <rect x="16" y="14" width="608" height="252" rx="8" fill="#0d0e10" stroke="#2c2d31"/>
+    <rect x="236" y="24" width="168" height="232" rx="6" fill="#243c48"/>
+    <path d="M236 196 L288 134 L328 166 L364 142 L404 198 V256 H236 Z" fill="#355868"/>
+    <text x="580" y="38" text-anchor="end" font-size="11" fill="#9ea2aa">Video preview</text>
+
+    <rect x="28" y="142" width="388" height="112" rx="8" fill="#1c1e22" stroke="#3c3f46"/>
+    <text x="42" y="164" font-size="11" fill="#f1f1ed">Saved frames · 3</text>
+    <text x="398" y="164" text-anchor="end" font-size="12" fill="#9ea2aa">×</text>
+
+    <g fill="#243c48" stroke="#454952">
+      <rect x="42" y="176" width="104" height="64" rx="6"/>
+      <rect x="156" y="176" width="104" height="64" rx="6" stroke="#d33f21" stroke-width="2"/>
+      <rect x="270" y="176" width="104" height="64" rx="6"/>
     </g>
     <g font-size="10" fill="#f1f1ed">
-      <text x="26" y="290">00:00.29</text><text x="122" y="290">00:01.71</text>
-      <text x="218" y="290">00:03.00</text><text x="314" y="290">00:04.79</text>
-      <text x="410" y="290">00:05.33</text><text x="506" y="290">00:07.46</text>
+      <text x="50" y="232">00:00.84</text>
+      <text x="164" y="232">00:03.00</text>
+      <text x="278" y="232">00:07.46</text>
     </g>
     <g fill="#f1f1ed">
-      <circle cx="96" cy="253" r="1.5"/><circle cx="96" cy="258" r="1.5"/><circle cx="96" cy="263" r="1.5"/>
-      <circle cx="192" cy="253" r="1.5"/><circle cx="192" cy="258" r="1.5"/><circle cx="192" cy="263" r="1.5"/>
-      <circle cx="288" cy="253" r="1.5"/><circle cx="288" cy="258" r="1.5"/><circle cx="288" cy="263" r="1.5"/>
+      <circle cx="248" cy="186" r="1.5"/><circle cx="248" cy="191" r="1.5"/><circle cx="248" cy="196" r="1.5"/>
     </g>
-    <rect x="350" y="97" width="220" height="108" rx="8" fill="#292c30" stroke="#62666a"/>
-    <text x="366" y="123" font-size="12" fill="#f1f1ed">To canvas (G)</text>
-    <text x="366" y="155" font-size="12" fill="#f1f1ed">Download (D)</text>
-    <text x="366" y="187" font-size="12" fill="#ff6b6d">Delete frame from canvas</text>
-    <text x="24" y="327" font-size="11" fill="#f1f1ed">Click a thumbnail to select it. B — hide / show frames.</text>
-    <text x="24" y="346" font-size="11" fill="#a5a8a4">Without video edits, Apply closes without a video copy.</text>
+
+    <rect x="428" y="142" width="182" height="96" rx="8" fill="#23262b" stroke="#4a4e57"/>
+    <text x="444" y="166" font-size="11" fill="#f1f1ed">To canvas (G)</text>
+    <text x="444" y="194" font-size="11" fill="#f1f1ed">Download (D)</text>
+    <text x="444" y="222" font-size="11" fill="#f07566">Delete frame from canvas</text>
+
+    <rect x="16" y="276" width="72" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+    <text x="52" y="293" text-anchor="middle" font-size="10" fill="#f1f1ed">Frame · S</text>
+    <rect x="94" y="276" width="84" height="26" rx="6" fill="#2b1d1a" stroke="#d33f21"/>
+    <text x="136" y="293" text-anchor="middle" font-size="10" fill="#f1f1ed">Frames · 3 · B</text>
+
+    <rect x="272" y="274" width="32" height="30" rx="6" fill="#27292e" stroke="#454850"/>
+    <path d="M285 283 V295 L295 289 Z" fill="#f1f1ed"/>
+    <text x="316" y="293" font-size="11" fill="#f1f1ed">00:03.00 / 00:09.60</text>
+
+    <text x="16" y="330" font-size="11" fill="#f1f1ed">Press S to save a frame; press B to toggle Saved frames without moving the player.</text>
+    <text x="16" y="348" font-size="11" fill="#9ea2aa">Without video edits, Apply closes without creating a video copy.</text>
   </g>
 </svg>

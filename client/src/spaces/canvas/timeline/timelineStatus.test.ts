@@ -108,7 +108,8 @@ test('на неготовом кадре клавиши ничего не дел
   assert.equal(notOnBoard.ok, false)
 
   const none = pickFrameTarget([], null, 'show')
-  assert.equal(!none.ok && none.notice.message, NO_FRAMES_MESSAGE)
+  assert.equal(!none.ok && none.notice.message, 'No frames yet — press S')
+  assert.equal(NO_FRAMES_MESSAGE, 'No frames yet — press S')
 })
 
 test('подписи карточки: сохраняю / сохранено / ошибка с причиной / отменён', () => {

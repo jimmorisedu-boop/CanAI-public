@@ -59,7 +59,7 @@ export function SavedFramesDrawer({
       <div className="tl-shelf-empty">
         <IconCamera size={18} />
 
-        {t('Nothing here yet. Capture a frame (click “Capture frame” or press F) and it will appear here.')}
+        {t('Nothing here yet. Capture a frame (click “Capture frame” or press S) and it will appear here.')}
       </div>
     )
   }

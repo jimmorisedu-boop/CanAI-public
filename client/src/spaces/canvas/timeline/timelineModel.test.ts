@@ -3,10 +3,13 @@ import test from 'node:test'
 import {
   MIN_PIECE_S,
   activeCuts,
+  adjacentCutTime,
   canCutAt,
   clamp,
   keptSegments,
   mergeCuts,
+  nextPlayableTime,
+  planSegmentTrim,
   pluralPieces,
   seamBounds,
   segmentAt,
@@ -156,4 +159,72 @@ test('метка удаления привязана к началу куска,
 test('метка, оставшаяся без своего куска, ничего не удаляет', () => {
   const segments = segmentsFrom(0, 9, [3])
   assert.deepEqual(keptSegments(segments, [5.5]), segments)
+})
+
+test('adjacentCutTime переходит к следующей/предыдущей точке монтажа без скачка в обратную сторону', () => {
+  const cuts = [3, 6]
+  assert.equal(adjacentCutTime(0, 1, 9, cuts, 1), 1)
+  assert.equal(adjacentCutTime(1, 1, 9, cuts, 1), 3)
+  assert.equal(adjacentCutTime(3, 1, 9, cuts, 1), 6)
+  assert.equal(adjacentCutTime(6, 1, 9, cuts, 1), 9)
+  assert.equal(adjacentCutTime(9, 1, 9, cuts, 1), 9)
+  assert.equal(adjacentCutTime(9.5, 1, 9, cuts, 1), 9.5)
+
+  assert.equal(adjacentCutTime(9.5, 1, 9, cuts, -1), 9)
+  assert.equal(adjacentCutTime(9, 1, 9, cuts, -1), 6)
+  assert.equal(adjacentCutTime(6, 1, 9, cuts, -1), 3)
+  assert.equal(adjacentCutTime(3, 1, 9, cuts, -1), 1)
+  assert.equal(adjacentCutTime(1, 1, 9, cuts, -1), 1)
+  assert.equal(adjacentCutTime(0.4, 1, 9, cuts, -1), 0.4)
+})
+
+test('planSegmentTrim обрезает слева (Q) и справа (W) как крайние, так и внутренние куски', () => {
+  // Крайний левый кусок: сдвигает inPoint даже на один кадр (0.15с)
+  assert.deepEqual(
+    planSegmentTrim({ side: 'left', head: 0.15, inPoint: 0, outPoint: 10, cuts: [4], dropped: [] }),
+    { kind: 'trim', inPoint: 0.15, outPoint: 10, dropped: [] },
+  )
+  // Крайний правый кусок: сдвигает outPoint
+  assert.deepEqual(
+    planSegmentTrim({ side: 'right', head: 9.8, inPoint: 0, outPoint: 10, cuts: [4], dropped: [] }),
+    { kind: 'trim', inPoint: 0, outPoint: 9.8, dropped: [] },
+  )
+  // Внутренний кусок [4, 8] при head = 5.5: Q отрезает [4, 5.5] в dropped, оставляя [0, 4], [5.5, 8], [8, 10]
+  assert.deepEqual(
+    planSegmentTrim({ side: 'left', head: 5.5, inPoint: 0, outPoint: 10, cuts: [4, 8], dropped: [] }),
+    { kind: 'trim', inPoint: 0, outPoint: 10, addedCut: 5.5, dropped: [4] },
+  )
+  // Внутренний кусок [4, 8] при head = 6.2: W отрезает [6.2, 8] в dropped, оставляя [4, 6.2]
+  assert.deepEqual(
+    planSegmentTrim({ side: 'right', head: 6.2, inPoint: 0, outPoint: 10, cuts: [4, 8], dropped: [] }),
+    { kind: 'trim', inPoint: 0, outPoint: 10, addedCut: 6.2, dropped: [6.2] },
+  )
+  // Защита от микрокусков короче MIN_PIECE_S (0.4с)
+  assert.deepEqual(
+    planSegmentTrim({ side: 'left', head: 3.8, inPoint: 0, outPoint: 10, cuts: [4], dropped: [] }),
+    { kind: 'tooShort' },
+  )
+  assert.deepEqual(
+    planSegmentTrim({ side: 'left', head: 4.2, inPoint: 0, outPoint: 10, cuts: [4, 8], dropped: [] }),
+    { kind: 'tooShort' },
+  )
+  // Курсор ровно на стыке — обрезать слева у нового куска нечего
+  assert.deepEqual(
+    planSegmentTrim({ side: 'left', head: 4, inPoint: 0, outPoint: 10, cuts: [4, 8], dropped: [] }),
+    { kind: 'noop' },
+  )
+})
+
+test('nextPlayableTime перепрыгивает удалённые куски и останавливает воспроизведение на последнем живом куске', () => {
+  const segments = segmentsFrom(0, 10, [3, 6, 8])
+  const dropped = [3, 8] // живые куски: [0, 3] и [6, 8]
+
+  assert.deepEqual(nextPlayableTime(segments, dropped, 1.2, false), { kind: 'play' })
+  // Вошли в удалённый [3, 6] во время воспроизведения — прыжок на 6
+  assert.deepEqual(nextPlayableTime(segments, dropped, 3.02, false), { kind: 'jump', time: 6 })
+  // Дошли до конца последнего живого [6, 8] — стоп на 8, не проигрывая удалённый хвост [8, 10]
+  assert.deepEqual(nextPlayableTime(segments, dropped, 8.0, false), { kind: 'stop', time: 8 })
+  // Нажали Play в конце (на 8.0 или в удалённом хвосте 9.2) — перезапуск с начала первого живого куска
+  assert.deepEqual(nextPlayableTime(segments, dropped, 8.0, true), { kind: 'jump', time: 0 })
+  assert.deepEqual(nextPlayableTime(segments, dropped, 9.2, true), { kind: 'jump', time: 0 })
 })

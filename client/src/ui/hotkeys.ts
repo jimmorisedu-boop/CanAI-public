@@ -6,7 +6,7 @@
 // `match` — часть записи, а не отдельная ветка в обработчике: пока клавиша
 // проверяется тем же объектом, который печатается в справке, разойтись им негде.
 
-export type HotkeyGroup = 'canvas' | 'compare' | 'editor' | 'prompt' | 'nodes'
+export type HotkeyGroup = 'canvas' | 'compare' | 'timeline' | 'editor' | 'prompt' | 'nodes'
 
 export interface HotkeyEvent {
   key: string
@@ -30,6 +30,7 @@ export interface Hotkey {
 export const HOTKEY_GROUPS: Array<{ id: HotkeyGroup; title: string }> = [
   { id: 'canvas', title: 'Canvas' },
   { id: 'compare', title: 'Compare' },
+  { id: 'timeline', title: 'Clip editing' },
   { id: 'editor', title: 'Image editor' },
   { id: 'prompt', title: 'Prompt bar' },
   { id: 'nodes', title: 'Macro editor' },
@@ -127,6 +128,22 @@ export const HOTKEYS: Hotkey[] = [
   { id: 'compare.mark', group: 'compare', keys: 'Numbers 1–9', what: 'Mark the winner' },
   { id: 'compare.archive', group: 'compare', keys: 'Delete', what: 'Archive candidate (Ctrl+Z restores)' },
   { id: 'compare.exit', group: 'compare', keys: 'Esc', what: 'Exit the set or comparison' },
+
+  // ── монтаж клипа (таймлайн) ──────────────────────────────
+  { id: 'timeline.play', group: 'timeline', keys: 'Space', what: 'Play or pause clip' },
+  { id: 'timeline.frameStep', group: 'timeline', keys: '← / →', what: 'Previous or next frame' },
+  { id: 'timeline.frameJump', group: 'timeline', keys: 'Shift+← / Shift+→', what: 'Back or forward 10 frames' },
+  { id: 'timeline.cutJump', group: 'timeline', keys: '↑ / ↓', what: 'Next or previous cut' },
+  { id: 'timeline.split', group: 'timeline', keys: 'C', what: 'Cut at cursor position' },
+  { id: 'timeline.drop', group: 'timeline', keys: 'X', what: 'Remove or restore segment under cursor' },
+  { id: 'timeline.trimLeft', group: 'timeline', keys: 'Q', what: 'Trim segment start to cursor' },
+  { id: 'timeline.trimRight', group: 'timeline', keys: 'W', what: 'Trim segment end from cursor' },
+  { id: 'timeline.crop', group: 'timeline', keys: 'F', what: 'Toggle crop frame' },
+  { id: 'timeline.capture', group: 'timeline', keys: 'S', what: 'Capture frame to canvas' },
+  { id: 'timeline.framesShelf', group: 'timeline', keys: 'B', what: 'Show or hide saved frames' },
+  { id: 'timeline.inOut', group: 'timeline', keys: 'I / O', what: 'Set clip start or end at cursor' },
+  { id: 'timeline.timeZoom', group: 'timeline', keys: 'Alt+scroll', what: 'Zoom timeline in time' },
+  { id: 'timeline.apply', group: 'timeline', keys: 'Enter', what: 'Apply edits' },
 
   // ── внешний редактор картинок ────────────────────────────
   { id: 'editor.open', group: 'editor', keys: 'F2', what: 'Open image in external editor' },

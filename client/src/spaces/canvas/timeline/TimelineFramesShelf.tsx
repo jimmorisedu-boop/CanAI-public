@@ -1,20 +1,20 @@
-import { useEffect, useId, useRef, useState, type Ref } from 'react'
-import { IconCaretDown, IconClose, IconDownload, IconMenu, IconNext, IconOpenExternal, IconRefresh, IconTrash } from '../../../ui/icons'
+import { useEffect, useId, useRef, useState, type RefObject } from 'react'
+import { IconClose, IconDownload, IconMenu, IconOpenExternal, IconRefresh, IconTrash } from '../../../ui/icons'
 import type { FrameCaptureRecord } from './frameCaptureQueue'
-import { TimelineButton } from './TimelineButton'
 import { frameStatusText, frameStatusTone, framesByTime, isBusyPhase, NO_FRAMES_MESSAGE } from './timelineStatus'
 import { timecode } from './timelineTimecode'
 import { useT } from '../../../i18n/context.js'
 
-
-// Полка занимает свою строку под превью. Миниатюра выбирает момент;
-// вторичные действия открываются отдельным меню вне прокручиваемой ленты.
+// Всплывающая полка сохранённых кадров в левом нижнем углу превью: не вставляет
+// лишний ряд между видео и транспортом (закон Фиттса + закон близости), и видео
+// не прыгает при открытии полки по клавише B.
 type FrameMenu = { id: string; left: number; bottom: number; maxHeight: number }
 
 export function TimelineFramesShelf({
   records,
   selectedId,
   open,
+  abovePresets,
   toggleRef,
   onToggle,
   onSelect,
@@ -27,7 +27,8 @@ export function TimelineFramesShelf({
   records: readonly FrameCaptureRecord[]
   selectedId: string | null
   open: boolean
-  toggleRef: Ref<HTMLButtonElement>
+  abovePresets?: boolean
+  toggleRef: RefObject<HTMLButtonElement>
   onToggle(): void
   onSelect(record: FrameCaptureRecord): void
   onRetry(id: string): void
@@ -44,19 +45,15 @@ export function TimelineFramesShelf({
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const [menu, setMenu] = useState<FrameMenu | null>(null)
   const menuId = useId()
-  const menuRecord = open ? records.find(record => record.id === menu?.id) : undefined
+  const menuRecord = open ? records.find((record) => record.id === menu?.id) : undefined
 
   function closeMenu(restoreFocus = true): void {
     setMenu(null)
     if (!restoreFocus) return
-    const target = triggerRef.current?.isConnected
-      ? triggerRef.current
-      : shelfRef.current?.querySelector<HTMLButtonElement>('.tl-shelf-toggle')
+    const target = triggerRef.current?.isConnected ? triggerRef.current : toggleRef.current
     target?.focus({ preventScroll: true })
   }
 
-  // Меню остаётся внутри модального окна для focus trap, но вне overflow
-  // ленты. Escape закрывает только меню, не весь просмотрщик.
   useEffect(() => {
     if (!menuRecord) return
     menuRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true })
@@ -77,8 +74,6 @@ export function TimelineFramesShelf({
     if (!open) setMenu(null)
   }, [open])
 
-  // Выбранная карточка остаётся на виду: снятый кадр или метка на дорожке
-  // выбирают карточку, которая может лежать за краем ленты.
   useEffect(() => {
     const grid = gridRef.current
     if (!open || !selectedId || !grid) return
@@ -90,29 +85,32 @@ export function TimelineFramesShelf({
     else if (right > grid.scrollLeft + grid.clientWidth) grid.scrollLeft = right - grid.clientWidth
   }, [open, selectedId, records.length])
 
+  if (!open) return null
+
   return (
-    <section className="tl-shelf" ref={shelfRef} data-open={open} aria-label={t('Saved frames')}>
+    <section
+      className={`tl-shelf${abovePresets ? ' above-presets' : ''}`}
+      ref={shelfRef}
+      data-open={open}
+      aria-label={t('Saved frames')}
+    >
       <div className="tl-shelf-head">
-        <TimelineButton
-          buttonRef={toggleRef}
-          label={open ? t('Hide saved frames') : t('Show saved frames')}
-          keys="B"
-          shortcut="B"
-          placement="top"
-          expanded={open}
-          className="tl-shelf-toggle"
-          onClick={onToggle}
-        >
-          {open ? <IconCaretDown size={16} /> : <IconNext size={16} />}
-        </TimelineButton>
+        <span className="tl-shelf-context">{t('Saved frames')}</span>
         <span className="tl-count" aria-live="polite">
           {records.length}
           <span className="tl-sr"> {t(records.length === 1 ? 'saved frame' : 'saved frames')}</span>
         </span>
-        <span className="tl-shelf-context">{t('Saved frames')}</span>
+        <button
+          type="button"
+          className="tl-shelf-close"
+          aria-label={t('Hide saved frames')}
+          onClick={onToggle}
+        >
+          <IconClose size={14} />
+        </button>
       </div>
 
-      {open && (ordered.length === 0 ? (
+      {ordered.length === 0 ? (
         <p className="tl-lane-empty">{t(NO_FRAMES_MESSAGE)}</p>
       ) : (
         <div className="tl-lane" ref={gridRef} role="list" aria-label={t('Saved frames')} onScroll={() => setMenu(null)}>
@@ -172,7 +170,8 @@ export function TimelineFramesShelf({
             )
           })}
         </div>
-      ))}
+      )}
+
       {menu && menuRecord && (
         <div
           ref={menuRef}
@@ -231,7 +230,7 @@ export function TimelineFramesShelf({
               onClick={() => {
                 closeMenu(false)
                 onRemove(menuRecord.id)
-                shelfRef.current?.querySelector<HTMLButtonElement>('.tl-shelf-toggle')?.focus({ preventScroll: true })
+                toggleRef.current?.focus({ preventScroll: true })
               }}>
               <IconTrash size={16} />{menuRecord.resultItemId ? t('Delete frame from canvas') : t('Remove from shelf')}
             </button>

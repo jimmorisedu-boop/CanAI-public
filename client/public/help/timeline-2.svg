@@ -1,1 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc"><title id="title">Trim on one timeline</title><desc id="desc">Large video preview, one timeline, and contextual editing tools.</desc><rect width="640" height="360" rx="12" fill="#101114"/><text x="16" y="23" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Cancel</text><text x="78" y="23" font-family="Arial,sans-serif" font-size="15" fill="#e4e6eb">Clip editing</text><rect x="544" y="7" width="80" height="25" rx="6" fill="#d33f21" stroke="#d33f21"/><text x="570" y="24" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Apply</text><rect x="20" y="45" width="400" height="225" rx="6" fill="#282e38" stroke="#363a44"/><path d="M210 137 L210 179 L245 158 Z" fill="#aeb8c8"/><text x="158" y="249" font-family="Arial,sans-serif" font-size="13" fill="#bbc2cd">Video preview</text><text x="440" y="64" font-family="Arial,sans-serif" font-size="14" fill="#e4e6eb">Tools</text><text x="440" y="94" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Cut at the playhead</text><text x="440" y="120" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Capture frame</text><rect x="440" y="142" width="180" height="30" rx="6" fill="#22252c" stroke="#363a44"/><text x="453" y="162" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">More</text><rect x="440" y="179" width="180" height="75" rx="6" fill="#22252c" stroke="#363a44"/><text x="452" y="200" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Delete / restore segment</text><text x="452" y="222" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Find cuts</text><text x="452" y="244" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Frames and audio</text><text x="20" y="289" font-family="Arial,sans-serif" font-size="11" fill="#e4e6eb">Play</text><text x="84" y="289" font-family="Arial,sans-serif" font-size="11" fill="#e4e6eb">0:02 / 0:06</text><text x="550" y="289" font-family="Arial,sans-serif" font-size="11" fill="#e4e6eb">Mute</text><rect x="20" y="300" width="600" height="22" rx="6" fill="#323844" stroke="#363a44"/><line x1="20" y1="303" x2="20" y2="319" stroke="#626e82"/><line x1="86.5" y1="303" x2="86.5" y2="319" stroke="#626e82"/><line x1="153" y1="303" x2="153" y2="319" stroke="#626e82"/><line x1="219.5" y1="303" x2="219.5" y2="319" stroke="#626e82"/><line x1="286" y1="303" x2="286" y2="319" stroke="#626e82"/><line x1="352.5" y1="303" x2="352.5" y2="319" stroke="#626e82"/><line x1="419" y1="303" x2="419" y2="319" stroke="#626e82"/><line x1="485.5" y1="303" x2="485.5" y2="319" stroke="#626e82"/><line x1="552" y1="303" x2="552" y2="319" stroke="#626e82"/><line x1="618.5" y1="303" x2="618.5" y2="319" stroke="#626e82"/><path d="M28 298 V324 M612 298 V324" stroke="#fff" stroke-width="3"/><path d="M220 298 V324" stroke="#ef6545" stroke-width="2"/><text x="20" y="346" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Cut</text><text x="79" y="346" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Crop</text><text x="142" y="346" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">Capture frame</text><text x="528" y="346" font-family="Arial,sans-serif" font-size="12" fill="#e4e6eb">More</text><text x="607" y="346" font-family="Arial,sans-serif" font-size="14" fill="#e4e6eb">?</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Split, trim, and zoom on the two-level timeline</title>
+  <desc id="desc">Centered video transport, a clean scrubbing ruler above a tall filmstrip with speech waveform and In/Out brackets, and grouped montage buttons ending with Apply edits.</desc>
+  <rect width="640" height="360" rx="12" fill="#141416"/>
+  <g font-family="Arial,sans-serif">
+    <rect x="16" y="12" width="608" height="174" rx="8" fill="#0d0e10" stroke="#2c2d31"/>
+    <rect x="592" y="20" width="24" height="24" rx="6" fill="#1d1e22" stroke="#35373c"/>
+    <text x="604" y="36" text-anchor="middle" font-size="13" fill="#f1f1ed">×</text>
+    <rect x="190" y="24" width="260" height="150" rx="6" fill="#232b34"/>
+    <path d="M190 138 L254 92 L302 122 L356 84 L450 144 V174 H190 Z" fill="#32414f"/>
+    <text x="320" y="106" text-anchor="middle" font-size="12" fill="#c7cad0">Video preview</text>
+
+    <rect x="16" y="192" width="64" height="24" rx="6" fill="#1f2024" stroke="#34363b"/>
+    <text x="48" y="208" text-anchor="middle" font-size="10" fill="#f1f1ed">Frame · S</text>
+    <rect x="86" y="192" width="70" height="24" rx="6" fill="#1f2024" stroke="#34363b"/>
+    <text x="121" y="208" text-anchor="middle" font-size="10" fill="#f1f1ed">Frames · B</text>
+
+    <rect x="236" y="192" width="24" height="24" rx="6" fill="#1f2024" stroke="#34363b"/>
+    <text x="248" y="208" text-anchor="middle" font-size="11" fill="#f1f1ed">‹</text>
+    <rect x="266" y="190" width="32" height="28" rx="6" fill="#27292e" stroke="#454850"/>
+    <path d="M279 198 V210 L289 204 Z" fill="#f1f1ed"/>
+    <rect x="304" y="192" width="24" height="24" rx="6" fill="#1f2024" stroke="#34363b"/>
+    <text x="316" y="208" text-anchor="middle" font-size="11" fill="#f1f1ed">›</text>
+    <text x="340" y="208" font-size="11" fill="#f1f1ed">00:04.20 / 00:09.60</text>
+    <text x="536" y="208" font-size="10" fill="#9ea2aa">2.0× · Alt+scroll</text>
+
+    <rect x="16" y="224" width="608" height="24" rx="6" fill="#1b1c20" stroke="#2f3137"/>
+    <text x="26" y="240" font-size="10" fill="#9ea2aa">00:00</text>
+    <text x="174" y="240" font-size="10" fill="#9ea2aa">00:03</text>
+    <text x="322" y="240" font-size="10" fill="#9ea2aa">00:06</text>
+    <text x="470" y="240" font-size="10" fill="#9ea2aa">00:09</text>
+    <text x="582" y="240" font-size="10" fill="#9ea2aa">00:12</text>
+
+    <rect x="16" y="252" width="608" height="54" rx="6" fill="#22262d" stroke="#343841"/>
+    <rect x="16" y="252" width="52" height="54" rx="6" fill="#141518" opacity="0.72"/>
+    <rect x="220" y="252" width="118" height="54" fill="#16171a" opacity="0.78"/>
+    <path d="M228 304 L252 254 M256 304 L280 254 M284 304 L308 254 M312 304 L334 258" stroke="#454952" stroke-width="1.5"/>
+    <text x="279" y="282" text-anchor="middle" font-size="10" fill="#a8acb5">Removed (X)</text>
+
+    <g fill="#8ab4c9" opacity="0.45">
+      <rect x="82" y="286" width="4" height="16"/><rect x="94" y="278" width="4" height="24"/>
+      <rect x="106" y="282" width="4" height="20"/><rect x="118" y="274" width="4" height="28"/>
+      <rect x="130" y="284" width="4" height="18"/><rect x="142" y="279" width="4" height="23"/>
+      <rect x="356" y="280" width="4" height="22"/><rect x="368" y="272" width="4" height="30"/>
+      <rect x="380" y="277" width="4" height="25"/><rect x="392" y="285" width="4" height="17"/>
+      <rect x="404" y="275" width="4" height="27"/><rect x="416" y="281" width="4" height="21"/>
+    </g>
+
+    <rect x="64" y="250" width="8" height="58" rx="3" fill="#f1f1ed"/>
+    <rect x="576" y="250" width="8" height="58" rx="3" fill="#f1f1ed"/>
+    <line x1="220" y1="250" x2="220" y2="308" stroke="#f1f1ed" stroke-width="2" stroke-dasharray="4 3"/>
+    <line x1="338" y1="250" x2="338" y2="308" stroke="#f1f1ed" stroke-width="2" stroke-dasharray="4 3"/>
+
+    <rect x="175" y="222" width="14" height="12" rx="3" fill="#d33f21"/>
+    <line x1="182" y1="234" x2="182" y2="310" stroke="#d33f21" stroke-width="2"/>
+
+    <g font-size="10" fill="#f1f1ed">
+      <rect x="16" y="320" width="58" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="45" y="337" text-anchor="middle">Split · C</text>
+      <rect x="78" y="320" width="72" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="114" y="337" text-anchor="middle">Remove · X</text>
+      <rect x="154" y="320" width="74" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="191" y="337" text-anchor="middle">Trim L · Q</text>
+      <rect x="232" y="320" width="74" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="269" y="337" text-anchor="middle">Trim R · W</text>
+      <rect x="316" y="320" width="60" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="346" y="337" text-anchor="middle">Crop · F</text>
+      <rect x="380" y="320" width="64" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="412" y="337" text-anchor="middle">Find cuts</text>
+      <rect x="448" y="320" width="62" height="26" rx="6" fill="#1f2024" stroke="#34363b"/>
+      <text x="479" y="337" text-anchor="middle">Audio · A</text>
+      <rect x="520" y="320" width="104" height="26" rx="6" fill="#d33f21"/>
+      <text x="572" y="337" text-anchor="middle">Apply · Enter</text>
+    </g>
+  </g>
+</svg>

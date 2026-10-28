@@ -11,6 +11,8 @@ export {
   ArrowClockwise as IconRedo,
   ArrowLineDown as IconToBack,
   ArrowLineDown as IconToCanvas,
+  ArrowLineLeft as IconTrimLeft,
+  ArrowLineRight as IconTrimRight,
   ArrowLineUp as IconToFront,
   ArrowSquareIn as IconInput,
   ArrowSquareOut as IconOpenExternal,

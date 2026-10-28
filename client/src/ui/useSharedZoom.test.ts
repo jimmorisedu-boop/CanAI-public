@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { pointZoom, zoomTransform, type ZoomState } from './useSharedZoom'
+import { pointZoom, shouldHandleZoomWheel, zoomTransform, type ZoomState } from './useSharedZoom'
 
 // Зум к точке — чистая арифметика, поэтому проверяется без DOM. Главное
 // свойство одно: точка кадра под курсором после зума остаётся под курсором.
@@ -46,4 +46,9 @@ test('масштаб не выходит за пределы, а возврат 
 test('на «вписано» transform не накладывается вовсе', () => {
   assert.equal(zoomTransform({ scale: 1, x: 0, y: 0 }), 'none')
   assert.equal(zoomTransform({ scale: 2, x: 5, y: 6 }), 'translate(5px, 6px) scale(2)')
+})
+
+test('Alt + колесо пропускается превью-зумом, чтобы масштабировать таймлайн по времени', () => {
+  assert.equal(shouldHandleZoomWheel({ altKey: false }), true)
+  assert.equal(shouldHandleZoomWheel({ altKey: true }), false)
 })

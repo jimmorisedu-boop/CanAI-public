@@ -76,14 +76,14 @@ async function fixture(src = '/media/source.mp4') {
   return { render, items, video, frames, calls, target: () => target }
 }
 
-for (const [board, src] of [['local', '/media/source.mp4'], ['network', '/api/cloud-assets/assets/source?v=1']]) {
+for (const [board, src] of [['local', '/media/source.mp4']]) {
   test(`${board}: подтверждение после сохранения шести кадров закрывает просмотрщик без копии видео`, async () => {
     const f = await fixture(src)
     const before = [...f.items]
     assert.equal(await f.render().apply(), 'applied', 'successful confirmation also closes the tablet editor')
     assert.equal(f.target(), null)
     assert.equal(f.calls.cut, 0, 'unchanged video must never reach the encoder')
-    assert.equal(f.calls.adopt, 0, 'unchanged video must not upload a copy to the team')
+    assert.equal(f.calls.adopt, 0, 'unchanged video must not duplicate local media')
     assert.equal(f.calls.place, 0)
     assert.deepEqual(f.items, before, 'original video and all captured frames stay unchanged')
     assert.equal(f.calls.notices.length, 0, 'no misleading transcoding message')
@@ -135,3 +135,44 @@ for (const edit of ['trim', 'cut', 'crop', 'drop']) {
     assert.deepEqual(f.items.slice(1, 7), f.frames)
   })
 }
+
+test('trimLeftAtHead (Q) и trimRightAtHead (W) подрезают текущий кусок на границе и внутри нарезки', async () => {
+  // На едином клипе 0..8: Q на 1.5с двигает inPoint в 1.5, W на 6.5с двигает outPoint в 6.5
+  const outer = await fixture()
+  outer.render().setHead(1.5)
+  outer.render().trimLeftAtHead()
+  assert.equal(outer.render().inPoint, 1.5)
+  outer.render().setHead(6.5)
+  outer.render().trimRightAtHead()
+  assert.equal(outer.render().outPoint, 6.5)
+  assert.equal(await outer.render().apply(), 'applied')
+  assert.equal(outer.calls.adopt, 1)
+
+  // На разрезанном клипе [0..3, 3..8]: Q на 4.5с отрезает [3..4.5] и оставляет два живых куска [0..3] и [4.5..8]
+  const inner = await fixture()
+  inner.render().setHead(3)
+  inner.render().addCut()
+  inner.render().setHead(4.5)
+  inner.render().trimLeftAtHead()
+  assert.equal(inner.render().pieces, 2)
+  assert.deepEqual(
+    model.keptSegments(inner.render().segments, inner.render().dropped),
+    [{ start: 0, end: 3 }, { start: 4.5, end: 8 }],
+  )
+})
+
+test('toggleDropAt убирает и возвращает произвольный кусок по его началу, защищая последний живой', async () => {
+  const f = await fixture()
+  f.render().setHead(4)
+  f.render().addCut()
+  // С курсором на 4с отключаем ПЕРВЫЙ кусок (start = 0) напрямую с дорожки
+  f.render().toggleDropAt(0)
+  assert.deepEqual([...f.render().dropped], [0])
+  // Попытка отключить последний оставшийся кусок (start = 4) блокируется с подсказкой
+  f.render().toggleDropAt(4)
+  assert.deepEqual([...f.render().dropped], [0])
+  assert.ok(f.calls.notices.length >= 1)
+  // Повторный вызов возвращает первый кусок обратно
+  f.render().toggleDropAt(0)
+  assert.deepEqual([...f.render().dropped], [])
+})

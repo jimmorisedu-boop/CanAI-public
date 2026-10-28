@@ -169,3 +169,129 @@ export function pluralPieces(count: number): string {
 export function pluralCuts(count: number): string {
   return plural(count, 'cut', 'cuts', 'cuts')
 }
+
+/** Следующая (`1`, ↑) или предыдущая (`-1`, ↓) точка монтажа среди `[inPoint, ...cuts, outPoint]`. */
+export function adjacentCutTime(
+  head: number,
+  inPoint: number,
+  outPoint: number,
+  cuts: readonly number[],
+  direction: -1 | 1,
+): number {
+  const points = outPoint > inPoint
+    ? [inPoint, ...activeCuts(cuts, inPoint, outPoint), outPoint]
+    : [inPoint]
+  if (direction > 0) {
+    const next = points.find((point) => point > head + 1e-4)
+    return next ?? head
+  }
+  for (let index = points.length - 1; index >= 0; index--) {
+    if (points[index] < head - 1e-4) return points[index]
+  }
+  return head
+}
+
+export type SegmentTrimPlan =
+  | { kind: 'noop' }
+  | { kind: 'tooShort' }
+  | {
+      kind: 'trim'
+      inPoint: number
+      outPoint: number
+      addedCut?: number
+      dropped: number[]
+    }
+
+/**
+ * Обрезка слева (`Q`) или справа (`W`) у куска под курсором:
+ * - у крайнего левого/правого края клипа двигает `inPoint` / `outPoint` напрямую;
+ * - внутри нарезанного клипа ставит рез в `head` и помечает отрезанную часть к удалению,
+ *   не задевая соседние куски.
+ */
+export function planSegmentTrim(input: {
+  side: 'left' | 'right'
+  head: number
+  inPoint: number
+  outPoint: number
+  cuts: readonly number[]
+  dropped: readonly number[]
+}): SegmentTrimPlan {
+  const { side, head, inPoint, outPoint, cuts, dropped } = input
+  const segments = segmentsFrom(inPoint, outPoint, cuts)
+  const seg = segmentAt(segments, head)
+  if (!seg) return { kind: 'noop' }
+
+  if (side === 'left') {
+    if (head <= seg.start + 0.001) return { kind: 'noop' }
+    if (seg.end - head < MIN_PIECE_S) return { kind: 'tooShort' }
+    if (Math.abs(seg.start - inPoint) < 1e-6) {
+      return {
+        kind: 'trim',
+        inPoint: head,
+        outPoint,
+        dropped: dropped.filter((start) => Math.abs(start - seg.start) > 1e-6),
+      }
+    }
+    if (head - seg.start < MIN_PIECE_S) return { kind: 'tooShort' }
+    const nextDropped = dropped.includes(seg.start) ? [...dropped] : [...dropped, seg.start]
+    return {
+      kind: 'trim',
+      inPoint,
+      outPoint,
+      addedCut: head,
+      dropped: nextDropped,
+    }
+  }
+
+  if (head >= seg.end - 0.001) return { kind: 'noop' }
+  if (head - seg.start < MIN_PIECE_S) return { kind: 'tooShort' }
+  if (Math.abs(seg.end - outPoint) < 1e-6) {
+    return {
+      kind: 'trim',
+      inPoint,
+      outPoint: head,
+      dropped: [...dropped],
+    }
+  }
+  if (seg.end - head < MIN_PIECE_S) return { kind: 'tooShort' }
+  const nextDropped = dropped.includes(head) ? [...dropped] : [...dropped, head]
+  return {
+    kind: 'trim',
+    inPoint,
+    outPoint,
+    addedCut: head,
+    dropped: nextDropped,
+  }
+}
+
+export type PlayableDecision =
+  | { kind: 'play' }
+  | { kind: 'jump'; time: number }
+  | { kind: 'stop'; time: number }
+
+/** Живой предпросмотр монтажа: при воспроизведении перепрыгивает удалённые куски. */
+export function nextPlayableTime(
+  segments: readonly Segment[],
+  dropped: readonly number[],
+  currentTime: number,
+  onStart: boolean,
+): PlayableDecision {
+  const kept = keptSegments(segments, dropped)
+  if (kept.length === 0) {
+    return { kind: 'stop', time: segments[0]?.start ?? 0 }
+  }
+  const last = kept[kept.length - 1]
+  const endSlack = onStart ? 0.02 : 0.005
+  if (currentTime >= last.end - endSlack) {
+    return onStart ? { kind: 'jump', time: kept[0].start } : { kind: 'stop', time: last.end }
+  }
+  for (const seg of kept) {
+    if (currentTime < seg.start - 0.005) {
+      return { kind: 'jump', time: seg.start }
+    }
+    if (currentTime < seg.end - endSlack) {
+      return { kind: 'play' }
+    }
+  }
+  return onStart ? { kind: 'jump', time: kept[0].start } : { kind: 'stop', time: last.end }
+}

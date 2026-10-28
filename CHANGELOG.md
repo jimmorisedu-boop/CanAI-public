@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.4
+
+- Redesigned the desktop video timeline around a clean preview, centered
+  transport controls, and a two-level track with a dedicated top scrubbing
+  ruler, filmstrip, and speech waveform.
+- Added live montage playback that automatically skips removed segments without
+  mutating the source video until Apply edits is confirmed.
+- Updated video editing shortcuts: **C** splits at the playhead, **X** removes
+  or restores the current segment, **Q** / **W** ripple-trim the segment start
+  or end, **F** toggles cropping, **S** captures a frame, **← / →** step by 1
+  frame (**Shift** for 10), **↑ / ↓** jump between cuts, and **Alt + scroll**
+  zooms the timeline in time with magnetic snap.
+- Moved saved frames into a floating popover over the preview so opening or
+  closing the shelf never shifts the transport bar, and removed the filename
+  overlay from the video preview.
+
 ## 0.1.3
 
 - Check for desktop updates in Settings → General → App updates.

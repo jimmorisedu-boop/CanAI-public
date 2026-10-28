@@ -1,22 +1,27 @@
-import { IconCamera, IconMute, IconPause, IconRun, IconSound, IconStepBack, IconStepForward } from '../../../ui/icons'
+import type { RefObject } from 'react'
+import { IconCamera, IconImage, IconMute, IconPause, IconRun, IconSound, IconStepBack, IconStepForward } from '../../../ui/icons'
 import { TimelineButton } from './TimelineButton'
 import { clearTimelineNotice } from './timelineNotice'
 import type { StatusLine } from './timelineStatus'
 import { timecode } from './timelineTimecode'
 import { useT } from '../../../i18n/context.js'
 
-
-// Транспорт под превью: шаг назад, играть/пауза, шаг вперёд, звук, таймкод,
-// живая строка состояния и главная кнопка «Снять кадр на холст». Сообщения
-// режима идут в строку состояния, а не плашкой посреди кадра: плашка
-// загораживала то, ради чего в режим зашли.
+// Транспорт непосредственно под видео (закон Фиттса + закон Якоба):
+// слева — снятие кадра (S) и всплывающая полка кадров (B), по центру — крупный
+// кластер воспроизведения с двойным таймкодом (текущее / живой хронометраж),
+// справа — сжимаемая строка состояния.
 
 export function TimelineTransport({
   playing,
   muted,
   ready,
   time,
+  keptDuration,
   status,
+  frameCount,
+  shelfOpen,
+  shelfToggleRef,
+  onToggleShelf,
   onStepBack,
   onPlay,
   onStepForward,
@@ -25,10 +30,14 @@ export function TimelineTransport({
 }: {
   playing: boolean
   muted: boolean
-  /** Клип прочитан — шагать и снимать есть что. */
   ready: boolean
   time: number
+  keptDuration: number
   status: StatusLine
+  frameCount: number
+  shelfOpen: boolean
+  shelfToggleRef: RefObject<HTMLButtonElement>
+  onToggleShelf(): void
   onStepBack(): void
   onPlay(): void
   onStepForward(): void
@@ -38,46 +47,85 @@ export function TimelineTransport({
   const t = useT()
   return (
     <div className="tl-transport" role="group" aria-label={t('Playback controls')}>
-      <TimelineButton
-        label={t('Previous frame')}
-        keys="←"
-        shortcut="ArrowLeft"
-        placement="top-start"
-        disabled={!ready}
-        onClick={onStepBack}
-      >
-        <IconStepBack size={18} />
-      </TimelineButton>
-      <TimelineButton
-        label={playing ? t('Pause') : t('Play')}
-        keys="Space"
-        shortcut="Space"
-        placement="top-start"
-        disabled={!ready}
-        onClick={onPlay}
-      >
-        {playing ? <IconPause size={18} /> : <IconRun size={18} />}
-      </TimelineButton>
-      <TimelineButton
-        label={t('Next frame')}
-        keys="→"
-        shortcut="ArrowRight"
-        placement="top-start"
-        disabled={!ready}
-        onClick={onStepForward}
-      >
-        <IconStepForward size={18} />
-      </TimelineButton>
-      <TimelineButton
-        label={muted ? t('Turn preview audio on') : t('Mute preview audio')}
-        placement="top-start"
-        on={muted}
-        onClick={onToggleMute}
-      >
-        {muted ? <IconMute size={18} /> : <IconSound size={18} />}
-      </TimelineButton>
+      <div className="tl-transport-left">
+        <TimelineButton
+          label={t('Capture frame to canvas')}
+          text={t('Frame')}
+          kbd="S"
+          keys="S"
+          shortcut="S"
+          placement="top-start"
+          disabled={!ready}
+          onClick={onCapture}
+        >
+          <IconCamera size={17} />
+        </TimelineButton>
+        <TimelineButton
+          buttonRef={shelfToggleRef}
+          label={shelfOpen ? t('Hide saved frames') : t('Show saved frames')}
+          text={`${t('Frames')}${frameCount > 0 ? ` · ${frameCount}` : ''}`}
+          kbd="B"
+          keys="B"
+          shortcut="B"
+          placement="top-start"
+          expanded={shelfOpen}
+          on={shelfOpen}
+          className="tl-shelf-toggle"
+          onClick={onToggleShelf}
+        >
+          <IconImage size={17} />
+        </TimelineButton>
+      </div>
 
-      <strong className="tl-timecode">{timecode(time)}</strong>
+      <div className="tl-transport-center">
+        <TimelineButton
+          label={t('Previous frame')}
+          keys="←"
+          shortcut="ArrowLeft"
+          hint={t('Shift+← steps 10 frames')}
+          placement="top"
+          disabled={!ready}
+          onClick={onStepBack}
+        >
+          <IconStepBack size={17} />
+        </TimelineButton>
+        <TimelineButton
+          label={playing ? t('Pause') : t('Play')}
+          keys="Space"
+          shortcut="Space"
+          placement="top"
+          className="tl-play-btn"
+          disabled={!ready}
+          onClick={onPlay}
+        >
+          {playing ? <IconPause size={19} /> : <IconRun size={19} />}
+        </TimelineButton>
+        <TimelineButton
+          label={t('Next frame')}
+          keys="→"
+          shortcut="ArrowRight"
+          hint={t('Shift+→ steps 10 frames')}
+          placement="top"
+          disabled={!ready}
+          onClick={onStepForward}
+        >
+          <IconStepForward size={17} />
+        </TimelineButton>
+
+        <span className="tl-timecode-pair">
+          <strong className="tl-timecode">{timecode(time)}</strong>
+          <span className="tl-timecode-total">/ {timecode(keptDuration)}</span>
+        </span>
+
+        <TimelineButton
+          label={muted ? t('Turn preview audio on') : t('Mute preview audio')}
+          placement="top"
+          on={muted}
+          onClick={onToggleMute}
+        >
+          {muted ? <IconMute size={17} /> : <IconSound size={17} />}
+        </TimelineButton>
+      </div>
 
       <span className="tl-live" aria-live="polite" data-tone={status.tone}>
         <span className="tl-live-text">{status.text}</span>
@@ -91,18 +139,6 @@ export function TimelineTransport({
           </button>
         )}
       </span>
-
-      <TimelineButton
-        label={t('Capture frame to canvas')}
-        keys="F"
-        shortcut="F"
-        placement="top-end"
-        primary
-        disabled={!ready}
-        onClick={onCapture}
-      >
-        <IconCamera size={18} />
-      </TimelineButton>
     </div>
   )
 }

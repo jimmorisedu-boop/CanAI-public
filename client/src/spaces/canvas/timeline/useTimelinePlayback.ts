@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { nextPlayableTime } from './timelineModel'
 import type { TimelineSession } from './useTimelineSession'
 
 /**
@@ -50,10 +51,14 @@ export function useTimelinePlayback(
       video.pause()
       return
     }
-    const { head, inPoint, outPoint } = latest.current
-    // Играем ТОЛЬКО выбранный кусок: за его границами смотреть нечего, а
-    // курсор, убежавший за выход, пришлось бы возвращать руками.
-    if (head < inPoint || head >= outPoint - 0.05) video.currentTime = inPoint
+    const { head, segments, dropped, setHead } = latest.current
+    // Играем живую склейку: при старте из удалённого куска или с конца переходим к первому живому куску.
+    const decision = nextPlayableTime(segments, dropped, head, true)
+    if (decision.kind === 'stop') return
+    if (decision.kind === 'jump') {
+      video.currentTime = decision.time
+      setHead(decision.time)
+    }
     playingRef.current = true
     setPlaying(true)
     void video.play().catch(() => {
@@ -69,11 +74,17 @@ export function useTimelinePlayback(
     if (!video) return
     const onTime = () => {
       if (video.paused) return
-      const { outPoint, setHead } = latest.current
-      if (video.currentTime >= outPoint) {
+      const { segments, dropped, setHead } = latest.current
+      const decision = nextPlayableTime(segments, dropped, video.currentTime, false)
+      if (decision.kind === 'stop') {
         playingRef.current = false
         video.pause()
-        setHead(outPoint)
+        setHead(decision.time)
+        return
+      }
+      if (decision.kind === 'jump') {
+        video.currentTime = decision.time
+        setHead(decision.time)
         return
       }
       setHead(video.currentTime)

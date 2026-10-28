@@ -1,4 +1,5 @@
 import type { TimelineCommand } from './timelineKeys'
+import { adjacentCutTime } from './timelineModel'
 
 // Что делает каждая клавиша таймлайна. Разбор клавиши в команду — в
 // timelineKeys (чисто, без DOM); здесь — выполнение команды через действия
@@ -9,6 +10,7 @@ export interface TimelineCommandEnv {
   head: number
   inPoint: number
   outPoint: number
+  cuts: readonly number[]
   duration: number
   /** Шаг стрелки — ровно кадр клипа. */
   frameStep: number
@@ -23,6 +25,8 @@ export interface TimelineCommandEnv {
   setHead(time: number): void
   cut(): void
   toggleDrop(): void
+  trimLeft(): void
+  trimRight(): void
   markIn(time: number): void
   markOut(time: number): void
   capture(): void
@@ -39,7 +43,9 @@ export function seekDelta(
   command: Extract<TimelineCommand, { kind: 'seek' }>,
   env: Pick<TimelineCommandEnv, 'duration' | 'frameStep'>,
 ): number {
-  const base = command.page ? Math.max(0.1, env.duration * 0.1) : (command.seconds ? 1 : env.frameStep)
+  const base = command.page
+    ? Math.max(0.1, env.duration * 0.1)
+    : (command.tenFrames ? env.frameStep * 10 : env.frameStep)
   return base * command.direction
 }
 
@@ -63,8 +69,15 @@ export function runTimelineCommand(command: TimelineCommand, env: TimelineComman
       }
       env.setHead(env.head + seekDelta(command, env))
       break
+    case 'jumpCut':
+      env.prevent()
+      env.pause()
+      env.setHead(adjacentCutTime(env.head, env.inPoint, env.outPoint, env.cuts, command.direction))
+      break
     case 'cut': env.prevent(); env.cut(); break
     case 'toggleDrop': env.prevent(); env.toggleDrop(); break
+    case 'trimLeft': env.prevent(); env.trimLeft(); break
+    case 'trimRight': env.prevent(); env.trimRight(); break
     case 'in': env.prevent(); env.markIn(env.head); break
     case 'out': env.prevent(); env.markOut(env.head); break
     case 'capture': env.prevent(); env.capture(); break

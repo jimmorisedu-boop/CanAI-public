@@ -2,19 +2,22 @@
 // без DOM (разделы 13–14 ТЗ).
 //
 // Правила сверены с ТЗ:
-//  - сначала defaultPrevented, потом repeat (повтор разрешён только стрелкам),
+//  - сначала defaultPrevented, потом repeat (повтор разрешён только движению),
 //    потом ctrlKey/metaKey/altKey;
-//  - shiftKey НЕ отсекаем до стрелок: Shift+Arrow = шаг в секунду;
+//  - shiftKey НЕ отсекаем до стрелок: Shift+←/→ = шаг в 10 кадров;
 //  - editable (input/textarea/select/contenteditable) не трогаем;
 //  - сфокусированную нативную кнопку Space/Enter не крадём (флаг from outside);
-//  - буквы — по физическому `event.code` (KeyS/KeyC/…) — одинаково на EN и RU;
+//  - буквы — по физическому `event.code` (KeyC/KeyX/KeyS/KeyF/KeyQ/KeyW/…) — одинаково на EN и RU;
 //  - после стрелок shift отсекаем перед буквенными/мутациями.
 
 export type TimelineCommand =
   | { kind: 'play' }
-  | { kind: 'seek'; direction: -1 | 1; seconds: boolean; page?: boolean; edge?: 'start' | 'end' }
+  | { kind: 'seek'; direction: -1 | 1; tenFrames: boolean; page?: boolean; edge?: 'start' | 'end' }
+  | { kind: 'jumpCut'; direction: -1 | 1 }
   | { kind: 'cut' }
   | { kind: 'toggleDrop' }
+  | { kind: 'trimLeft' }
+  | { kind: 'trimRight' }
   | { kind: 'in' }
   | { kind: 'out' }
   | { kind: 'capture' }
@@ -60,6 +63,7 @@ export function dispatchTimelineKey(input: TimelineKeyInput): TimelineCommand | 
   // (рез, кадр, применение, звук) — единичные точные действия, и зажатая
   // клавиша не должна нарезать клип десятками раз.
   const isMove = code === 'ArrowLeft' || code === 'ArrowRight'
+    || code === 'ArrowUp' || code === 'ArrowDown'
     || code === 'PageUp' || code === 'PageDown' || code === 'Home' || code === 'End'
   if (ctx.repeat && !isMove) return null
 
@@ -71,33 +75,40 @@ export function dispatchTimelineKey(input: TimelineKeyInput): TimelineCommand | 
   if (code === 'Space') return { kind: 'play' }
   if (key === 'Enter') return { kind: 'apply' }
 
-  // стрелки: повтор разрешён, shift — секунда.
+  // стрелки влево/вправо: повтор разрешён, Shift — по 10 кадров.
   if (code === 'ArrowLeft' || code === 'ArrowRight') {
     return {
       kind: 'seek',
       direction: code === 'ArrowLeft' ? -1 : 1,
-      seconds: Boolean(ctx.shift),
+      tenFrames: Boolean(ctx.shift),
     }
+  }
+
+  // стрелки вверх/вниз — переход к следующей/предыдущей склейке.
+  if (!ctx.shift && (code === 'ArrowUp' || code === 'ArrowDown')) {
+    return { kind: 'jumpCut', direction: code === 'ArrowUp' ? 1 : -1 }
   }
 
   // страница/края ползунка (семантика ARIA slider; §15 ТЗ): PageUp/Down — шаг в
   // ~10% клипа, Home/End — к началу/концу.
   if (code === 'PageUp' || code === 'PageDown') {
-    return { kind: 'seek', direction: code === 'PageUp' ? -1 : 1, seconds: false, page: true }
+    return { kind: 'seek', direction: code === 'PageUp' ? -1 : 1, tenFrames: false, page: true }
   }
-  if (code === 'Home') return { kind: 'seek', direction: -1, seconds: false, edge: 'start' }
-  if (code === 'End') return { kind: 'seek', direction: 1, seconds: false, edge: 'end' }
+  if (code === 'Home') return { kind: 'seek', direction: -1, tenFrames: false, edge: 'start' }
+  if (code === 'End') return { kind: 'seek', direction: 1, tenFrames: false, edge: 'end' }
 
   // после стрелок shift не влияет на буквы/мутации.
   if (ctx.shift) return null
 
   switch (code) {
-    case 'KeyS': return { kind: 'cut' }
-    case 'KeyC': return { kind: 'toggleDrop' }
+    case 'KeyC': return { kind: 'cut' }
+    case 'KeyX': return { kind: 'toggleDrop' }
+    case 'KeyQ': return { kind: 'trimLeft' }
+    case 'KeyW': return { kind: 'trimRight' }
     case 'KeyI': return { kind: 'in' }
     case 'KeyO': return { kind: 'out' }
-    case 'KeyF': return { kind: 'capture' }
-    case 'KeyR': return { kind: 'crop' }
+    case 'KeyS': return { kind: 'capture' }
+    case 'KeyF': return { kind: 'crop' }
     case 'KeyA': return { kind: 'audio' }
     case 'KeyB': return { kind: 'drawer' }
     case 'KeyG': return { kind: 'showOnCanvas' }

@@ -13,6 +13,7 @@ import {
   keptSegments,
   mergeCuts,
   MIN_PIECE_S,
+  planSegmentTrim,
   pluralCuts,
   pluralPieces,
   seamBounds,
@@ -68,6 +69,9 @@ export interface TimelineSession {
   dropped: number[]
   /** Убрать или вернуть кусок под курсором. */
   toggleDropAtHead(): void
+  toggleDropAt(start: number): void
+  trimLeftAtHead(): void
+  trimRightAtHead(): void
   /** Автопоиск склеек: состояние, переключение и чувствительность. */
   shots: ShotCandidate[]
   autoOn: boolean
@@ -334,6 +338,48 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     setDropped((current) => [...current, segment.start])
   }, [segments, head, dropped, kept.length])
 
+  const toggleDropAt = useCallback((segmentStart: number) => {
+    const target = segments.find((seg) => Math.abs(seg.start - segmentStart) < 1e-6)
+    if (!target) return
+    if (dropped.includes(target.start)) {
+      setDropped((current) => current.filter((start) => start !== target.start))
+      return
+    }
+    if (kept.length <= 1) {
+      notifyInTimeline({
+        kind: 'info',
+        message: 'This is the last segment; nothing would remain. Cut it first',
+        replaceKey: 'timeline-drop',
+      })
+      return
+    }
+    setDropped((current) => [...current, target.start])
+  }, [segments, dropped, kept.length])
+
+  const applyTrimSide = useCallback((side: 'left' | 'right') => {
+    if (!facts) return
+    const plan = planSegmentTrim({ side, head, inPoint, outPoint, cuts: cutTimes, dropped })
+    if (plan.kind === 'noop') return
+    if (plan.kind === 'tooShort') {
+      notifyInTimeline({
+        kind: 'info',
+        message: 'The remaining segment would be too short',
+        replaceKey: 'timeline-trim',
+      })
+      return
+    }
+    setInPoint(plan.inPoint)
+    setOutPoint(plan.outPoint)
+    if (plan.addedCut !== undefined) {
+      const cutAt = plan.addedCut
+      setManual((current) => [...current, cutAt])
+    }
+    setDropped(plan.dropped)
+  }, [facts, head, inPoint, outPoint, cutTimes, dropped])
+
+  const trimLeftAtHead = useCallback(() => { applyTrimSide('left') }, [applyTrimSide])
+  const trimRightAtHead = useCallback(() => { applyTrimSide('right') }, [applyTrimSide])
+
   const apply = useCallback(async (): Promise<'applied' | 'failed' | 'no-op'> => {
     // Замок СИНХРОННЫЙ. Состояние busy доезжает только на следующий рендер, а
     // Enter на сфокусированной кнопке «Применить» поднимает СРАЗУ ДВА события:
@@ -360,9 +406,6 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     try {
       const { pieces } = await api.cutVideo(item.src, kept, crop ?? undefined)
       if (pieces.length === 0) throw new Error('Failed to get segments; edits were saved, try again')
-      // ⚠️ Куски нарезал НАШ ffmpeg и положил к себе. На сетевой доске такая
-      // ссылка не значит ничего: у коллеги файла нет, а сервер команды правку
-      // с ней даже не разбирает. Переселяем их к остальной доске.
       const adopted = await Promise.all(pieces.map(async (piece, index) => ({
         ...piece,
         ...await adoptForBoard(piece, `${item.name || 'clip'} — some ${index + 1}.mp4`),
@@ -431,6 +474,9 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     segments,
     dropped,
     toggleDropAtHead,
+    toggleDropAt,
+    trimLeftAtHead,
+    trimRightAtHead,
     shots,
     autoOn,
     autoBusy,

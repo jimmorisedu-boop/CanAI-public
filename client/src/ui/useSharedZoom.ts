@@ -18,6 +18,11 @@ export function zoomTransform({ scale, x, y }: ZoomState): string {
   return scale <= 1.001 ? 'none' : `translate(${x}px, ${y}px) scale(${scale})`
 }
 
+/** Alt + колесо масштабирует временную шкалу клипа, а не картинку превью. */
+export function shouldHandleZoomWheel(event: { altKey?: boolean }): boolean {
+  return !event.altKey
+}
+
 /**
  * Новое состояние при зуме К ТОЧКЕ: точка под курсором остаётся на месте.
  *
@@ -95,6 +100,7 @@ export function useSharedZoom(
     const el = containerRef.current
     if (!el) return
     const onWheel = (event: WheelEvent) => {
+      if (!shouldHandleZoomWheel(event)) return
       event.preventDefault()
       const prev = zoomRef.current
       // Нормализуем дельту: deltaMode page/line переводим в сопоставимый сдвиг,

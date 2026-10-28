@@ -56,3 +56,31 @@ test('«Применить» — последний в строке монтаж
   const apply = montage.indexOf("label={t('Apply edits')}")
   assert.ok(result !== -1 && apply !== -1 && result < apply, 'итог — перед главной кнопкой')
 })
+
+test('законы UX: транспорт центрирован под превью, единственная primary-кнопка — Apply edits, дорожка двухэтажная', () => {
+  const transport = fs.readFileSync(new URL('./TimelineTransport.tsx', import.meta.url), 'utf8')
+  const montage = fs.readFileSync(new URL('./TimelineMontage.tsx', import.meta.url), 'utf8')
+  const track = fs.readFileSync(new URL('./TimelineTrack.tsx', import.meta.url), 'utf8')
+  const preview = fs.readFileSync(new URL('./TimelinePreview.tsx', import.meta.url), 'utf8')
+
+  // Эффект фон Ресторфф: в транспорте нет конкурирующей primary-кнопки на захвате кадра (S)
+  assert.doesNotMatch(transport, /\bprimary\b/u)
+  assert.match(transport, /keys="S"/u)
+  assert.match(transport, /keys="B"/u)
+  assert.match(transport, /tl-transport-center/u)
+
+  // Полка кадров живёт всплывающей панелью внутри .tl-preview, не разрывая видео и транспорт,
+  // а поверх верхнего края видео нет плашки имени (.tl-name), перекрывающей сам кадр.
+  assert.match(preview, /TimelineFramesShelf/u)
+  assert.doesNotMatch(preview, /tl-name/u)
+
+  // Двухэтажная дорожка: чистый рельс линейки (.tl-ruler) + плёнка с аудиоволной (.tl-waveform)
+  assert.match(track, /className="tl-ruler"/u)
+  assert.match(track, /tl-waveform/u)
+
+  // Группировка инструментов монтажа с новыми горячими клавишами C, X, Q, W | F, A
+  for (const key of ['keys="C"', 'keys="X"', 'keys="Q"', 'keys="W"', 'keys="F"', 'keys="A"', 'keys="Enter"']) {
+    assert.ok(montage.includes(key), `в TimelineMontage должна быть клавиша ${key}`)
+  }
+  assert.match(montage, /tl-divider/u)
+})

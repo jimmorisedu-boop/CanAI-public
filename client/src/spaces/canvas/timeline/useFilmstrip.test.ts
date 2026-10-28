@@ -8,6 +8,7 @@ import {
   filmstripCaptureOrder,
   filmstripCellSize,
   filmstripCoverRect,
+  filmstripRangeTimes,
 } from './filmstripMath'
 import { startFilmstripJob } from './filmstripJob'
 
@@ -59,6 +60,12 @@ test('времена ячеек: нет длительности или числ
   assert.deepEqual(filmstripCellTimes(Number.NaN, 5), [])
   assert.deepEqual(filmstripCellTimes(10, 0), [])
   assert.deepEqual(filmstripCellTimes(10, Number.NaN), [])
+})
+
+test('filmstripRangeTimes распределяет ячейки равномерно внутри зумированного окна [start, end]', () => {
+  assert.deepEqual(filmstripRangeTimes(4, 8, 20, 4), [4.5, 5.5, 6.5, 7.5])
+  assert.deepEqual(filmstripRangeTimes(0, 10, 10, 4), filmstripCellTimes(10, 4))
+  assert.deepEqual(filmstripRangeTimes(8, 4, 20, 4), [])
 })
 
 test('порядок съёмки: сначала редкая сетка, потом уплотнение, каждая ячейка — раз', () => {

@@ -85,6 +85,10 @@ const MIXED_CLIENT_PATHS = new Set([
   'client/src/spaces/canvas/promptChatStore.ts',
   'client/src/spaces/canvas/assistantAsk.ts',
   'client/src/spaces/canvas/actionDockBatchPlanning.test.ts',
+  'client/src/spaces/canvas/timeline/timelineApply.test.ts',
+  'client/src/spaces/canvas/timeline/timelineLeaveGuard.test.ts',
+  'client/src/spaces/canvas/timeline/useTimelineSession.ts',
+  'client/src/spaces/canvas/timeline/captureFrame.ts',
   'client/src/tablet/BoardCanvas.tsx',
   'client/src/tablet/boardHistory.tsx',
   'client/src/ui/TopbarActions.tsx',
@@ -704,6 +708,20 @@ export function transformLocalClientSource(sourcePath, sourceText) {
   if (normalized === 'client/src/spaces/canvas/assistantAsk.ts') return transformAssistantAskSource(sourceText)
   if (normalized === 'client/src/spaces/canvas/actionDockBatchPlanning.test.ts') {
     return sourceText.replace(/from ['"]\.\/dockCatalogTestKit['"]/u, "from './localDockCatalogTestKit'")
+  }
+  if (normalized === 'client/src/spaces/canvas/timeline/timelineApply.test.ts') {
+    return sourceText
+      .replace("[['local', '/media/source.mp4'], ['network', '/api/cloud-assets/assets/source?v=1']]", "[['local', '/media/source.mp4']]")
+      .replace("assert.equal(f.calls.adopt, 0, 'unchanged video must not upload a copy to the team')", "assert.equal(f.calls.adopt, 0, 'unchanged video must not duplicate local media')")
+  }
+  if (normalized === 'client/src/spaces/canvas/timeline/timelineLeaveGuard.test.ts') {
+    return sourceText.replace(/\r?\ntest\('cloud tablet session expiry preserves the draft[\s\S]*$/u, '\n')
+  }
+  if (normalized === 'client/src/spaces/canvas/timeline/useTimelineSession.ts') {
+    return sourceText.replace(/^[ \t]*\/\/ ⚠️ Куски нарезал НАШ ffmpeg[\s\S]*?Переселяем их к остальной доске\.\r?\n/mu, '')
+  }
+  if (normalized === 'client/src/spaces/canvas/timeline/captureFrame.ts') {
+    return sourceText.replace(/^[ \t]*\/\/ ⚠️ На сетевой доске файл обязан[\s\S]*?заменяет готовым кадром\.\r?\n/mu, '')
   }
   if (normalized === 'client/src/tablet/BoardCanvas.tsx') return transformBoardCanvasSource(sourceText)
   if (normalized === 'client/src/tablet/boardHistory.tsx') return transformBoardHistorySource(sourceText)

@@ -1,29 +1,37 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState, type RefObject } from 'react'
 import { Tooltip } from '../../../ui/Tooltip'
 import type { FrameCaptureRecord } from './frameCaptureQueue'
 import { beginPointerDrag } from './timelineDrag'
+import { clamp, segmentAt } from './timelineModel'
 import { frameStatusText, isBusyPhase } from './timelineStatus'
 import { timecode } from './timelineTimecode'
+import {
+  rulerTicksForWindow,
+  slicePeaksForWindow,
+  snapTimelineTime,
+  timeToWindowPercent,
+  windowRatioToTime,
+} from './timelineTimeZoom'
+import { TimelineZoomScrollbar } from './TimelineZoomScrollbar'
 import type { TimelineSession } from './useTimelineSession'
+import type { TimelineTimeZoomController } from './useTimelineTimeZoom'
 import { filmstripCellCount, useFilmstrip } from './useFilmstrip'
 import { useTrackSize } from './useTrackSize'
 import { useT } from '../../../i18n/context.js'
 
+// Двухэтажная дорожка по закону руления (Steering Law) и закону Фиттса:
+// 1) верхний чистый рельс линейки (28px) — для свободной протяжки курсора без
+//    риска случайно схватить рез или скобу края;
+// 2) высокая плёнка кадров (62px) с реальной аудиоволной речи, ухватистыми
+//    скобами [ In / Out ], карточками кусков и перетаскиваемыми склейками.
 
-// Плёнка клипа: одна полоса с кадрами по времени, а поверх неё — головка,
-// монтажные резы, ручки входа/выхода и метки сохранённых кадров. Рез нарисован
-// СТЫКОМ, а не чертой: дорожка в этом месте расходится щелью, и тот же жест
-// отвечает на оба вопроса — вбок двигаешь границу, вниз за дорожку сводишь
-// куски обратно.
-//
-// ⚠️ Обрезает по скруглению (`overflow: hidden`) только слой кадров. Головка,
-// резы и метки выступают за полосу — клип на них не должен резать.
-
-/** Насколько ниже дорожки надо увести указатель, чтобы рез считался убранным. */
 const REMOVE_DROP_PX = 20
 
 export function TimelineTrack({
   session,
+  trackRef,
+  timeZoom,
+  peaks,
   frames,
   selectedFrameId,
   playing,
@@ -32,61 +40,84 @@ export function TimelineTrack({
   onSelectFrame,
 }: {
   session: TimelineSession
+  trackRef: RefObject<HTMLDivElement>
+  timeZoom: TimelineTimeZoomController
+  peaks: readonly number[]
   frames: readonly FrameCaptureRecord[]
   selectedFrameId: string | null
   playing: boolean
-  /** Взять управление у видео: протяжка и клик ведут курсор, а не плеер. */
   onPause(): void
-  /** Что показывает превью, пока тянут ручку или стык (null — вернуться к голове). */
   onPreview(time: number | null): void
   onSelectFrame(record: FrameCaptureRecord): void
 }) {
   const t = useT()
-  const trackRef = useRef<HTMLDivElement>(null)
-  // Обработчики перетаскивания живут дольше одного рендера, а session — новый
-  // объект на каждый. Замыкание держало сеанс, снятый в момент pointerdown:
-  // после первого же движения moveCut считал границы по УСТАРЕВШЕМУ списку
-  // резов, и стык дёргался вместо того, чтобы плавно ехать за курсором.
   const sessionRef = useRef(session)
   sessionRef.current = session
-  // Только ТЕКУЩЕЕ положение стыка: сравнивать с тем, за что схватились,
-  // нельзя — к моменту тяги вниз стык уже уехал, и предпросмотр («щель
-  // схлопнулась», «метка побледнела») переставал совпадать с меткой.
+  const zoomRef = useRef(timeZoom)
+  zoomRef.current = timeZoom
+
   const [dragCut, setDragCut] = useState<{ at: number; removing: boolean } | null>(null)
+  const [hoverTime, setHoverTime] = useState<number | null>(null)
+  const [snapped, setSnapped] = useState(false)
 
   const { facts, inPoint, outPoint, head, cuts } = session
   const duration = facts?.duration || 1
+  const win = timeZoom.window
 
-  // Плёнка: сколько кадров лежит по ширине — решает размер самой дорожки.
   const size = useTrackSize(trackRef)
   const aspect = facts?.width && facts?.height ? facts.width / facts.height : undefined
   const cellCount = filmstripCellCount(size.width, size.height, aspect ?? 16 / 9)
-  const filmstrip = useFilmstrip(session.item.src, facts?.duration ?? 0, cellCount, aspect)
+  const filmstrip = useFilmstrip(session.item.src, facts?.duration ?? 0, cellCount, aspect, win)
 
-  function timeAt(clientX: number): number {
+  const cutTimes = useMemo(() => cuts.map((cut) => cut.time), [cuts])
+  const snapTargets = useMemo(
+    () => [inPoint, outPoint, ...cutTimes, ...frames.map((f) => f.requestedTime)],
+    [inPoint, outPoint, cutTimes, frames],
+  )
+  const ticks = useMemo(() => rulerTicksForWindow(win, size.width), [win, size.width])
+  const barCount = Math.max(48, Math.min(160, Math.round((size.width || 800) / 6)))
+  const waveBars = useMemo(
+    () => slicePeaksForWindow(peaks, win, duration, barCount),
+    [peaks, win, duration, barCount],
+  )
+
+  function rawTimeAt(clientX: number): number {
     const rect = trackRef.current?.getBoundingClientRect()
-    if (!rect || rect.width === 0) return 0
-    return Math.max(0, Math.min(duration, ((clientX - rect.left) / rect.width) * duration))
+    if (!rect || rect.width <= 0) return 0
+    return windowRatioToTime((clientX - rect.left) / rect.width, zoomRef.current.window, duration)
   }
 
-  function percent(time: number): string {
-    return `${(time / duration) * 100}%`
+  function snappedTimeAt(clientX: number, altKey: boolean): number {
+    const raw = rawTimeAt(clientX)
+    const width = trackRef.current?.getBoundingClientRect().width ?? 0
+    const res = snapTimelineTime(raw, snapTargets, zoomRef.current.window, width, altKey)
+    setSnapped(res.snapped)
+    return res.time
   }
 
-  /** Курсор не только ставится кликом, но и ТАЩИТСЯ: просмотр по кадрам — это
-   *  протяжка, а не серия одиночных попаданий. */
+  function pct(time: number): number {
+    return timeToWindowPercent(time, win)
+  }
+
+  function clampedPct(time: number): string {
+    return `${clamp(pct(time), 0, 100)}%`
+  }
+
   function scrub(event: React.PointerEvent): void {
     onPause()
-    beginPointerDrag(event, (moveEvent) => sessionRef.current.setHead(timeAt(moveEvent.clientX)), () => undefined)
-    sessionRef.current.setHead(timeAt(event.clientX))
+    setHoverTime(null)
+    beginPointerDrag(
+      event,
+      (moveEvent) => sessionRef.current.setHead(snappedTimeAt(moveEvent.clientX, moveEvent.altKey)),
+      () => setSnapped(false),
+    )
+    sessionRef.current.setHead(snappedTimeAt(event.clientX, event.altKey))
   }
 
-  /** Вход/выход: ручка встаёт ровно туда, куда её привели. Идёт через свежий
-   *  сеанс на каждое движение: границы куска и метки удалённых кусков берутся
-   *  из текущего состояния, а не из того, что было при нажатии. */
   function dragEdge(event: React.PointerEvent, edge: 'in' | 'out'): void {
+    event.stopPropagation()
     const apply = (moveEvent: PointerEvent) => {
-      const time = timeAt(moveEvent.clientX)
+      const time = rawTimeAt(moveEvent.clientX)
       if (edge === 'in') sessionRef.current.moveIn(time)
       else sessionRef.current.moveOut(time)
       onPreview(time)
@@ -96,9 +127,8 @@ export function TimelineTrack({
   }
 
   function dragSeam(event: React.PointerEvent, cut: number): void {
+    event.stopPropagation()
     const rect = trackRef.current?.getBoundingClientRect()
-    // Стык двигается, поэтому «какой именно рез убрать» надо помнить по
-    // последнему положению, а не по тому, за что схватились изначально.
     let current = cut
     let removing = false
     setDragCut({ at: cut, removing: false })
@@ -108,10 +138,7 @@ export function TimelineTrack({
       (moveEvent) => {
         removing = Boolean(rect) && moveEvent.clientY > rect!.bottom + REMOVE_DROP_PX
         if (!removing) {
-          // Куда рез реально встал, знает сам сеанс: он же его и клампит по
-          // соседям. Повторять эту арифметику здесь значило бы разъехаться с
-          // ней при первой же правке.
-          current = sessionRef.current.moveCut(current, timeAt(moveEvent.clientX))
+          current = sessionRef.current.moveCut(current, rawTimeAt(moveEvent.clientX))
         }
         setDragCut({ at: current, removing })
         onPreview(removing ? null : current)
@@ -124,17 +151,100 @@ export function TimelineTrack({
     )
   }
 
-  const cutTimes = cuts.map((cut) => cut.time)
   const seams = dragCut?.removing ? cutTimes.filter((time) => time !== dragCut.at) : cutTimes
-  const edges = [inPoint, ...seams]
-  // Кусок под курсором удалённым не пропадает с дорожки — он перечёркнут, иначе
-  // человек не увидит, что именно убрал, и не найдёт, чем вернуть.
-  const goneSegments = session.segments.filter((segment) => session.dropped.includes(segment.start))
-  const trimmed = inPoint > 0.001 || outPoint < duration - 0.001
+  const activeSeg = segmentAt(session.segments, head)
+  const activeSegIndex = activeSeg ? session.segments.findIndex((s) => s.start === activeSeg.start) : -1
+  const activeDropped = Boolean(activeSeg && session.dropped.includes(activeSeg.start))
+  const inVisible = inPoint >= win.start - 1e-4 && inPoint <= win.end + 1e-4
+  const outVisible = outPoint >= win.start - 1e-4 && outPoint <= win.end + 1e-4
+  const headVisible = head >= win.start - 1e-4 && head <= win.end + 1e-4
+  const leftCurtainW = clamp(pct(inPoint), 0, 100)
+  const rightCurtainLeft = clamp(pct(outPoint), 0, 100)
 
   return (
     <section className="tl-track-block" aria-label={t('Clip timeline')}>
-      <div className={`tl-track-stage${playing ? ' is-playing' : ''}`}>
+      <div className="tl-track-head">
+        <div className="tl-track-meta">
+          {activeSeg && (
+            <span className={`tl-seg-status${activeDropped ? ' is-dropped' : ''}`}>
+              {t('Segment #{0} of {1} · {2} s', {
+                0: activeSegIndex + 1,
+                1: session.segments.length,
+                2: (activeSeg.end - activeSeg.start).toFixed(1),
+              })}
+              {activeDropped ? ` · ${t('removed (X — restore)')}` : ''}
+            </span>
+          )}
+          <span className="tl-track-hint">{t('↑↓ cuts · Shift+←→ 10 frames · Alt+scroll zoom')}</span>
+        </div>
+
+        <div className="tl-track-zoom">
+          {timeZoom.zoomed ? (
+            <button
+              type="button"
+              className="tl-zoom-pill is-active"
+              onClick={timeZoom.resetZoom}
+              title={t('Reset timeline zoom to full clip')}
+            >
+              {`${timeZoom.zoomFactor.toFixed(1)}× · ${t('Fit clip')}`}
+            </button>
+          ) : (
+            <span className="tl-zoom-pill">{`1.0× · ${t('Alt+scroll')}`}</span>
+          )}
+        </div>
+      </div>
+
+      <div className={`tl-track-stage${playing ? ' is-playing' : ''}${snapped ? ' is-snapped' : ''}`}>
+        {/* 1 этаж: чистый рельс перемотки со шкалой времени и флажками кадров */}
+        <div
+          className="tl-ruler"
+          onPointerDown={scrub}
+          onPointerMove={(e) => { if (e.buttons === 0) setHoverTime(rawTimeAt(e.clientX)) }}
+          onPointerLeave={() => setHoverTime(null)}
+        >
+          {ticks.map((tick) => (
+            <span
+              key={`t-${tick.time}`}
+              className={`tl-tick${tick.major ? ' major' : ''}`}
+              style={{ left: `${pct(tick.time)}%` }}
+            >
+              {tick.label && <span className="tl-tick-label">{tick.label}</span>}
+            </span>
+          ))}
+
+          {hoverTime !== null && hoverTime >= win.start && hoverTime <= win.end && (
+            <div className="tl-hover-ghost" style={{ left: `${pct(hoverTime)}%` }} aria-hidden="true">
+              <span className="tl-hover-pill">{timecode(hoverTime)}</span>
+            </div>
+          )}
+
+          <div className="tl-marks">
+            {frames
+              .filter((record) => record.requestedTime >= win.start - 1e-4 && record.requestedTime <= win.end + 1e-4)
+              .map((record) => (
+                <Tooltip
+                  key={record.id}
+                  title={t('Frame {0}', { 0: timecode(record.requestedTime) })}
+                  hint={frameStatusText(record)}
+                  placement="top"
+                  hostClassName="tl-mark-host"
+                  hostStyle={{ left: `${pct(record.requestedTime)}%` }}
+                >
+                  <button
+                    type="button"
+                    className={`tl-mark${record.id === selectedFrameId ? ' is-selected' : ''}`}
+                    data-phase={isBusyPhase(record.phase) ? 'busy' : record.phase}
+                    aria-label={t('Frame {0} — {1}', { 0: timecode(record.requestedTime), 1: frameStatusText(record) })}
+                    aria-current={record.id === selectedFrameId ? 'true' : undefined}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={() => onSelectFrame(record)}
+                  />
+                </Tooltip>
+              ))}
+          </div>
+        </div>
+
+        {/* 2 этаж: высокая плёнка кадров + аудиоволна речи + куски и скобы [ ] */}
         <div
           className="tl-track"
           ref={trackRef}
@@ -147,87 +257,135 @@ export function TimelineTrack({
           tabIndex={0}
           onPointerDown={scrub}
         >
-          {/* Слой кадров — единственное, что обрезается по скруглению. */}
-          <div className="tl-film" aria-hidden="true">
-            <div className="tl-film-cells">
+          <div className="tl-film">
+            <div className="tl-film-cells" aria-hidden="true">
               {filmstrip.cells.map((url, index) => (
                 <span key={index} className="tl-film-cell">
                   {url && <img src={url} alt="" draggable={false} />}
                 </span>
               ))}
             </div>
-            <div className="tl-dim" style={{ left: 0, width: percent(inPoint) }} />
-            <div className="tl-dim" style={{ left: percent(outPoint), right: 0 }} />
-            {trimmed && <div className="tl-sel" style={{ left: percent(inPoint), width: percent(outPoint - inPoint) }} />}
-            {goneSegments.map((segment) => (
-              <div
-                key={`gone-${segment.start}`}
-                className="tl-gone"
-                style={{ left: percent(segment.start), width: percent(segment.end - segment.start) }}
-              />
-            ))}
-            {seams.map((cut) => (
-              <div key={`seam-${cut}`} className="tl-seam" style={{ left: percent(cut) }} />
-            ))}
-            {seams.length > 0 && edges.map((edge, index) => (
-              <div key={`no-${edge}`} className="tl-segno" style={{ left: percent(edge) }}>{index + 1}</div>
-            ))}
+
+            {waveBars.length > 0 && (
+              <div className="tl-waveform" aria-hidden="true">
+                {waveBars.map((peak, idx) => (
+                  <span
+                    key={idx}
+                    className="tl-wave-bar"
+                    style={{ height: `${Math.max(10, peak)}%` }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {leftCurtainW > 0 && <div className="tl-dim" style={{ left: 0, width: `${leftCurtainW}%` }} aria-hidden="true" />}
+            {rightCurtainLeft < 100 && <div className="tl-dim" style={{ left: `${rightCurtainLeft}%`, right: 0 }} aria-hidden="true" />}
+
+            {session.segments.map((segment, index) => {
+              const visStart = Math.max(win.start, segment.start)
+              const visEnd = Math.min(win.end, segment.end)
+              if (visEnd <= visStart) return null
+              const leftP = clamp(pct(visStart), 0, 100)
+              const widthP = clamp(pct(visEnd) - leftP, 0, 100 - leftP)
+              const widthPx = ((widthP / 100) * (size.width || 800))
+              const isDropped = session.dropped.includes(segment.start)
+              const isCurrent = activeSeg?.start === segment.start
+              return (
+                <div
+                  key={`seg-${segment.start}`}
+                  className={`tl-seg-card${isCurrent ? ' is-current' : ''}${isDropped ? ' is-dropped' : ''}`}
+                  style={{ left: `${leftP}%`, width: `${widthP}%` }}
+                >
+                  {isDropped && <div className="tl-gone" aria-hidden="true" />}
+                  {widthPx >= 64 && (
+                    <span className="tl-segno" aria-hidden="true">
+                      {`#${index + 1} · ${(segment.end - segment.start).toFixed(1)}s`}
+                    </span>
+                  )}
+                  {session.segments.length > 1 && widthPx >= 88 && (
+                    <button
+                      type="button"
+                      className="tl-seg-toggle"
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        session.toggleDropAt(segment.start)
+                      }}
+                    >
+                      {isDropped ? t('Restore') : t('Remove')}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+
+            {seams
+              .filter((cut) => cut >= win.start && cut <= win.end)
+              .map((cut) => (
+                <div key={`seam-${cut}`} className="tl-seam" style={{ left: `${pct(cut)}%` }} aria-hidden="true" />
+              ))}
           </div>
 
-          <div className="tl-head" style={{ left: percent(head) }} aria-hidden="true" />
-          <div className="tl-grip" style={{ left: percent(inPoint) }} onPointerDown={(event) => dragEdge(event, 'in')} />
-          <div className="tl-grip" style={{ left: percent(outPoint) }} onPointerDown={(event) => dragEdge(event, 'out')} />
-          {cuts.map((cut) => (
-            <Tooltip
-              key={`cut-${cut.time}`}
-              title={cut.auto ? t('Cut found automatically') : t('Edit cut')}
-              hint={t('Drag sideways to move, down to remove · double-click removes')}
-              placement="top"
-              hostClassName={`tl-cut-host${dragCut?.at === cut.time ? ' is-dragging' : ''}`}
-              hostStyle={{ left: percent(cut.time) }}
-            >
-              <div
-                className={`tl-cut${cut.auto ? ' auto' : ''}${dragCut?.removing && dragCut.at === cut.time ? ' removing' : ''}`}
-                role="button"
-                aria-label={t('{0} at {1}', { 0: cut.auto ? 'Cut' : 'Cut', 1: timecode(cut.time) })}
-                onPointerDown={(event) => dragSeam(event, cut.time)}
-                onDoubleClick={(event) => {
-                  // Двойной клик — короткий путь к тому же, что и тяга вниз.
-                  // Тяга нагляднее (видно, как куски сходятся), но когда резов
-                  // много, целиться в неё каждый раз утомительно.
-                  event.stopPropagation()
-                  session.removeCut(cut.time)
-                }}
-              />
-            </Tooltip>
-          ))}
+          {inVisible && (
+            <div
+              className="tl-grip in"
+              style={{ left: clampedPct(inPoint) }}
+              role="button"
+              aria-label={t('Trim start (I)')}
+              onPointerDown={(event) => dragEdge(event, 'in')}
+            />
+          )}
+          {outVisible && (
+            <div
+              className="tl-grip out"
+              style={{ left: clampedPct(outPoint) }}
+              role="button"
+              aria-label={t('Trim end (O)')}
+              onPointerDown={(event) => dragEdge(event, 'out')}
+            />
+          )}
+
+          {cuts
+            .filter((cut) => cut.time >= win.start - 1e-4 && cut.time <= win.end + 1e-4)
+            .map((cut) => (
+              <Tooltip
+                key={`cut-${cut.time}`}
+                title={cut.auto ? t('Cut found automatically') : t('Edit cut')}
+                hint={t('Drag sideways to move, down to remove · double-click removes')}
+                placement="top"
+                hostClassName={`tl-cut-host${dragCut?.at === cut.time ? ' is-dragging' : ''}`}
+                hostStyle={{ left: `${pct(cut.time)}%` }}
+              >
+                <div
+                  className={`tl-cut${cut.auto ? ' auto' : ''}${dragCut?.removing && dragCut.at === cut.time ? ' removing' : ''}`}
+                  role="button"
+                  aria-label={t('{0} at {1}', { 0: 'Cut', 1: timecode(cut.time) })}
+                  onPointerDown={(event) => dragSeam(event, cut.time)}
+                  onDoubleClick={(event) => {
+                    event.stopPropagation()
+                    session.removeCut(cut.time)
+                  }}
+                />
+              </Tooltip>
+            ))}
         </div>
 
-        {/* Метки сохранённых кадров — отдельный слой РЯДОМ с дорожкой, а не в
-            ней. Внутри дорожки нажатие на метку сначала доходило до протяжки,
-            та захватывала указатель, и клик по метке не срабатывал никогда. */}
-        <div className="tl-marks">
-          {frames.map((record) => (
-            <Tooltip
-              key={record.id}
-              title={t('Frame {0}', { 0: timecode(record.requestedTime) })}
-              hint={frameStatusText(record)}
-              placement="top"
-              hostClassName="tl-mark-host"
-              hostStyle={{ left: percent(record.requestedTime) }}
-            >
-              <button
-                type="button"
-                className={`tl-mark${record.id === selectedFrameId ? ' is-selected' : ''}`}
-                data-phase={isBusyPhase(record.phase) ? 'busy' : record.phase}
-                aria-label={t('Frame {0} — {1}', { 0: timecode(record.requestedTime), 1: frameStatusText(record) })}
-                aria-current={record.id === selectedFrameId ? 'true' : undefined}
-                onClick={() => onSelectFrame(record)}
-              />
-            </Tooltip>
-          ))}
-        </div>
+        {/* Сквозная головка воспроизведения с ухватистым колпачком на рельсе */}
+        {headVisible && (
+          <div className="tl-head" style={{ left: clampedPct(head) }}>
+            <div className="tl-head-cap" onPointerDown={scrub} />
+          </div>
+        )}
       </div>
+
+      {timeZoom.zoomed && (
+        <TimelineZoomScrollbar
+          duration={duration}
+          head={head}
+          cuts={cutTimes}
+          timeZoom={timeZoom}
+        />
+      )}
     </section>
   )
 }
