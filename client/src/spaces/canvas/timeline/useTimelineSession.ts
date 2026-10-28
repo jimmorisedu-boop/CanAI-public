@@ -28,6 +28,8 @@ import {
  *  движение камеры — единицы, так что десятка отделяет одно от другого. */
 const DEFAULT_THRESHOLD = 10
 import { getTimelineTarget, onTimelineTarget, setTimelineTarget } from './timelineBus'
+import { useT } from '../../../i18n/context.js'
+import { registerTimelineLeaveGuard, requestTimelineLeave } from './timelineLeaveGuard'
 
 // Состояние сеанса правки: что за клип, где вход/выход, где резы. Отдельно от
 // отрисовки — оверлей получается тонким, а вся арифметика уже покрыта тестами
@@ -82,11 +84,13 @@ export interface TimelineSession {
   toggleCrop(): void
   pieces: number
   summary: string
+  /** Успешное подтверждение закрывает режим, в том числе без экспорта, если правок нет. */
   apply(): Promise<'applied' | 'failed' | 'no-op'>
   close(): void
 }
 
 export function useTimelineSession(store: CanvasStore): TimelineSession | null {
+  const t = useT()
   const [targetId, setTargetId] = useState<string | null>(getTimelineTarget)
   useEffect(() => onTimelineTarget(setTargetId), [])
 
@@ -115,6 +119,13 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
   const [dropped, setDropped] = useState<number[]>([])
   // см. apply: замок от двойного запуска, который нельзя держать в состоянии
   const applyingRef = useRef(false)
+  const leaveState = useRef({ targetId, dirty: false })
+  useEffect(() => registerTimelineLeaveGuard({
+    active: () => Boolean(leaveState.current.targetId && getTimelineTarget() === leaveState.current.targetId),
+    dirty: () => leaveState.current.dirty,
+    busy: () => applyingRef.current,
+    discard: () => setTimelineTarget(null),
+  }), [store])
 
   const src = item?.src
   useEffect(() => {
@@ -151,7 +162,7 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     if (targetId && (!item || item.kind !== 'video')) setTimelineTarget(null)
   }, [targetId, item])
 
-  const close = useCallback(() => setTimelineTarget(null), [])
+  const close = useCallback(() => { void requestTimelineLeave() }, [])
 
   const setHead = useCallback((time: number) => {
     setHeadTime(clamp(time, inPoint, outPoint))
@@ -290,6 +301,13 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
 
   const segments = useMemo(() => segmentsFrom(inPoint, outPoint, cutTimes), [inPoint, outPoint, cutTimes])
   const kept = useMemo(() => keptSegments(segments, dropped), [segments, dropped])
+  leaveState.current = {
+    targetId,
+    dirty: Boolean(facts && (inPoint !== 0 || outPoint !== facts.duration
+      || activeCuts(cutTimes, inPoint, outPoint).length > 0
+      || segments.some(segment => dropped.includes(segment.start))
+      || (crop && !(crop.x === 0 && crop.y === 0 && crop.w === 1 && crop.h === 1)))),
+  }
 
   /** Убрать или вернуть кусок под курсором.
    *
@@ -321,7 +339,15 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     // Enter на сфокусированной кнопке «Применить» поднимает СРАЗУ ДВА события:
     // нативный клик кнопки и наш обработчик на окне. Оба видели busy === false,
     // уходили два запроса — и на холст ложились две копии каждого куска.
-    if (!item || !item.src || kept.length === 0 || applyingRef.current) return 'no-op'
+    if (!item || !item.src || !facts || error || kept.length === 0 || applyingRef.current) return 'no-op'
+    // Просмотр, перемотка и снятие кадров не меняют само видео. Сверяем
+    // итоговые границы и кроп, чтобы отменённые правки тоже не создавали
+    // дубликат. «applied» означает подтверждение: планшет по нему закрывается.
+    const fullFrame = !crop || (crop.x === 0 && crop.y === 0 && crop.w === 1 && crop.h === 1)
+    if (fullFrame && kept.length === 1 && kept[0].start === 0 && kept[0].end === facts.duration) {
+      setTimelineTarget(null)
+      return 'applied'
+    }
     applyingRef.current = true
     setBusy(true)
     // Перекодирование не мгновенно, и об этом надо сказать сразу, иначе
@@ -364,7 +390,7 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
     // crop в зависимостях обязателен: без него useCallback держал бы рамку из
     // прошлого рендера, строка итога писала бы «с перекодированием», а на
     // сервер уходил бы старый (пустой) кроп — и клип возвращался нетронутым.
-  }, [item, kept, busy, store, crop])
+  }, [item, kept, busy, store, crop, facts, error])
 
   if (!targetId || !item || item.kind !== 'video') return null
 
@@ -377,12 +403,12 @@ export function useTimelineSession(store: CanvasStore): TimelineSession | null {
   // причине, и писать «слишком короткий кусок» значит валить вину на человека
   // за то, чего он не делал.
   const summary = error
-    ? 'Video was not read'
+    ? t('Video was not read')
     : !facts
-      ? 'Reading video…'
+      ? t('Reading video…')
       : pieces === 0
-        ? 'The selected segment is too short'
-        : `${pieces} ${pluralPieces(pieces)} · ${length.toFixed(1)} s${gone > 0 ? ` · removed ${gone}` : ''}`
+        ? t('The selected segment is too short')
+        : `${t(pieces === 1 ? '{0} clip · {1} s' : '{0} clips · {1} s', { 0: pieces, 1: length.toFixed(1) })}${gone > 0 ? ` · ${t('removed {0}', { 0: gone })}` : ''}`
 
   return {
     item,

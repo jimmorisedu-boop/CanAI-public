@@ -40,6 +40,7 @@ import {
 } from './prepare-public-release-artifacts.mjs'
 import { GITLEAKS_VERSION } from './install-gitleaks.mjs'
 import { makeProjectTemp, removeProjectTemp } from './project-workspace.mjs'
+import { writeDesktopUpdateManifest } from './desktop-update-manifest.mjs'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..')
@@ -202,6 +203,7 @@ export async function preparePublicRelease(options, hooks = {}) {
       await fs.mkdir(unpackRoot, { recursive: true })
       const packageDirectory = await extractZip({ zip: packagePath, destination: unpackRoot, platform: options.platform, runner: hooks.runner, logPath: path.join(logs, 'unpack.log') })
       await runSmoke({ workspace: candidateRoot, packageDir: packageDirectory, platform: options.platform, nodePath, runner: hooks.runner, logs })
+      await writeDesktopUpdateManifest({ directory: stagedArtifact, version, commit: candidate.commit, platform: options.platform, packagePath, sha256: packageHash })
     }
     progress('publishing candidate and writing artifact pointer')
     if (git(candidateRoot, ['status', '--porcelain']).trim()) throw new Error('Public candidate became dirty during release packaging')

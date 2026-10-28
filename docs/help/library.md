@@ -12,11 +12,11 @@ Pin a useful card in Assets when you want it available in future prompts on this
 
 ![Keep a board tidy: Save for reuse](../../client/public/help/library-1.svg)
 
-### 2. Archive a board
+### 2. Archive objects
 
-Archive a board to hide it from the active list while keeping its data.
+Select objects and drag them to Archive to clear the canvas. Open Archive to preview or return them. Archived objects stay with the board after reopening.
 
-![Keep a board tidy: Archive a board](../../client/public/help/library-2.svg)
+![Archived objects saved with the board and ready to return to the canvas](../../client/public/help/library-2.svg)
 
 ### 3. Delete a board
 
@@ -26,7 +26,7 @@ Delete sends a board to Trash. Permanent deletion removes its stored data after 
 
 ## Notes
 
-- Assets belong inside a board. Archive and Trash act on whole boards, not individual references.
+- The canvas Archive stores objects. Trash in the board list stores deleted boards.
 - Connection and sign-in notices use English. Board names keep their original language.
 - Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.
 - System labels follow the selected interface language; source filenames and clip names remain as entered.

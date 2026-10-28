@@ -1,6 +1,6 @@
-# Add photos to Assistant
+# Attach Canvas references to Assistant
 
-Import a photo to the Canvas, then drag it into Assistant or choose it from Assets.
+Select Canvas media or text, then drag it into Assistant to add it to the draft.
 
 **Category:** [Assistant](./README.md#assistant)
 
@@ -12,11 +12,11 @@ Drop or paste the photo on the Canvas and wait until its card appears.
 
 ![Add photos to Assistant: Import onto Canvas](../../client/public/help/assistant-photos-1.svg)
 
-### 2. Drag into Assistant
+### 2. Select and drag references
 
-Drag the saved Canvas photo card into the Assistant dock.
+Select one or more media or text cards, then drag from any selected card to any part of the Assistant pane. Every supported selection is added to the draft attachments; the Canvas cards stay in place.
 
-![Add photos to Assistant: Drag into Assistant](../../client/public/help/assistant-photos-2.svg)
+![Attach Canvas references to Assistant: Select and drag references](../../client/public/help/assistant-photos-2.svg)
 
 ### 3. Or click an Assets thumbnail
 
@@ -24,16 +24,17 @@ With Assistant open, click the pinned thumbnail in Assets to add it to the compo
 
 ![Add photos to Assistant: Click an Assets thumbnail](../../client/public/help/assistant-photos-3.svg)
 
-### 4. Check the attachment
+### 4. Check the draft attachments
 
-Confirm the photo chip is visible before sending the Assistant message.
+Confirm the supported references appear in the draft attachments. Dropping adds them to the draft; it does not send the Assistant message.
 
-![Add photos to Assistant: Check the attachment](../../client/public/help/assistant-photos-4.svg)
+![Attach Canvas references to Assistant: Check the draft attachments](../../client/public/help/assistant-photos-4.svg)
 
 ## Notes
 
-- The original Canvas card stays in place when you attach a photo.
-- Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail.
+- The original Canvas cards stay in place when you attach references.
+- Dropping the same card again does not create a duplicate attachment.
+- Selecting a Canvas item alone does not attach it; drag the selection into Assistant or click an Assets thumbnail.
 - System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language.
 
 ## Related topics

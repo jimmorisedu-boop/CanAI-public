@@ -58,6 +58,21 @@ export function ProjectsScreen({ onOpen, onSettings, theme, setTheme }: { onOpen
   useEffect(() => { void reload() }, [])
   useEffect(() => onSettingsSaved(() => void reload()), [])
   useEffect(() => {
+    if (!menuId) return
+    const outside = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest('.project-menu-wrap, .project-menu-positioner')) setMenuId(null)
+    }
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuId(null)
+    }
+    document.addEventListener('pointerdown', outside)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('pointerdown', outside)
+      document.removeEventListener('keydown', escape)
+    }
+  }, [menuId])
+  useEffect(() => {
     let active = true
     const checkRecovery = () => {
       void api.status()
@@ -124,7 +139,85 @@ export function ProjectsScreen({ onOpen, onSettings, theme, setTheme }: { onOpen
       {failure && <GalleryFailureState failure={failure} retrying={false} onRetry={() => void reload()} />}
       <div className="gallery-toolbar"><div className="gallery-toolbar-actions"><button type="button" className="gallery-new" disabled={busy || serviceUnavailable} onClick={() => void create()}><IconPlus size={18} weight="bold" />  {t('New board')}</button><button type="button" className="gallery-import" disabled={busy || serviceUnavailable} onClick={() => importRef.current?.click()}><IconUpload size={17} />  {t('Import')}</button><input ref={importRef} hidden type="file" accept=".canai,application/zip" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) importProject(file) }} /><button type="button" className="gallery-trash icon-tab" disabled={serviceUnavailable} onClick={() => setTrashOpen(true)}><IconTrash size={17} />  {t('Trash')}</button><div className="gallery-search"><IconSearch className="gallery-search-icon" size={17} /><input ref={searchRef} className="gallery-search-input" value={query} placeholder={t('Search boards')} aria-label={t('Search boards')} onChange={(event) => setQuery(event.target.value)} /></div></div><div className="gallery-toolbar-filters"><GallerySortControl value={sort} onChange={setSort} /></div></div>
       {!projects && !failure && <div className="gallery-empty">{t('Loading…')}</div>}{projects && list.length === 0 && <div className="gallery-empty">{query ? t('No boards match your search.') : t('No boards yet — create your first one.')}</div>}
-      <div className="project-grid">{list.map((project) => <div className={`project-card ${menuId === project.id ? 'is-menu-open' : ''}`} key={project.id} onDoubleClick={() => onOpen({ source: 'local', id: project.id }, project)}><button type="button" className="project-card-open" aria-label={t('Open board “{0}”', { 0: project.name })} onClick={() => onOpen({ source: 'local', id: project.id }, project)}><div className="project-thumb"><ProjectPreviewMedia preview={project.preview ?? null} /></div><div className="project-meta"><div className="project-name-row">{renamingId === project.id ? <input className="project-name-input" autoFocus value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void commitRename(project); if (event.key === 'Escape') setRenamingId(null) }} onBlur={() => void commitRename(project)} /> : <><div className="project-name" title={project.name}>{project.name}</div>{project.pinned && <span className="project-pin-marker is-pinned" role="img" aria-label={t('Pinned')}><IconPin size={15} /></span>}</>}</div><div className="project-card-subline"><div className="project-date">{formatDate(project.updatedAt)}</div><span className="project-source-badge">{t('Local')}</span></div></div></button><div className="project-card-actions"><ProjectMenuAnchor button={<button type="button" className="icon-btn project-menu-button" aria-label={t('Actions for “{0}”', { 0: project.name })} aria-expanded={menuId === project.id} onClick={(event) => { event.stopPropagation(); setMenuId(menuId === project.id ? null : project.id) }}><IconMenu size={18} /></button>} menu={menuId === project.id ? <div className="project-menu" role="menu" onClick={(event) => event.stopPropagation()}><button type="button" role="menuitem" onClick={() => openProjectInBackground({ source: 'local', id: project.id })}>{t('Open in new tab')}</button><button type="button" role="menuitem" onClick={() => startRename(project)}>{t('Rename')}</button><button type="button" role="menuitem" disabled={busy} onClick={() => void togglePin(project)}>{project.pinned ? t('Unpin') : t('Pin')}</button><button type="button" role="menuitem" onClick={() => { setVersionsProject(project); setMenuId(null) }}>{t('Versions')}</button><button type="button" role="menuitem" className="danger" onClick={() => void remove(project)}>{t('Move to Trash')}</button></div> : null} /></div></div>)}</div>
+      <div className="project-grid">{list.map((project) => (
+        <div
+          className={`project-card ${menuId === project.id ? 'is-menu-open' : ''}`}
+          key={project.id}
+          role="button"
+          tabIndex={serviceUnavailable || renamingId === project.id ? -1 : 0}
+          aria-disabled={serviceUnavailable || undefined}
+          aria-label={t('Open board “{0}”', { 0: project.name })}
+          onClick={(event) => {
+            if (serviceUnavailable || renamingId === project.id) return
+            if (event.ctrlKey || event.metaKey) openProjectInBackground({ source: 'local', id: project.id })
+            else onOpen({ source: 'local', id: project.id }, project)
+          }}
+          onKeyDown={(event) => {
+            if (serviceUnavailable || renamingId === project.id || event.target !== event.currentTarget) return
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              if (event.ctrlKey || event.metaKey) openProjectInBackground({ source: 'local', id: project.id })
+              else onOpen({ source: 'local', id: project.id }, project)
+            }
+          }}
+        >
+          <div className="project-thumb"><ProjectPreviewMedia preview={project.preview ?? null} /></div>
+          <div className="project-meta">
+            <div className="project-name-row">
+              {renamingId === project.id ? (
+                <input
+                  className="project-rename"
+                  aria-label={t('Board name')}
+                  autoFocus
+                  value={renameValue}
+                  onClick={(event) => event.stopPropagation()}
+                  onChange={(event) => setRenameValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') void commitRename(project)
+                    if (event.key === 'Escape') setRenamingId(null)
+                  }}
+                  onBlur={() => void commitRename(project)}
+                />
+              ) : <>
+                <div className="project-name" title={project.name}>{project.name}</div>
+                {project.pinned && <span className="project-pin-marker is-pinned" role="img" aria-label={t('Pinned')}><IconPin size={15} /></span>}
+              </>}
+            </div>
+            <div className="project-card-actions">
+              <ProjectMenuAnchor
+                button={(
+                  <button
+                    type="button"
+                    className="project-menu-btn icon-btn"
+                    title={t('Actions')}
+                    aria-label={t('Actions for “{0}”', { 0: project.name })}
+                    aria-haspopup="menu"
+                    aria-expanded={menuId === project.id}
+                    disabled={serviceUnavailable}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setMenuId(menuId === project.id ? null : project.id)
+                    }}
+                  ><IconMenu size={18} /></button>
+                )}
+                menu={menuId === project.id ? (
+                  <div className="project-menu" role="menu" onClick={(event) => event.stopPropagation()}>
+                    <button type="button" role="menuitem" onClick={() => { setMenuId(null); openProjectInBackground({ source: 'local', id: project.id }) }}>{t('Open in new tab')}</button>
+                    <button type="button" role="menuitem" onClick={() => startRename(project)}>{t('Rename')}</button>
+                    <button type="button" role="menuitem" disabled={busy} onClick={() => void togglePin(project)}>{project.pinned ? t('Unpin') : t('Pin')}</button>
+                    <button type="button" role="menuitem" onClick={() => { setVersionsProject(project); setMenuId(null) }}>{t('Versions')}</button>
+                    <button type="button" role="menuitem" className="danger" onClick={() => void remove(project)}>{t('Move to Trash')}</button>
+                  </div>
+                ) : null}
+              />
+            </div>
+            <div className="project-card-subline">
+              <div className="project-date">{formatDate(project.updatedAt)}</div>
+              <span className="gallery-source-badge">{t('Local')}</span>
+            </div>
+          </div>
+        </div>
+      ))}</div>
     </div></div>
     {undoProject && <div className="undo-toast" role="status">{t('“{0}” was moved to Trash.', { 0: undoProject.name })}<button type="button" onClick={() => void undo()} disabled={busy}>{t('Undo')}</button><button type="button" className="icon-btn" aria-label={t('Close')} onClick={() => setUndoProject(null)}>×</button></div>}
     {trashOpen && <TrashModal onClose={() => setTrashOpen(false)} onChanged={() => void reload()} onRestored={() => void reload()} onServiceUnavailable={() => setFailure({ kind: 'service-unavailable' })} />}

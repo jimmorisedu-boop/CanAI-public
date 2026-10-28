@@ -32,7 +32,7 @@ Choose Generate to send the prompt and its selected references together.
 
 ## Related topics
 
-- [Add photos to Assistant](./assistant-photos.md)
+- [Attach Canvas references to Assistant](./assistant-photos.md)
 - [Understand reference types](./reference-kinds.md)
 - [Choose Together or Each](./generation-modes.md)
 

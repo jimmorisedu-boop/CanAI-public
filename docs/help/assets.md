@@ -31,7 +31,7 @@ Right-click an asset to unpin it. The Canvas item and local file remain availabl
 
 ## Related topics
 
-- [Add photos to Assistant](./assistant-photos.md)
+- [Attach Canvas references to Assistant](./assistant-photos.md)
 - [Keep a board tidy](./library.md)
 - [Restore or delete from Trash](./archive-trash.md)
 

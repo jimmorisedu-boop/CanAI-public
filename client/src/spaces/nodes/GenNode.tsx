@@ -107,7 +107,7 @@ function ModelPicker({
           className="node-model-eff-hint"
           title={effModelTitle('Selected from connected inputs', eff.name)}
         >
-          Using “{effModelSuffix(selectedPreset?.name ?? '', eff.name)}”
+          {t('Using “{0}”', { 0: effModelSuffix(selectedPreset?.name ?? '', eff.name) })}
         </div>
       )}
       {eff && eff.params.length > 0 && (

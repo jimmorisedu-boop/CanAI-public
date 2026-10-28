@@ -10,7 +10,7 @@ import { SavedFramesDrawer } from '../spaces/canvas/timeline/SavedFramesDrawer'
 import { segmentAt } from '../spaces/canvas/timeline/timelineModel'
 import { TabletFullScreen } from './TabletFullScreen'
 import { ClipTrack } from './ClipTrack'
-import { confirmDiscardDraft } from './confirmDiscardDraft'
+import { requestTimelineLeave } from '../spaces/canvas/timeline/timelineLeaveGuard'
 import { TabletClipPreview } from './TabletClipPreview'
 import { TabletClipCropPanel } from './TabletClipCropPanel'
 import { InlineNotice } from '../ui/InlineNotice'
@@ -196,9 +196,7 @@ export function TabletClip({
 
   const close = async () => {
     if (applyingRef.current || session.busy) return
-    const dirty = session.inPoint !== 0 || session.outPoint !== duration || session.cuts.length > 0 || session.crop !== null
-    if (!await confirmDiscardDraft(dirty)) return
-    session.close()
+    if (!await requestTimelineLeave()) return
     onClose()
   }
 

@@ -213,3 +213,21 @@ test('local price-summary tests stay independent of Cloud quote fixtures', () =>
   assert.doesNotMatch(source, /cloudCatalogModel|approvePreparedGenerationQuotes/)
   assert.equal(isLocalClientSourcePath('client/src/spaces/canvas/cloudGenerationReviewRows.test.ts'), false)
 })
+
+test('local archive override removes Cloud assets while retaining local media and text records', () => {
+  const archivePath = 'client/src/spaces/canvas/konva/archive.ts'
+  const overridePath = `local-edition/overrides/${archivePath}`
+  if (existsSync(overridePath)) {
+    // The authoring tree contains both editions; an exported tree contains
+    // only the local implementation at its final destination.
+    const full = readFileSync(archivePath, 'utf8')
+    assert.match(full, /\/api\/cloud-assets\/assets\//)
+    assert.match(full, /\/v3\/assets\//)
+  }
+  const local = readFileSync(existsSync(overridePath) ? overridePath : archivePath, 'utf8')
+  // The committed local override must have no route that can reach Cloud.
+  assert.doesNotMatch(local, /\/api\/cloud-assets\/|\/v3\/assets\//)
+  assert.match(local, /entry\.src\.startsWith\('\/media\/'\)/)
+  assert.match(local, /entry\.kind === 'text'/)
+  assert.match(local, /isSafeCanvasLinkData\(entry\.link\)/)
+})

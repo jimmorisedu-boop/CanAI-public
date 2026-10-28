@@ -628,7 +628,7 @@ function Flow({
         graph.saveState === 'saving'
           ? translate('Saving…')
           : graph.saveState === 'saved'
-            ? 'Saved ✓'
+            ? translate('Saved ✓')
             : 'Save macro (Ctrl+S)'
       }
     >

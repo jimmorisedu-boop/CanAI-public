@@ -149,7 +149,7 @@ export function FaceSimilarityChip({
       : value.where === 'a'
         ? 'no face in the source'
         : 'no face in the candidate'
-    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />{where}  {t('— nothing to compare')}</span>
+    return <span className="face-chip"><i className="face-dot" aria-hidden="true" />{t(where)}  {t('— nothing to compare')}</span>
   }
 
   const verdict = faceVerdict(value.similarity, threshold)

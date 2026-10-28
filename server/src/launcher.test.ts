@@ -189,7 +189,7 @@ async function startFakeCanAi(
     if (req.url === '/api/shares/transport/start' && req.method === 'POST') {
       state.shareStartRequests += 1
       res.setHeader('content-type', 'application/json')
-      res.end('{"origin":"https://panfilov.space/canai/o/test"}')
+      res.end('{"origin":"https://share.example.invalid/canai/o/test"}')
       return
     }
     res.statusCode = 404

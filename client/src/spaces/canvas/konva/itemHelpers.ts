@@ -1,6 +1,6 @@
 import Konva from 'konva'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { createPromptChatDropResult } from '../promptChatDrop'
+import { createPromptChatDropResult, createPromptChatGroupDrop } from '../promptChatDrop'
 import {
   notifyPromptChatDropHover,
   requestPromptChatDrop,
@@ -332,6 +332,12 @@ export function tryPinToAssetBar(
 }
 
 function clientPoint(e: DragKEvent): { x: number; y: number } | null {
+  // On an HTML overlay the Stage pointer can be stale or already cleared.
+  // Hit-test the release itself, including touchend's changedTouches.
+  const event = e.evt as MouseEvent | TouchEvent | undefined
+  const touch = event && 'changedTouches' in event ? event.changedTouches[0] : undefined
+  const pointerEvent = touch ?? (event && 'clientX' in event ? event : null)
+  if (pointerEvent) return { x: pointerEvent.clientX, y: pointerEvent.clientY }
   const stage = e.target.getStage()
   const pointer = stage?.getPointerPosition()
   const rect = stage?.container().getBoundingClientRect()
@@ -461,6 +467,23 @@ export function onDragEnd(
     else if (pending) e.target.position({ x: pending.x, y: pending.y })
     e.target.getLayer()?.batchDraw()
   }
+  const point = clientPoint(e)
+  if (point && overPromptChat(point)) {
+    // Attaching references does not mutate the board or need an edit lease.
+    // Deliver the frozen group once: Transformer need not emit every dragend.
+    const group = session && isGroupDragMember(session, id) ? session : null
+    const ids = group ? group.origins.map((origin) => origin.id) : movingIds
+    const event = createPromptChatGroupDrop(store, ids)
+    if (event && requestPromptChatDrop(event)) {
+      if (group) settledByGroupDrag = new Set(groupDragFollowers(group, id))
+      revert()
+      groupDrag = null
+      groupDragStore = null
+      clearActiveDrag(store)
+      store.getCollaboration()?.setPreview(null)
+      return
+    }
+  }
   // ⚠️ Объект, который держит ЖИВОЙ коллега, возвращаем сразу: ждать нечего.
   // Всё остальное доводится до холста, добрав аренду по дороге, — см.
   // commitGestureWithLease. Прежний общий отказ по canMutateItems откатывал
@@ -474,7 +497,6 @@ export function onDragEnd(
     clearActiveDrag(store)
     return
   }
-  const point = clientPoint(e)
   // ⚠️ С Alt исходник остаётся на доске при любом исходе: копию, отпущенную
   // над плиткой архива, просто ставим на холст, а в архив ничего не увозим.
   if (!copying && item && point && overArchive(point)) {
@@ -501,20 +523,6 @@ export function onDragEnd(
     store.getCollaboration()?.setPreview(null)
     e.target.getLayer()?.batchDraw()
     return
-  }
-  if (point && overPromptChat(point)) {
-    const result = createPromptChatDropResult(item, pending)
-    if (result) {
-      requestPromptChatDrop(result.event)
-      if (groupDrag) cancelGroupDrag(groupDrag)
-      else e.target.position(result.position)
-      groupDrag = null
-      groupDragStore = null
-      clearActiveDrag(store)
-      store.getCollaboration()?.setPreview(null)
-      e.target.getLayer()?.batchDraw()
-      return
-    }
   }
   if (copying && session) {
     // Исходники остаются где были, копии встают туда, куда их привели, —

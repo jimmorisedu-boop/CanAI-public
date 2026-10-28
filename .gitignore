@@ -29,6 +29,7 @@ server/data/
 dist/
 client/dist-tablet-cloud/
 artifacts/
+.wrangler/
 *.local
 
 # индекс CodeGraph — служебный кэш инструмента, пересобирается сам

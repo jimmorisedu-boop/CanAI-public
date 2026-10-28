@@ -72,6 +72,7 @@ import { formatExactUsd } from './priceFormat.js'
 import { createAgentRouter } from './agents/routes.js'
 import { agentHost, agentPackageManager, agentPackageRegistry } from './agents/runtime.js'
 import { canvasActionRouter } from './canvasActionRoutes.js'
+import { DesktopUpdateError, type DesktopUpdateService } from './desktopUpdate.js'
 
 export const apiRouter = Router()
 // «Сообщить о проблеме» (5.9): жалоба с журналами — на сервер команды или файлом.
@@ -85,6 +86,7 @@ export const mediaImportManager = new MediaImportManager({
 })
 let lifecycle: LifecycleManager | null = null
 let lifecycleShutdown: (() => Promise<void>) | null = null
+let desktopUpdates: DesktopUpdateService | null = null
 
 /** Public identity only; the shutdown token remains private. */
 export function localRuntimeInstanceId(): string | null {
@@ -97,6 +99,12 @@ export function attachLifecycle(
 ): void {
   lifecycle = manager
   lifecycleShutdown = shutdown
+}
+
+/** Desktop updater is wired only by the local desktop process.  The remote
+ * tablet allowlist intentionally has no entries for these routes. */
+export function attachDesktopUpdates(service: DesktopUpdateService): void {
+  desktopUpdates = service
 }
 
 // под-роутеры: workflow, доски, billing fal
@@ -149,6 +157,39 @@ apiRouter.get('/status', async (req, res) => {
     // Какая сборка у сервера: интерфейс сверяет со своей (пункт 5.1).
     build: buildInfo(),
   })
+})
+
+function updateErrorResponse(res: Response, error: unknown): void {
+  if (error instanceof DesktopUpdateError) {
+    res.status(error.status).json({ error: error.message, code: error.code })
+    return
+  }
+  res.status(500).json({ error: error instanceof Error ? error.message : 'Desktop update failed', code: 'update-error' })
+}
+
+apiRouter.get('/desktop-updates', async (_req, res) => {
+  if (!desktopUpdates) return res.status(503).json({ error: 'Desktop updater still not ready', code: 'not-ready' })
+  try { res.json(await desktopUpdates.status()) } catch (error) { updateErrorResponse(res, error) }
+})
+
+apiRouter.post('/desktop-updates/check', async (_req, res) => {
+  if (!desktopUpdates) return res.status(503).json({ error: 'Desktop updater still not ready', code: 'not-ready' })
+  try { res.json(await desktopUpdates.check()) } catch (error) { updateErrorResponse(res, error) }
+})
+
+apiRouter.post('/desktop-updates/prepare', (req, res) => {
+  if (!desktopUpdates) return res.status(503).json({ error: 'Desktop updater still not ready', code: 'not-ready' })
+  try {
+    const status = desktopUpdates.startPrepare({ target: req.body?.target })
+    res.status(202).json(status)
+  } catch (error) { updateErrorResponse(res, error) }
+})
+
+apiRouter.post('/desktop-updates/apply', async (req, res) => {
+  if (!desktopUpdates) return res.status(503).json({ error: 'Desktop updater still not ready', code: 'not-ready' })
+  const jobId = typeof req.body?.jobId === 'string' ? req.body.jobId : ''
+  if (!jobId) return res.status(400).json({ error: 'A valid jobId is required', code: 'invalid-job' })
+  try { res.status(202).json(await desktopUpdates.apply(jobId)) } catch (error) { updateErrorResponse(res, error) }
 })
 
 apiRouter.post('/lifecycle/shutdown', (req, res) => {

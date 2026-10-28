@@ -10,7 +10,7 @@ Open the `?` Help button in CanAI to view the same illustrated tasks.
 
 - [Start a local board](./quick-start.md) — Open the local studio, connect a provider, and make one small result.
 - [Use the Assets shelf](./assets.md) — Keep reusable media on the current board without removing it from the Canvas.
-- [Add photos to Assistant](./assistant-photos.md) — Import a photo to the Canvas, then drag it into Assistant or choose it from Assets.
+- [Attach Canvas references to Assistant](./assistant-photos.md) — Select Canvas media or text, then drag it into Assistant to add it to the draft.
 - [Use Canvas references](./references.md) — Prompt selection can become automatic references; Assistant attachments are added deliberately.
 - [Import files and screenshots](./import.md) — Drop media onto the Canvas or paste a screenshot; originals stay local.
 - [Make your first result](./first-result.md) — Use a short prompt and keep the first run easy to inspect.
@@ -31,7 +31,7 @@ Open the `?` Help button in CanAI to view the same illustrated tasks.
 
 ### Assistant
 
-- [Add photos to Assistant](./assistant-photos.md) — Import a photo to the Canvas, then drag it into Assistant or choose it from Assets.
+- [Attach Canvas references to Assistant](./assistant-photos.md) — Select Canvas media or text, then drag it into Assistant to add it to the draft.
 - [Manage Assistant profiles](./assistant-profiles.md) — Choose a profile, edit its instructions and model, and share it through the assistant library.
 - [Use Assistant actions](./assistant-basics.md) — Turn a suggestion into a prompt, run all suggestions, or place text on the Canvas.
 - [Choose board memory](./assistant-memory.md) — Board memory keeps prompt, model, and text context; it does not see every photo automatically.
@@ -84,6 +84,7 @@ Open the `?` Help button in CanAI to view the same illustrated tasks.
 - [Configure providers and models](./settings-provider.md) — Provider keys, catalog models, and price confirmations stay explicit.
 - [Choose the interface language](./settings-language.md) — Switch CanAI between English and Russian for this device without reopening your board.
 - [Keep the local app portable](./settings-local.md) — Keep boards, media, and settings together under the local app folder.
+- [Update the desktop app](./settings-updates.md) — Check a verified release, keep your board saved, and restart CanAI once.
 - [Use the tablet client on a LAN](./tablet-lan.md) — The tablet surface can connect to the local app on your network with deliberate access limits.
 - [Use tablet touch gestures](./tablet-gestures.md) — Select, pan, zoom, resize, and manage history with the tablet’s touch controls.
 

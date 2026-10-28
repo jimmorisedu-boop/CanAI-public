@@ -1,4 +1,4 @@
-import type { CSSProperties, DOMAttributes, ReactNode, RefObject } from 'react'
+import type { CSSProperties, DOMAttributes, RefObject } from 'react'
 import { IconClose, IconFrameFit } from '../../../ui/icons'
 import { zoomTransform, type ZoomState } from '../../../ui/useSharedZoom'
 import { RATIO_PRESETS } from '../konva/cropMath'
@@ -6,18 +6,23 @@ import { TimelineButton } from './TimelineButton'
 import { TimelineCropFrame } from './TimelineCropFrame'
 import type { TimelineSession } from './useTimelineSession'
 import { systemErrorMessage } from '../../../ui/systemMessage'
-import { useT } from '../../../i18n/context.js'
+import { useT, type Translate } from '../../../i18n/context.js'
 
 
 // Превью правки клипа: видео вписано в окно, поверх него — стеклянные плашки
-// (имя клипа, «вписать кадр», выход, пропорции кадрирования) и полка кадров.
+// (имя клипа, «вписать кадр», выход, пропорции кадрирования).
 // Всё, что поверх видео, лежит РЯДОМ с областью просмотра, а не внутри неё:
 // нажатие по плашке не должно начинать панораму кадра и захватывать указатель.
 
-function describe(session: TimelineSession): string {
+function describe(session: TimelineSession, t: Translate): string {
   const { facts } = session
   if (!facts) return systemErrorMessage(session.error, 'Reading video…')
-  return `${facts.duration.toFixed(1)} s · ${facts.width ?? '?'}×${facts.height ?? '?'} · ${facts.hasAudio ? 'with audio' : 'without audio'}`
+  return t('{0} s · {1}×{2} · {3}', {
+    0: facts.duration.toFixed(1),
+    1: facts.width ?? '?',
+    2: facts.height ?? '?',
+    3: t(facts.hasAudio ? 'with audio' : 'without audio'),
+  })
 }
 
 export function TimelinePreview({
@@ -29,7 +34,6 @@ export function TimelinePreview({
   zoomed,
   viewportProps,
   onFit,
-  children,
 }: {
   session: TimelineSession
   videoRef: RefObject<HTMLVideoElement>
@@ -39,8 +43,6 @@ export function TimelinePreview({
   zoomed: boolean
   viewportProps: Pick<DOMAttributes<HTMLDivElement>, 'onPointerDown' | 'onPointerMove' | 'onPointerUp' | 'onPointerCancel' | 'onDoubleClick'>
   onFit(): void
-  /** Полка кадров: оверлей внутри превью. */
-  children?: ReactNode
 }) {
   const t = useT()
   const { facts } = session
@@ -72,8 +74,8 @@ export function TimelinePreview({
 
       <div className="tl-preview-top">
         <div className="tl-glass tl-name">
-          <strong>{session.item.name || 'clip'}</strong>
-          <span>{describe(session)}</span>
+          <strong>{session.item.name || t('clip')}</strong>
+          <span>{describe(session, t)}</span>
         </div>
         <div className="tl-preview-actions">
           <TimelineButton
@@ -114,7 +116,6 @@ export function TimelinePreview({
         </div>
       )}
 
-      {children}
     </div>
   )
 }

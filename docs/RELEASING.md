@@ -106,15 +106,23 @@ git -C F:\Exp\CanAI-public push origin main
 ```
 
 Create a version tag on the checked `publicCommit`. Attach the source ZIP,
-the package for the verified platform, and their `.sha256` sidecars from the
+the package for the verified platform, their `.sha256` sidecars, and
+`update-manifest.json` from the
 artifact directory named by `latest.json`. Write release notes in English
 and state which checks and platforms actually ran. Do not attach local logs,
 credentials, personal data, or private authoring history. Never overwrite a
 released tag or package; increment the version for a subsequent release.
+The update manifest is generated only after the native package passes its
+launcher smoke test. It binds that package's filename, size and SHA-256 to
+the generated public commit, so Settings can install the local edition from
+the official Release. A source-only export and CI verification artifacts
+are not installable releases. Do not hand-write an update manifest for an
+unchecked package. Existing installations that predate the Settings updater
+need one manual upgrade to a release containing it.
 Pushing code or creating a GitHub Release must not change repository
 visibility. Never use `--mirror` to publish the development checkout.
 
-The current public target is the `0.1.2` release candidate. Use a clean Git
+The current public target is the `0.1.3` release candidate. Use a clean Git
 checkout and record the exact commit for every artifact. Do not add provider
 keys, personal data, local runtime files, or a private Cloud service to an
 archive.

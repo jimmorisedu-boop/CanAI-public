@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { requestTimelineLeave } from '../spaces/canvas/timeline/timelineLeaveGuard'
 import { InlineNotice } from '../ui/InlineNotice'
 import { GlobalNotifications } from '../ui/GlobalNotifications'
 import { deviceName } from '../spaces/canvas/continuity/deviceIdentity'
@@ -155,8 +156,8 @@ function Screens({
         runtime={runtime}
         canEdit={screen.project.permissions.canEdit}
         canManage={screen.project.permissions.canManage}
-        onExit={() => setScreen({ kind: 'gallery' })}
-        onOpenProject={(project) => setScreen({ kind: 'board', project })}
+        onExit={() => { void requestTimelineLeave().then(allowed => { if (allowed) setScreen({ kind: 'gallery' }) }) }}
+        onOpenProject={(project) => { void requestTimelineLeave().then(allowed => { if (allowed) setScreen({ kind: 'board', project }) }) }}
         onRenamed={(name) => setScreen({ kind: 'board', project: { ...screen.project, name } })}
       />
     )

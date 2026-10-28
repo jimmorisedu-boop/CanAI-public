@@ -161,7 +161,7 @@ function Sync-CanAiDependencies([string]$Package) {
     Write-Host "[CanAI] Syncing dependencies in '$Package'…"
     Push-Location $dir
     npm ci --no-fund --no-audit
-    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Could not install dependencies in '$Package' (npm ci, see the message above). Usually registry.npmjs.org is unreachable; check your internet connection, VPN, or proxy." }
+    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Could not install dependencies in '$Package' (npm ci, see the error above). For EPERM/EACCES, close development or preview servers using this folder and retry; also check file permissions or antivirus. For network errors, check your internet connection, VPN, or proxy." }
     Pop-Location
     Set-Content -Path $marker -Value $lockHash -Encoding Ascii
 }
@@ -396,7 +396,7 @@ if ($null -ne $knownControl -and [int]$knownControl.port -ne $requestedPort) {
                 Write-Host ''
                 Write-Host '[CanAI] CanAI is already running on its fallback port; opening it in the browser.'
                 Write-Host "[CanAI] Address: $knownUrl. A second instance is not needed."
-                Start-Process $knownUrl
+                if (-not $env:CANAI_NO_BROWSER) { Start-Process $knownUrl }
                 Write-Host '[CanAI] This window will stay open; press any key when you want to close it.'
                 exit 0
             }
@@ -430,7 +430,7 @@ if (Test-PortListening $requestedPort) {
             Write-Host ''
             Write-Host '[CanAI] CanAI is already running; opening it in the browser.'
             Write-Host "[CanAI] Address: $requestedUrl. A second instance is not needed."
-            Start-Process $requestedUrl
+            if (-not $env:CANAI_NO_BROWSER) { Start-Process $requestedUrl }
             Write-Host '[CanAI] This window will stay open; press any key when you want to close it.'
             exit 0
         }
@@ -481,6 +481,8 @@ Write-Host ''
 # Write-Host до окна человека не доходит, пока идёт сервер. Поэтому строку с
 # адресом печатает сам сервер — он же и знает, приходил ли за страницей кто-то.
 function Start-CanAiBrowserWatcher([string]$u, [string]$fingerprint) {
+    # Settings keeps the existing tab connected while its updater restarts us.
+    if ($env:CANAI_NO_BROWSER) { return $null }
     return Start-Job -ScriptBlock {
         param($targetUrl, $expectedFingerprint)
         function Get-CanAiStatus($url) {

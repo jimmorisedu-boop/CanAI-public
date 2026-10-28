@@ -4,6 +4,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { assertInside, assertNoSymlinkPath, lstatOrNull } from './prepare-public-release-guards.mjs'
+import { verifyDesktopUpdateManifest } from './desktop-update-manifest.mjs'
 
 export async function sha256File(file) {
   const data = await fs.readFile(file)
@@ -81,6 +82,7 @@ export async function assertReusableArtifact(target, expected) {
     const file = await regularFile(target, archive.file, 'Artifact archive')
     await verifyHashSidecar(file, archive.sha256)
   }
+  if (expected.sourceOnly === false) await verifyDesktopUpdateManifest(target, provenance)
   const logs = await lstatOrNull(path.join(target, 'logs'))
   if (!logs?.isDirectory() || logs.isSymbolicLink()) throw new Error(`Artifact diagnostics are missing: ${target}`)
 }

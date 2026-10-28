@@ -16,6 +16,7 @@ import { navigationModeStore, type NavigationMode } from './navigationMode'
 import { BehaviorSettingsSection } from './BehaviorSettingsSection'
 import { AgentsSettingsSection } from './AgentsSettingsSection'
 import { LanguageSettingsSection } from './LanguageSettingsSection'
+import { DesktopUpdateSection } from './DesktopUpdateSection'
 import { useT } from '../i18n/context.js'
 import type { CanAIIcon } from '../ui/icons'
 import {
@@ -38,6 +39,7 @@ import {
   type FalConnectionState,
 } from './settingsPresentation'
 import { systemErrorMessage } from '../ui/systemMessage'
+import type { DesktopUpdateGuardResult } from './desktopUpdateGuards'
 
 // Иконки живут здесь, а список разделов — в settingsSections.ts: там он
 // проверяется тестом, а сюда картинке и место.
@@ -112,17 +114,39 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
       .catch(() => setError('Could not load settings'))
   }, [])
 
+  async function persistSettings(falKeyPayload: string | null | undefined, close = false, notify = true): Promise<void> {
+    await api.saveSettings(editorPath.trim() || null, falKeyPayload, optimiseLargeImages, confirmCostAboveUsd, undefined, undefined, shareLanAccess, undefined, { mode: cookiesMode, file: cookiesFile }, tabletDailyGenerationLimit, tabletApproveDailyLimit)
+    navigationModeStore.set(navigationMode)
+    if (notify) notifySettingsSaved()
+    if (close) onClose()
+  }
+
   async function save(): Promise<void> {
     if (!loaded || saving) return
     setSaving(true)
     setError(null)
     try {
-      await api.saveSettings(editorPath.trim() || null, undefined, optimiseLargeImages, confirmCostAboveUsd, undefined, undefined, shareLanAccess, undefined, { mode: cookiesMode, file: cookiesFile }, tabletDailyGenerationLimit, tabletApproveDailyLimit)
-      navigationModeStore.set(navigationMode)
-      notifySettingsSaved()
-      onClose()
+      await persistSettings(undefined, true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function beforeRestart(): Promise<DesktopUpdateGuardResult> {
+    if (!loaded) return { ok: false, message: t('Settings are still loading. Wait before updating.') }
+    if (saving) return { ok: false, message: t('Settings are still saving. Try again before updating.') }
+    if (falKey.trim()) return { ok: false, message: t('Save or clear the new API key before updating.') }
+    setSaving(true)
+    setError(null)
+    try {
+      await persistSettings(undefined)
+      return { ok: true }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('Could not save settings before updating.')
+      setError(message)
+      return { ok: false, message }
     } finally {
       setSaving(false)
     }
@@ -159,7 +183,7 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
     setFalStatusDetail(null)
     try {
       const keyPayload = removeKey ? null : falKey.trim()
-      await api.saveSettings(editorPath.trim() || null, keyPayload, optimiseLargeImages, confirmCostAboveUsd, undefined, undefined, shareLanAccess, undefined, { mode: cookiesMode, file: cookiesFile }, tabletDailyGenerationLimit, tabletApproveDailyLimit)
+      await persistSettings(keyPayload, false, false)
       await refreshFalConnectionState(removeKey)
       notifySettingsSaved()
     } catch (err) {
@@ -234,6 +258,7 @@ export function SettingsModal({ hint, section: requestedSection, onClose }: {
               onTabletDailyLimitChange={setTabletDailyGenerationLimit}
               onTabletApproveLimitChange={setTabletApproveDailyLimit}
             />
+            <DesktopUpdateSection beforeRestart={beforeRestart} />
               </>
             )}
 

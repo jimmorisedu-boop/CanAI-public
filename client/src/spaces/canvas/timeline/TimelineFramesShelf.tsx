@@ -1,23 +1,15 @@
-import { useEffect, useRef, type Ref } from 'react'
-import { IconCaretDown, IconClose, IconDownload, IconNext, IconOpenExternal, IconRefresh, IconTrash } from '../../../ui/icons'
+import { useEffect, useId, useRef, useState, type Ref } from 'react'
+import { IconCaretDown, IconClose, IconDownload, IconMenu, IconNext, IconOpenExternal, IconRefresh, IconTrash } from '../../../ui/icons'
 import type { FrameCaptureRecord } from './frameCaptureQueue'
 import { TimelineButton } from './TimelineButton'
-import { Tooltip } from '../../../ui/Tooltip'
 import { frameStatusText, frameStatusTone, framesByTime, isBusyPhase, NO_FRAMES_MESSAGE } from './timelineStatus'
 import { timecode } from './timelineTimecode'
-import { plural } from '../../../ui/plural'
 import { useT } from '../../../i18n/context.js'
 
 
-// Полка сохранённых кадров — ОВЕРЛЕЙ внутри превью: видео при её открытии не
-// сжимается и не прыгает. Закрыта: в правом нижнем углу кластер «шеврон + число
-// + подпись». Открыта: панель с лентой карточек. Один и тот же шеврон служит
-// и открывалкой, и закрывалкой — после закрытия фокус остаётся на нём сам, без
-// ручного возврата.
-//
-// Список тот же, что у планшета (SavedFramesDrawer), но вид другой: компьютеру
-// нужна лента карточек поверх кадра, а планшету — сетка в своём полноэкранном
-// окне.
+// Полка занимает свою строку под превью. Миниатюра выбирает момент;
+// вторичные действия открываются отдельным меню вне прокручиваемой ленты.
+type FrameMenu = { id: string; left: number; bottom: number; maxHeight: number }
 
 export function TimelineFramesShelf({
   records,
@@ -47,6 +39,43 @@ export function TimelineFramesShelf({
   const t = useT()
   const ordered = framesByTime(records)
   const gridRef = useRef<HTMLDivElement>(null)
+  const shelfRef = useRef<HTMLElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const [menu, setMenu] = useState<FrameMenu | null>(null)
+  const menuId = useId()
+  const menuRecord = open ? records.find(record => record.id === menu?.id) : undefined
+
+  function closeMenu(restoreFocus = true): void {
+    setMenu(null)
+    if (!restoreFocus) return
+    const target = triggerRef.current?.isConnected
+      ? triggerRef.current
+      : shelfRef.current?.querySelector<HTMLButtonElement>('.tl-shelf-toggle')
+    target?.focus({ preventScroll: true })
+  }
+
+  // Меню остаётся внутри модального окна для focus trap, но вне overflow
+  // ленты. Escape закрывает только меню, не весь просмотрщик.
+  useEffect(() => {
+    if (!menuRecord) return
+    menuRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true })
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) setMenu(null)
+    }
+    const resize = () => closeMenu()
+    document.addEventListener('pointerdown', outside, true)
+    window.addEventListener('resize', resize)
+    return () => {
+      document.removeEventListener('pointerdown', outside, true)
+      window.removeEventListener('resize', resize)
+    }
+  }, [menuRecord?.id])
+
+  useEffect(() => {
+    if (!open) setMenu(null)
+  }, [open])
 
   // Выбранная карточка остаётся на виду: снятый кадр или метка на дорожке
   // выбирают карточку, которая может лежать за краем ленты.
@@ -62,7 +91,7 @@ export function TimelineFramesShelf({
   }, [open, selectedId, records.length])
 
   return (
-    <section className="tl-shelf" data-open={open} aria-label={t('Saved frames')}>
+    <section className="tl-shelf" ref={shelfRef} data-open={open} aria-label={t('Saved frames')}>
       <div className="tl-shelf-head">
         <TimelineButton
           buttonRef={toggleRef}
@@ -78,7 +107,7 @@ export function TimelineFramesShelf({
         </TimelineButton>
         <span className="tl-count" aria-live="polite">
           {records.length}
-          <span className="tl-sr"> {plural(records.length, ['saved frame', 'saved frames', 'saved frames'])}</span>
+          <span className="tl-sr"> {t(records.length === 1 ? 'saved frame' : 'saved frames')}</span>
         </span>
         <span className="tl-shelf-context">{t('Saved frames')}</span>
       </div>
@@ -86,13 +115,11 @@ export function TimelineFramesShelf({
       {open && (ordered.length === 0 ? (
         <p className="tl-lane-empty">{t(NO_FRAMES_MESSAGE)}</p>
       ) : (
-        <div className="tl-lane" ref={gridRef} role="list" aria-label={t('Saved frames')}>
+        <div className="tl-lane" ref={gridRef} role="list" aria-label={t('Saved frames')} onScroll={() => setMenu(null)}>
           {ordered.map((record) => {
             const at = timecode(record.requestedTime)
             const tone = frameStatusTone(record)
-            const busy = isBusyPhase(record.phase)
             const status = frameStatusText(record)
-            const retryable = record.phase === 'error' || record.phase === 'cancelled'
             return (
               <article
                 key={record.id}
@@ -110,68 +137,107 @@ export function TimelineFramesShelf({
                 >
                   {record.resultUrl
                     ? <img src={record.resultUrl} alt="" draggable={false} />
-                    : <span className="tl-spinner" aria-hidden="true" />}
+                    : isBusyPhase(record.phase) && <span className="tl-spinner" aria-hidden="true" />}
                   <span className="tl-frame-time">{at}</span>
+                  {record.phase !== 'saved' && (
+                    <span className="tl-frame-status" data-tone={tone} title={status}>
+                      {record.phase === 'error' ? t('Error') : status}
+                    </span>
+                  )}
                 </button>
-                <div className="tl-frame-info">
-                  <span className="tl-frame-name">{t('Frame {0}', { 0: at })}</span>
-                  {/* Длинную причину ошибки строка обрежет многоточием — полный
-                      текст в подсказке. Короткие подписи в ней не нуждаются. */}
-                  {tone === 'error' ? (
-                    <Tooltip title={status} placement="top">
-                      <span className="tl-frame-status" data-tone={tone}>{status}</span>
-                    </Tooltip>
-                  ) : (
-                    <span className="tl-frame-status" data-tone={tone}>{status}</span>
-                  )}
-                </div>
-                <div className="tl-frame-actions">
-                  {record.phase === 'saved' && (
-                    <>
-                      <TimelineButton
-                        label={t('Show frame {0} on canvas', { 0: at })}
-                        keys="G"
-                        shortcut="G"
-                        disabled={!record.resultItemId}
-                        onClick={() => onShow(record.id)}
-                      >
-                        <IconOpenExternal size={16} />
-                      </TimelineButton>
-                      <TimelineButton
-                        label={t('Download frame PNG {0}', { 0: at })}
-                        keys="D"
-                        shortcut="D"
-                        disabled={!record.resultUrl}
-                        onClick={() => onDownload(record.id)}
-                      >
-                        <IconDownload size={16} />
-                      </TimelineButton>
-                    </>
-                  )}
-                  {retryable && (
-                    <TimelineButton label={t('Retry frame capture')} onClick={() => onRetry(record.id)}>
-                      <IconRefresh size={16} />
-                    </TimelineButton>
-                  )}
-                  {busy && (
-                    <TimelineButton label={t('Cancel frame capture')} onClick={() => onCancel(record.id)}>
-                      <IconClose size={16} />
-                    </TimelineButton>
-                  )}
-                  {!busy && (
-                    <TimelineButton
-                      label={record.resultItemId ? t('Delete frame from canvas') : t('Remove from shelf')}
-                      onClick={() => onRemove(record.id)}
-                    >
-                      <IconTrash size={16} />
-                    </TimelineButton>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  className="tl-frame-menu-trigger"
+                  aria-label={`${t('More')} · ${at}`}
+                  title={t('More')}
+                  aria-haspopup="menu"
+                  aria-expanded={menuRecord?.id === record.id}
+                  aria-controls={menuRecord?.id === record.id ? menuId : undefined}
+                  onClick={(event) => {
+                    if (menu?.id === record.id) { closeMenu(); return }
+                    const trigger = event.currentTarget
+                    const rect = trigger.getBoundingClientRect()
+                    triggerRef.current = trigger
+                    setMenu({
+                      id: record.id,
+                      left: Math.max(12, Math.min(rect.right - 240, window.innerWidth - 252)),
+                      bottom: window.innerHeight - rect.top + 8,
+                      maxHeight: Math.max(80, rect.top - 20),
+                    })
+                  }}
+                >
+                  <IconMenu size={16} />
+                </button>
               </article>
             )
           })}
         </div>
       ))}
+      {menu && menuRecord && (
+        <div
+          ref={menuRef}
+          id={menuId}
+          className="tl-frame-menu"
+          role="menu"
+          aria-label={t('Frame {0}', { 0: timecode(menuRecord.requestedTime) })}
+          style={{ left: menu.left, bottom: menu.bottom, maxHeight: menu.maxHeight }}
+          onKeyDownCapture={(event) => {
+            event.stopPropagation()
+            if (event.key === 'Escape') { event.preventDefault(); closeMenu(); return }
+            if (event.key === 'Tab') { closeMenu(); return }
+            if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey && menuRecord.phase === 'saved') {
+              if (event.code === 'KeyG' && menuRecord.resultItemId) {
+                event.preventDefault(); closeMenu(); onShow(menuRecord.id); return
+              }
+              if (event.code === 'KeyD' && menuRecord.resultUrl) {
+                event.preventDefault(); closeMenu(); onDownload(menuRecord.id); return
+              }
+            }
+            if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+            event.preventDefault()
+            const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
+            const index = buttons.indexOf(document.activeElement as HTMLButtonElement)
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+              : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length
+            buttons[next]?.focus({ preventScroll: true })
+          }}
+        >
+          {menuRecord.phase !== 'saved' && (
+            <p className="tl-frame-menu-status" role="status">{frameStatusText(menuRecord)}</p>
+          )}
+          {menuRecord.phase === 'saved' && (
+            <>
+              <button type="button" role="menuitem" disabled={!menuRecord.resultItemId}
+                onClick={() => { closeMenu(); onShow(menuRecord.id) }}>
+                <IconOpenExternal size={16} />{t('To canvas (G)')}
+              </button>
+              <button type="button" role="menuitem" disabled={!menuRecord.resultUrl}
+                onClick={() => { closeMenu(); onDownload(menuRecord.id) }}>
+                <IconDownload size={16} />{t('Download (D)')}
+              </button>
+            </>
+          )}
+          {(menuRecord.phase === 'error' || menuRecord.phase === 'cancelled') && (
+            <button type="button" role="menuitem" onClick={() => { closeMenu(); onRetry(menuRecord.id) }}>
+              <IconRefresh size={16} />{t('Retry frame capture')}
+            </button>
+          )}
+          {isBusyPhase(menuRecord.phase) ? (
+            <button type="button" role="menuitem" onClick={() => { closeMenu(); onCancel(menuRecord.id) }}>
+              <IconClose size={16} />{t('Cancel frame capture')}
+            </button>
+          ) : (
+            <button type="button" role="menuitem" className="danger"
+              onClick={() => {
+                closeMenu(false)
+                onRemove(menuRecord.id)
+                shelfRef.current?.querySelector<HTMLButtonElement>('.tl-shelf-toggle')?.focus({ preventScroll: true })
+              }}>
+              <IconTrash size={16} />{menuRecord.resultItemId ? t('Delete frame from canvas') : t('Remove from shelf')}
+            </button>
+          )}
+        </div>
+      )}
     </section>
   )
 }

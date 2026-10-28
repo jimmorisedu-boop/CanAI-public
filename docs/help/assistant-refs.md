@@ -30,7 +30,7 @@ Right-click a thumbnail to remove it from the current references; the Canvas ite
 
 ## Related topics
 
-- [Add photos to Assistant](./assistant-photos.md)
+- [Attach Canvas references to Assistant](./assistant-photos.md)
 - [Use the Assets shelf](./assets.md)
 - [Understand reference types](./reference-kinds.md)
 

@@ -14,12 +14,18 @@ export function frameBlob(src: string, time: number, options: {
     let settled = false
     let drawing = false
     let seeking = false
+    let paint = 0
+    // seeked может опередить обновление поверхности кадра в Chromium.
+    // Читаем её в следующем цикле отрисовки, иначе PNG бывает прозрачным
+    // или содержит первый кадр вместо запрошенного.
+    const afterSeek = () => { paint = requestAnimationFrame(draw) }
     const cleanup = () => {
       clearTimeout(timer)
+      if (paint) cancelAnimationFrame(paint)
       video.removeEventListener('error', fail)
       video.removeEventListener('loadedmetadata', prepare)
       video.removeEventListener('loadeddata', prepare)
-      video.removeEventListener('seeked', draw)
+      video.removeEventListener('seeked', afterSeek)
       if (!reuse) {
         video.pause()
         video.removeAttribute('src')
@@ -54,13 +60,16 @@ export function frameBlob(src: string, time: number, options: {
       } catch (error) { finish(error) }
     }
     const prepare = () => {
-      if (settled || drawing) return
+      // Метаданные ещё не означают, что декодер выдал первый кадр. Seek из
+      // HAVE_METADATA может закончиться раньше loadeddata: в Chromium
+      // drawImage тогда молча оставляет полностью прозрачный canvas.
+      if (settled || drawing || video.readyState < 2) return
       const end = Number.isFinite(video.duration) ? Math.max(0, video.duration - 0.001) : time
       const target = Math.max(0, Math.min(Number.isFinite(time) ? time : 0, end))
       if (!seeking && Math.abs(video.currentTime - target) > 0.001) {
         seeking = true
         try { video.currentTime = target } catch (error) { finish(error) }
-      } else if (!video.seeking) draw()
+      } else if (!seeking && !video.seeking) draw()
     }
     if (reuse) { draw(); return }
     video.muted = true
@@ -70,7 +79,7 @@ export function frameBlob(src: string, time: number, options: {
     video.addEventListener('error', fail)
     video.addEventListener('loadedmetadata', prepare)
     video.addEventListener('loadeddata', prepare)
-    video.addEventListener('seeked', draw)
+    video.addEventListener('seeked', afterSeek)
     video.src = src
     video.load()
   })

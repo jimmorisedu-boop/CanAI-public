@@ -18,14 +18,21 @@ Press T to open the editor, then use Cut at cursor position, Remove segment unde
 
 ![Trim video on the timeline: Trim or cut](../../client/public/help/timeline-2.svg)
 
-### 3. Capture or apply
+### 3. Apply or continue editing
 
-Use Enable cropping for a crop pass, Capture frame to canvas for the current frame, and Apply edits when the timeline is ready.
+Apply edits adds edited clips below the original; capturing frames makes no video copy. Before leaving, Continue editing keeps the draft; Leave without applying discards it. Closing or reloading the tab also warns about unapplied edits.
 
-![Trim video on the timeline: Capture or apply](../../client/public/help/timeline-3.svg)
+![A warning before leaving video editing, with Continue editing and Leave without applying buttons](../../client/public/help/timeline-5.svg)
+
+### 4. Saved frames
+
+On desktop, frames sit below the video. Click a thumbnail to select its moment. The three-dot menu offers To canvas, Download, and Delete. Progress and errors stay visible; retry or cancel from the menu. Press B to hide or show frames.
+
+![Saved frames below the full video preview, with actions in a three-dot menu](../../client/public/help/timeline-4.svg)
 
 ## Notes
 
+- Apply edits creates video clips only when trimming, cuts, or cropping change the video. If you only viewed it or captured frames, Apply closes the viewer without a video copy. The original and captured frames stay on the canvas.
 - Video, frame-saving, and export errors use English. Source filenames and clip names are kept as entered.
 - On tablet, select a video and open Clip editing. Cut, Crop, and Capture frame stay below the preview.
 - Drag Playback position on the single timeline to seek. Start and End trim the clip; drag a cut down to join it again.

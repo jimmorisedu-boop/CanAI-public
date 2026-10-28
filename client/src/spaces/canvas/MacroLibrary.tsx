@@ -124,7 +124,7 @@ export function MacroLibrary({
       >
         <header>
           <h2 id="macro-lib-title">{t('Macros')}</h2>
-          {!data.loading && <span className="macro-lib-count">{`${slotted.length} of ${MACRO_SLOT_COUNT}`}</span>}
+          {!data.loading && <span className="macro-lib-count">{t('{0} of {1}', { 0: slotted.length, 1: MACRO_SLOT_COUNT })}</span>}
           <button className="macro-lib-close" type="button" aria-label={t('Close')} onClick={onClose}><IconClose size={16} /></button>
         </header>
 
@@ -147,7 +147,7 @@ export function MacroLibrary({
         <MacroLibraryLegacy macros={data.legacy} unit={unit} busy={busy} onRemove={actions.removeLegacy} />
         <footer className="macro-lib-footer">
           <button className="macro-lib-add" type="button" disabled={data.loading || full} title={full ? t('All {0} slots are occupied', { 0: MACRO_SLOT_COUNT }) : undefined} onClick={() => actions.create()}>
-            <IconPlus size={14} /> Add macro
+            <IconPlus size={14} /> {t('Add macro')}
           </button>
           <button className="macro-lib-add" type="button" disabled={data.loading || full || busy} title={full ? t('All {0} slots are occupied', { 0: MACRO_SLOT_COUNT }) : t('Upload macro from file')} onClick={() => actions.importFile()}>
             <IconUpload size={14} />  {t('From file')}

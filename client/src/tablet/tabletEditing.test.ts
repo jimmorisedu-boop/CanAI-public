@@ -53,25 +53,25 @@ function callback(relative: string, variable: string): string {
   return ts.transpile(`const callback = ${arrow.getText(source)}`, { target: ts.ScriptTarget.ES2022 }) + '\nreturn callback'
 }
 
-for (const outcome of ['failure', 'empty', 'empty-result', 'success'] as const) {
-  test(`clip apply: ${outcome} closes only after a created result`, async () => {
+for (const outcome of ['failure', 'empty', 'empty-result', 'success', 'unchanged'] as const) {
+  test(`clip apply: ${outcome} closes only after successful confirmation`, async () => {
     let closed = 0
     let created = 0
     const notices: Array<{ kind: string }> = []
     // ⚠️ Зависимости внедряются поимённо: забыл новую — функция падает на
     // неизвестном имени, и тест краснеет не по делу. adoptForBoard переселяет
     // куски нарезки на сервер команды (см. boardUploader).
-    const apply = new Function('item', 'kept', 'applyingRef', 'setBusy', 'notifyInTimeline', 'api', 'crop', 'store', 'setTimelineTarget', 'pluralPieces', 'adoptForBoard',
+    const apply = new Function('item', 'kept', 'applyingRef', 'setBusy', 'notifyInTimeline', 'api', 'crop', 'facts', 'error', 'store', 'setTimelineTarget', 'pluralPieces', 'adoptForBoard',
       callback('../spaces/canvas/timeline/useTimelineSession.ts', 'apply'))(
-      { src: '/media/test.mp4' }, outcome === 'empty' ? [] : [{ start: 1, end: 2 }], { current: false }, () => {}, (notice: { kind: string }) => notices.push(notice),
-      { cutVideo: async () => { if (outcome === 'failure') throw new Error('503'); return { pieces: outcome === 'empty-result' ? [] : [{}] } } }, null,
+      { src: '/media/test.mp4' }, outcome === 'empty' ? [] : outcome === 'unchanged' ? [{ start: 0, end: 8 }] : [{ start: 1, end: 2 }], { current: false }, () => {}, (notice: { kind: string }) => notices.push(notice),
+      { cutVideo: async () => { if (outcome === 'unchanged') assert.fail('unchanged video must not be exported'); if (outcome === 'failure') throw new Error('503'); return { pieces: outcome === 'empty-result' ? [] : [{}] } } }, null, { duration: 8 }, null,
       { placeVideoPieces: () => { created++; return ['piece'] }, removeItems() {} }, () => {}, () => '',
       async (piece: unknown) => piece,
     )
     const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose', 't',
       callback('./TabletClip.tsx', 'apply'))({ current: false }, () => {}, { apply }, () => closed++, identityTranslate)
     await tabletApply()
-    assert.equal(closed, outcome === 'success' ? 1 : 0)
+    assert.equal(closed, outcome === 'success' || outcome === 'unchanged' ? 1 : 0)
     assert.equal(created, outcome === 'success' ? 1 : 0)
     if (outcome === 'failure') assert.ok(notices.some(notice => notice.kind === 'error'))
   })
@@ -288,10 +288,10 @@ test('failed clip apply is an accessible inline error inside the editor, with it
   const upstreamError = '503 — повторите обработку'
   setTimelineTarget('test-video')
   try {
-    const apply = new Function('item', 'kept', 'applyingRef', 'setBusy', 'notifyInTimeline', 'api', 'crop', 'store', 'setTimelineTarget', 'pluralPieces',
+    const apply = new Function('item', 'kept', 'applyingRef', 'setBusy', 'notifyInTimeline', 'api', 'crop', 'facts', 'error', 'store', 'setTimelineTarget', 'pluralPieces',
       callback('../spaces/canvas/timeline/useTimelineSession.ts', 'apply'))(
       { src: '/media/test.mp4' }, [{ start: 1, end: 2 }], { current: false }, () => {}, notifyInTimeline,
-      { cutVideo: async () => { throw new Error(upstreamError) } }, null,
+      { cutVideo: async () => { throw new Error(upstreamError) } }, null, { duration: 8 }, null,
       { placeVideoPieces() { assert.fail('a failed request must not create media') } }, setTimelineTarget, () => '',
     )
     const tabletApply = new Function('applyingRef', 'setBusyNote', 'session', 'onClose', 't',

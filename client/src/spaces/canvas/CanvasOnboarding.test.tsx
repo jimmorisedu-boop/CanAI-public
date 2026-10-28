@@ -79,7 +79,7 @@ test('assistant photo step explains drag attachment and uses the attachment illu
   const html = renderToStaticMarkup(
     <CanvasOnboardingView document={documentWith({})} status="ready" isEmpty actions={actions} tutorialIndex={2} />,
   )
-  assert.match(html, /Drag into Assistant/)
+  assert.match(html, /Select and drag references/)
   assert.match(html, /drag a photo from Canvas into Assistant|Drag a photo from Canvas into Assistant/)
   assert.match(html, /assistant-photos-2\.svg/)
 })

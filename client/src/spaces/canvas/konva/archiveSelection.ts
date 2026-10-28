@@ -1,6 +1,6 @@
-import { OBJECTS, pluralWithCount } from '../../../ui/plural'
 import { notify } from '../notifications'
 import type { CanvasStore } from './canvasStore'
+import { t } from '../../../i18n/translate.js'
 
 // Отправка в архив — одна точка на все входы: перетаскивание на плитку,
 // пункт контекстного меню, кнопка над выделением и Shift+Delete. Раньше это
@@ -11,8 +11,10 @@ export function archiveSelection(store: CanvasStore, ids: string[]): number {
   if (moved === 0) return 0
   notify({
     kind: 'success',
-    message: moved === 1 ? 'Object is in Archive' : `Moved to Archive: ${pluralWithCount(moved, OBJECTS)}`,
-    action: { label: 'Cancel', run: () => store.undo() },
+    message: moved === 1
+      ? t('Object is in Archive')
+      : t('Moved to Archive: {0}', { 0: `${moved} ${t('objects')}` }),
+    action: { label: t('Cancel'), run: () => store.undo() },
   })
   return moved
 }

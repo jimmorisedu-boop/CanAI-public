@@ -35,3 +35,22 @@ test('drop доставляется только текущему обработ
   registerPromptChatDropHandler(null)
   assert.equal(requestPromptChatDrop(event), false)
 })
+
+test('a group is delivered in one event with independent reference snapshots', () => {
+  const refs = [event.ref, { ...event.ref, shapeId: 'image-2' }]
+  const unregister = registerPromptChatDropHandler({
+    hover() {},
+    drop: (received) => {
+      assert.equal(received.kind, 'references')
+      if (received.kind !== 'references') return
+      assert.deepEqual(received.refs.map((ref) => ref.shapeId), ['image-1', 'image-2'])
+      received.refs[0].label = 'changed'
+      received.refs.pop()
+    },
+  })
+  try {
+    assert.equal(requestPromptChatDrop({ kind: 'references', refs }), true)
+    assert.equal(refs.length, 2)
+    assert.equal(refs[0].label, 'Кадр')
+  } finally { unregister() }
+})

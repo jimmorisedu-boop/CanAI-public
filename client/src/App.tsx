@@ -14,6 +14,7 @@ import { createMacroEditorLeaveController, type MacroFinalize, type MacroLeaveOp
 import { ErrorBoundary } from './ui/ErrorBoundary'
 import { IconBack, IconBalance } from './ui/icons'
 import { withViewTransition } from './ui/viewTransition'
+import { requestTimelineLeave } from './spaces/canvas/timeline/timelineLeaveGuard'
 import { OperationState } from './ui/OperationState'
 import { GlobalNotifications } from './ui/GlobalNotifications'
 import { falBalancePresentation } from './ui/falBalancePresentation'
@@ -40,6 +41,7 @@ import type { ProjectRef } from './types'
 import { activeLocalProject, requestedProjectRef, type ActiveProject } from './projects/activeProject'
 import { projectKey } from './projects/projectRef'
 import { useT } from './i18n/context.js'
+import { registerDesktopUpdateGuard } from './settings/desktopUpdateGuards'
 
 
 const NodesSpace = lazy(() => import('./spaces/nodes/NodesSpace').then((module) => ({ default: module.NodesSpace })))
@@ -166,6 +168,7 @@ export function App() {
     setCurrentCurrency(currency)
   }, [])
 
+  const activeBoardUrl = useRef(window.location.href)
   const leaveMacroEditor = useCallback((onLeave: () => void, options?: MacroLeaveOptions): Promise<boolean> => {
     const transition = () => withViewTransition(() => {
       macroEditRef.current = null
@@ -179,7 +182,23 @@ export function App() {
     return macroLeaveController.leave(transition, options)
   }, [macroLeaveController])
 
+  const leaveBoard = useCallback(async (onLeave: () => void): Promise<boolean> => {
+    if (!await requestTimelineLeave()) return false
+    return leaveMacroEditor(onLeave)
+  }, [leaveMacroEditor])
+
   const registerMacroLeaveGuard = useCallback((finalize: MacroFinalize) => macroLeaveController.register(finalize), [macroLeaveController])
+
+  useEffect(() => registerDesktopUpdateGuard('app-leave', async () => {
+    if (!await requestTimelineLeave()) {
+      return { ok: false, message: t('Finish or discard the open timeline edit before updating.') }
+    }
+    if (macroEditRef.current) {
+      const left = await leaveMacroEditor(() => {})
+      if (!left) return { ok: false, message: t('Finish or discard the open workflow draft before updating.') }
+    }
+    return { ok: true }
+  }), [leaveMacroEditor, t])
   const [isEditingName, setIsEditingName] = useState(false)
   const [renameValue, setRenameValue] = useState('')
 
@@ -249,8 +268,13 @@ export function App() {
   }, [leaveMacroEditor])
 
   useEffect(() => {
-    const loadFromUrl = () => {
-      const id = new URLSearchParams(window.location.search).get('project')
+    const loadFromUrl = async () => {
+      const requestedUrl = window.location.href
+      if (!await requestTimelineLeave()) {
+        window.history.replaceState(null, '', activeBoardUrl.current)
+        return
+      }
+      const id = new URL(requestedUrl).searchParams.get('project')
       if (!id) {
         setProject(null)
         setView('gallery')
@@ -283,7 +307,7 @@ export function App() {
         setRouteResolving(false)
       })
     }
-    loadFromUrl()
+    void loadFromUrl()
     window.addEventListener('popstate', loadFromUrl)
     return () => window.removeEventListener('popstate', loadFromUrl)
   }, [routeAttempt])
@@ -295,6 +319,7 @@ export function App() {
     } else if (window.location.search && !macroEdit && !routeError && !routeResolving) {
       window.history.pushState(null, '', '/')
     }
+    activeBoardUrl.current = window.location.href
   }, [project, macroEdit, routeError, routeResolving])
   useEffect(() => {
     if (!shortcutsOpen) return
@@ -315,7 +340,7 @@ export function App() {
   })), [openHelpModal])
 
   function openLocalProject(next: ProjectMeta): void {
-    void leaveMacroEditor(() => {
+    void leaveBoard(() => {
       setProject(activeLocalProject(next))
       setView('editor')
     })
@@ -327,7 +352,7 @@ export function App() {
     if (resolution.kind === 'trash') {
       requestProjectTrash({ projectId: resolution.project.id })
       notify({ kind: 'info', message: 'The board is in Trash' })
-      void leaveMacroEditor(() => { setProject(null); setView('gallery') })
+      void leaveBoard(() => { setProject(null); setView('gallery') })
       return
     }
     notify({ kind: resolution.kind === 'missing' ? 'error' : 'error', message: resolution.kind === 'missing' ? 'The external edit board is no longer available' : resolution.message })
@@ -356,14 +381,14 @@ export function App() {
       if (resolution.kind === 'trash') {
         requestProjectTrash({ projectId: resolution.project.id })
         notify({ kind: 'info', message: 'The board is in Trash' })
-        void leaveMacroEditor(() => { setProject(null); setView('gallery') })
+        void leaveBoard(() => { setProject(null); setView('gallery') })
         return
       }
       notify({ kind: 'error', message: resolution.kind === 'missing' ? 'The board is no longer available' : resolution.message, action: { label: 'Retry', run: () => requestGenerationResultNavigation(request) }, replaceKey: 'generation-result-navigation' })
     })
-  }), [leaveMacroEditor])
+  }), [leaveBoard])
 
-  function backToGallery(): void { void leaveMacroEditor(() => { setView('gallery'); setProject(null) }) }
+  function backToGallery(): void { void leaveBoard(() => { setView('gallery'); setProject(null) }) }
   function openSettings(): void { setSettingsHint(null); setSettingsSection(undefined); setSettingsOpen(true) }
 
   const externalEditStatus = (

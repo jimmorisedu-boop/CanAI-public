@@ -243,10 +243,12 @@
     {
       "id": "assistant-photos",
       "category": "assistant",
-      "title": "Add photos to Assistant",
-      "summary": "Import a photo to the Canvas, then drag it into Assistant or choose it from Assets.",
+      "title": "Attach Canvas references to Assistant",
+      "summary": "Select Canvas media or text, then drag it into Assistant to add it to the draft.",
       "keywords": [
-        "add photos to assistant"
+        "add photos to assistant",
+        "attach canvas references to assistant",
+        "drag references to assistant"
       ],
       "steps": [
         {
@@ -256,10 +258,10 @@
           "alt": "Add photos to Assistant: Import onto Canvas"
         },
         {
-          "title": "Drag into Assistant",
-          "body": "Drag the saved Canvas photo card into the Assistant dock.",
+          "title": "Select and drag references",
+          "body": "Select one or more media or text cards, then drag from any selected card to any part of the Assistant pane. Every supported selection is added to the draft attachments; the Canvas cards stay in place.",
           "image": "/help/assistant-photos-2.svg",
-          "alt": "Add photos to Assistant: Drag into Assistant"
+          "alt": "Attach Canvas references to Assistant: Select and drag references"
         },
         {
           "title": "Or click an Assets thumbnail",
@@ -268,15 +270,16 @@
           "alt": "Add photos to Assistant: Click an Assets thumbnail"
         },
         {
-          "title": "Check the attachment",
-          "body": "Confirm the photo chip is visible before sending the Assistant message.",
+          "title": "Check the draft attachments",
+          "body": "Confirm the supported references appear in the draft attachments. Dropping adds them to the draft; it does not send the Assistant message.",
           "image": "/help/assistant-photos-4.svg",
-          "alt": "Add photos to Assistant: Check the attachment"
+          "alt": "Attach Canvas references to Assistant: Check the draft attachments"
         }
       ],
       "notes": [
-        "The original Canvas card stays in place when you attach a photo.",
-        "Selecting a Canvas item alone does not attach it; drag it into Assistant or click its Assets thumbnail.",
+        "The original Canvas cards stay in place when you attach references.",
+        "Dropping the same card again does not create a duplicate attachment.",
+        "Selecting a Canvas item alone does not attach it; drag the selection into Assistant or click an Assets thumbnail.",
         "System labels follow the selected interface language; Assistant prompts, profile instructions, and chat messages remain in their original language."
       ],
       "related": [
@@ -574,10 +577,10 @@
           "alt": "Keep a board tidy: Save for reuse"
         },
         {
-          "title": "Archive a board",
-          "body": "Archive a board to hide it from the active list while keeping its data.",
+          "title": "Archive objects",
+          "body": "Select objects and drag them to Archive to clear the canvas. Open Archive to preview or return them. Archived objects stay with the board after reopening.",
           "image": "/help/library-2.svg",
-          "alt": "Keep a board tidy: Archive a board"
+          "alt": "Archived objects saved with the board and ready to return to the canvas"
         },
         {
           "title": "Delete a board",
@@ -587,7 +590,7 @@
         }
       ],
       "notes": [
-        "Assets belong inside a board. Archive and Trash act on whole boards, not individual references.",
+        "The canvas Archive stores objects. Trash in the board list stores deleted boards.",
         "Connection and sign-in notices use English. Board names keep their original language.",
         "Use Play or Pause below a media preview. Drag Seek to jump; Mute and Volume change its sound.",
         "System labels follow the selected interface language; source filenames and clip names remain as entered."
@@ -1268,10 +1271,16 @@
           "alt": "Trim video on the timeline: Trim or cut"
         },
         {
-          "title": "Capture or apply",
-          "body": "Use Enable cropping for a crop pass, Capture frame to canvas for the current frame, and Apply edits when the timeline is ready.",
-          "image": "/help/timeline-3.svg",
-          "alt": "Trim video on the timeline: Capture or apply"
+          "title": "Apply or continue editing",
+          "body": "Apply edits adds edited clips below the original; capturing frames makes no video copy. Before leaving, Continue editing keeps the draft; Leave without applying discards it. Closing or reloading the tab also warns about unapplied edits.",
+          "image": "/help/timeline-5.svg",
+          "alt": "A warning before leaving video editing, with Continue editing and Leave without applying buttons"
+        },
+        {
+          "title": "Saved frames",
+          "body": "On desktop, frames sit below the video. Click a thumbnail to select its moment. The three-dot menu offers To canvas, Download, and Delete. Progress and errors stay visible; retry or cancel from the menu. Press B to hide or show frames.",
+          "image": "/help/timeline-4.svg",
+          "alt": "Saved frames below the full video preview, with actions in a three-dot menu"
         }
       ],
       "shortcuts": [
@@ -1298,6 +1307,7 @@
         "export"
       ],
       "notes": [
+        "Apply edits creates video clips only when trimming, cuts, or cropping change the video. If you only viewed it or captured frames, Apply closes the viewer without a video copy. The original and captured frames stay on the canvas.",
         "Video, frame-saving, and export errors use English. Source filenames and clip names are kept as entered.",
         "On tablet, select a video and open Clip editing. Cut, Crop, and Capture frame stay below the preview.",
         "Drag Playback position on the single timeline to seek. Start and End trim the clip; drag a cut down to join it again.",
@@ -1577,6 +1587,46 @@
       "related": [
         "project-files",
         "settings-provider"
+      ]
+    },
+    {
+      "id": "settings-updates",
+      "category": "settings",
+      "title": "Update the desktop app",
+      "summary": "Check a verified release, keep your board saved, and restart CanAI once.",
+      "keywords": [
+        "update the desktop app",
+        "app updates",
+        "check for updates"
+      ],
+      "steps": [
+        {
+          "title": "Check for updates",
+          "body": "Open Settings → General → App updates and choose Check for updates. The section shows your current version and the release notes.",
+          "image": "/help/settings-updates-1.svg",
+          "alt": "Update the desktop app: Check for updates"
+        },
+        {
+          "title": "Choose Update",
+          "body": "When a verified release is available, choose Update. CanAI prepares the release while you keep working; closing Settings does not cancel preparation.",
+          "image": "/help/settings-updates-2.svg",
+          "alt": "Update the desktop app: Choose Update"
+        },
+        {
+          "title": "Save and restart",
+          "body": "Before applying the release, CanAI saves the local board or waits for local edits to be confirmed. It restarts and reloads once after the server returns.",
+          "image": "/help/settings-updates-3.svg",
+          "alt": "Update the desktop app: Save and restart"
+        }
+      ],
+      "notes": [
+        "The tablet surface does not show desktop app updates.",
+        "An offline local board or unresolved recovery draft blocks the restart until you reconnect or resolve it.",
+        "The update flow does not charge for generation and does not change board content or provider settings."
+      ],
+      "related": [
+        "settings-local",
+        "recovery"
       ]
     },
     {

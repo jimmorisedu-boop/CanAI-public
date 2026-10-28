@@ -428,7 +428,7 @@
     gap: 16px;
   }
 
-  .project-menu-btn {
+  .gallery-view .project-menu-btn {
     width: var(--compact-target);
     min-width: var(--compact-target);
     height: var(--compact-target);

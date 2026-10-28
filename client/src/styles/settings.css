@@ -162,6 +162,45 @@
   border-bottom: 1px solid var(--border);
 }
 
+.desktop-update-section {
+  content-visibility: auto;
+}
+
+.desktop-update-card {
+  gap: var(--space-2);
+}
+
+.desktop-update-card > p {
+  margin: 0;
+}
+
+.desktop-update-notes {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-2);
+  font-size: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.desktop-update-progress {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  color: var(--text-3);
+  font-size: var(--text-secondary);
+}
+
+.desktop-update-progress > span {
+  display: block;
+  width: 0;
+  height: var(--space-1);
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
 .settings-primary > .settings-section:first-child {
   padding-top: 0;
 }

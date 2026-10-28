@@ -31,7 +31,7 @@ Add a photo to the chat only when you want Assistant to receive that image.
 
 ## Related topics
 
-- [Add photos to Assistant](./assistant-photos.md)
+- [Attach Canvas references to Assistant](./assistant-photos.md)
 - [Use Canvas references](./references.md)
 
 ---

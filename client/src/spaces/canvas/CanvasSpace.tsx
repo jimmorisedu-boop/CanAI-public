@@ -39,6 +39,8 @@ import { deliverExternalEditSession } from './externalEditApply'
 import { registerMediaImportSink } from './mediaImportRegistry'
 import { mediaLinkController, refreshUnsettledLinkPreviews, registerMediaLinkRetryHandler } from './konva/mediaLinkController'
 import { useT } from '../../i18n/context.js'
+import { registerDesktopUpdateGuard } from '../../settings/desktopUpdateGuards'
+import { flushLocalUpdateSave } from '../../settings/desktopUpdateSaveGuards'
 
 
 const GENERATION_FOCUS_MS = 2200
@@ -97,6 +99,11 @@ export function CanvasSpace({ projectRef, projectName, canEdit, canComment: _can
     const release = setActiveCanvasStore(store)
     return () => { active = false; release(); const handle = syncRef.current; if (handle) void handle.dispose().catch((error) => console.warn('[CanAI] failed to complete board saving:', error)); syncRef.current = null }
   }, [store, projectId, loadAttempt])
+
+  useEffect(() => registerDesktopUpdateGuard(`canvas:${projectId}`, async () => {
+    if (!syncHandle) return { ok: false, message: t('The local board is still loading. Wait until it is ready before updating.') }
+    return flushLocalUpdateSave(syncHandle, t('The local board could not confirm its latest save. Try again before updating.'))
+  }, 'save'), [projectId, syncHandle, t])
 
   useEffect(() => {
     if (!boardUsable) return

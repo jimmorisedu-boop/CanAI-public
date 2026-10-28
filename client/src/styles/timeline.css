@@ -1,8 +1,8 @@
 /* Режим правки клипа. Раскладка — по утверждённому макету: сверху вниз плеер
    (превью + транспорт одним блоком), плёнка, ряд монтажа. Видео занимает всё
    свободное место; всё, что поверх него (имя клипа, «вписать кадр», выход,
-   пропорции кадрирования, полка кадров), — стеклянные плашки, а не полосы,
-   отнимающие у кадра высоту. Режим всегда тёмный, как любая монтажка. */
+   пропорции кадрирования), — стеклянные плашки. Полка кадров занимает свою
+   строку под видео. Режим всегда тёмный, как любая монтажка. */
 
 /* Режим правки — модальный: пока он открыт, плавающие панели холста прячутся.
    Промпт, полка ассетов, архив, зум и экспорт здесь ничего не делают, а
@@ -89,12 +89,13 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* ── Плеер: превью + транспорт ─────────────────────────────────────────── */
+/* ── Плеер: превью + полка кадров + транспорт ──────────────────────────── */
 
 .tl-player {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  min-width: 0;
   min-height: 0;
   border-radius: var(--radius-control);
   background: var(--tl-preview);
@@ -419,49 +420,26 @@
 .tl-live[data-tone='warn'] { color: var(--tl-marker); }
 .tl-live[data-tone='error'] { color: var(--tl-danger); }
 
-/* ── Полка сохранённых кадров: оверлей внутри превью ───────────────────── */
-
-/* Закрыта — кластер в правом нижнем углу; открыта — панель с лентой карточек.
-   Видео при этом не сжимается: полка лежит поверх, а не рядом. */
+/* ── Полка сохранённых кадров: отдельная строка под превью ─────────────── */
 .tl-shelf {
-  position: absolute;
-  right: 10px;
-  bottom: 6px;
-  left: 10px;
+  position: relative;
   z-index: 20;
   display: grid;
-  gap: 7px;
-  padding: 7px;
-  border: 1px solid var(--tl-line-strong);
-  border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--tl-shell) 94%, transparent);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(14px);
-}
-
-.tl-shelf[data-open='false'] {
-  right: 8px;
-  left: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2);
+  border-top: 1px solid var(--tl-line);
+  background: var(--tl-shell);
 }
 
 .tl-shelf-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   min-width: 0;
 }
 
 .tl-shelf-toggle { background: var(--tl-panel); }
-
-.tl-shelf[data-open='false'] .tl-shelf-toggle {
-  background: color-mix(in srgb, var(--tl-panel) 94%, transparent);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
-}
 
 .tl-count {
   display: inline-grid;
@@ -482,24 +460,15 @@
   font-size: var(--text-secondary);
 }
 
-/* Закрытая полка лежит прямо на кадре: подписи нужна подложка, иначе на
-   светлом видео её не прочесть. */
-.tl-shelf[data-open='false'] .tl-shelf-context {
-  padding: 4px 8px;
-  border-radius: var(--radius-compact);
-  background: var(--tl-glass);
-  color: var(--tl-glass-ink);
-  backdrop-filter: blur(10px);
-}
-
 .tl-lane {
   display: flex;
   max-width: 100%;
   gap: var(--space-2);
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 2px;
+  padding: 2px;
   scrollbar-width: thin;
+  scrollbar-color: var(--tl-line-strong) var(--tl-shell);
 }
 
 .tl-lane-empty {
@@ -510,13 +479,9 @@
 }
 
 .tl-frame {
-  display: grid;
-  flex: 0 0 250px;
+  position: relative;
+  flex: 0 0 128px;
   min-width: 0;
-  grid-template-columns: 76px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 5px 8px;
-  padding: 6px;
   border: 1px solid var(--tl-line);
   border-radius: var(--radius-control);
   background: var(--tl-panel);
@@ -533,12 +498,11 @@
   display: block;
   width: 100%;
   min-width: 0;
-  height: 58px;
-  grid-row: 1 / span 2;
+  height: 72px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid var(--tl-line-strong);
-  border-radius: var(--radius-compact);
+  border: 0;
+  border-radius: inherit;
   background: var(--tl-preview);
   color: var(--tl-glass-ink);
   cursor: pointer;
@@ -553,12 +517,12 @@
   z-index: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .tl-frame-time {
   position: absolute;
-  right: 6px;
+  left: 6px;
   bottom: 5px;
   z-index: 2;
   padding: 3px 5px;
@@ -584,59 +548,87 @@
   to { transform: rotate(360deg); }
 }
 
-.tl-frame-info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px var(--space-2);
-  min-width: 0;
-}
-
-.tl-frame-info .ui-tooltip-host {
-  min-width: 0;
-  max-width: 100%;
-}
-
-.tl-frame-name {
-  font-size: var(--text-control);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-}
-
 .tl-frame-status {
-  position: relative;
+  position: absolute;
+  top: 6px;
+  left: 6px;
   display: block;
-  max-width: 100%;
+  max-width: calc(100% - 44px);
   overflow: hidden;
-  padding-left: 11px;
-  color: var(--tl-good);
-  font-size: var(--text-secondary);
+  padding: 3px 5px;
+  border-radius: var(--radius-compact);
+  background: var(--tl-glass);
+  color: var(--tl-muted);
+  font-size: var(--text-micro);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.tl-frame-status::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  background: currentColor;
 }
 
 .tl-frame-status[data-tone='busy'] { color: var(--tl-marker); }
 .tl-frame-status[data-tone='error'] { color: var(--tl-danger); }
 .tl-frame-status[data-tone='cancelled'] { color: var(--tl-muted); }
 
-.tl-frame-actions {
+.tl-frame-menu-trigger {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: var(--tl-glass);
+  color: var(--tl-glass-ink);
+  cursor: pointer;
+}
+
+.tl-frame-menu-trigger:hover,
+.tl-frame-menu-trigger[aria-expanded='true'] { background: var(--tl-panel-strong); }
+.tl-frame-menu-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Меню вне overflow ленты; фиксированная позиция считается от кнопки. */
+.tl-frame-menu {
+  position: fixed;
+  z-index: 45;
+  display: grid;
+  width: min(240px, calc(100vw - 24px));
+  overflow-y: auto;
+  padding: var(--space-1);
+  border: 1px solid var(--tl-line-strong);
+  border-radius: var(--radius-control);
+  background: var(--tl-panel);
+  color: var(--tl-ink);
+  box-shadow: var(--shadow-lg);
+}
+
+.tl-frame-menu button {
   display: flex;
-  flex-wrap: wrap;
-  grid-column: 2;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tl-frame-menu button svg { flex: none; }
+.tl-frame-menu button:hover:not(:disabled),
+.tl-frame-menu button:focus-visible { background: var(--tl-panel-strong); }
+.tl-frame-menu button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tl-frame-menu button:disabled { opacity: 0.46; cursor: default; }
+.tl-frame-menu button.danger { color: var(--tl-danger); }
+.tl-frame-menu-status { margin: 0; padding: var(--space-2); overflow-wrap: anywhere; color: var(--tl-muted); }
+
+@media (pointer: coarse) {
+  .tl-frame-menu-trigger { width: 36px; height: 36px; }
+  .tl-frame-menu button { min-height: 44px; }
 }
 
 /* ── Плёнка ────────────────────────────────────────────────────────────── */

@@ -1521,9 +1521,14 @@ export function PromptBar({
         }
         setLocalError(null)
         const current = manualRefsRef.current
-        const next = current.some((ref) => ref.shapeId === event.ref.shapeId)
-          ? current
-          : [...current, event.ref]
+        const incoming = event.kind === 'references' ? event.refs : [event.ref]
+        const known = new Set(current.map((ref) => ref.shapeId))
+        const next = [...current]
+        for (const ref of incoming) {
+          if (known.has(ref.shapeId)) continue
+          known.add(ref.shapeId)
+          next.push(ref)
+        }
         manualRefsRef.current = next
         setManualRefs(next)
         const textarea = textareaRef.current
@@ -1535,7 +1540,7 @@ export function PromptBar({
         )
       },
     })
-  }, [discussOpen])
+  }, [discussOpen, promptChatProjectId, promptChatSnapshot.activeId, Boolean(promptChatSnapshot.active)])
 
   const submitRef = useRef(submit)
   submitRef.current = submit

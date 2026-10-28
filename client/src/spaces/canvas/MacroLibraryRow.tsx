@@ -88,7 +88,12 @@ export function MacroLibraryRow({
           />
         ) : <strong>{macro.name}</strong>}
         <small className={orphan ? 'warn' : undefined}>
-          {describeMacro({ orphan, ready, nodeCount: nodes.length, unit })}
+          {orphan
+            ? t(describeMacro({ orphan, ready, nodeCount: nodes.length, unit }))
+            : t(
+                Math.abs(nodes.length) === 1 ? '{0} node · {1}' : '{0} nodes · {1}',
+                { 0: nodes.length, 1: t(ready ? 'ready' : 'draft') },
+              )}
         </small>
       </div>
 

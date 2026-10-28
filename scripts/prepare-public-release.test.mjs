@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import test from 'node:test'
 import { parseArgs, preparePublicRelease } from './prepare-public-release.mjs'
 import { assertNoSharedHistory, createCandidate, publishCandidate, syncCandidate, verifyCandidateManifest } from './prepare-public-release-git.mjs'
-import { copyArtifacts } from './prepare-public-release-artifacts.mjs'
+import { assertReusableArtifact, copyArtifacts } from './prepare-public-release-artifacts.mjs'
+import { writeDesktopUpdateManifest } from './desktop-update-manifest.mjs'
 import { removeProjectTemp } from './project-workspace.mjs'
 import { assertAuthoringCheckout, assertDisjointPaths, assertPublicCheckout, readVersion } from './prepare-public-release-guards.mjs'
 import { npmInvocation, runNpmGates, runNpmInstall, runSecretScan } from './prepare-public-release-steps.mjs'
@@ -228,6 +230,7 @@ test('source-only preparation runs injected gates and publishes an immutable art
   assert.equal(result.version, '1.2.3')
   assert.equal(await fs.stat(path.join(result.artifactDirectory, 'CanAI-1.2.3-source.zip')).then(() => true), true)
   assert.equal(await fs.stat(path.join(result.artifactDirectory, 'logs')).then(() => true), true)
+  assert.equal(await fs.stat(path.join(result.artifactDirectory, 'update-manifest.json')).then(() => true, () => false), false)
   assert.equal(await fs.readFile(path.join(artifactRoot, 'latest-source.json'), 'utf8').then((text) => JSON.parse(text).publicCommit), result.candidateCommit)
   assert.equal(calls.filter((call) => call.args.includes('--require-gitleaks')).length, 2)
   assert.equal(await fs.stat(publicRoot).then(() => true), true)
@@ -321,6 +324,36 @@ test('artifact copy retains nested logs and refuses to replace an existing relea
   await assert.rejects(copyArtifacts({ stage, destination }), /already exists/u)
   assert.equal(await fs.readFile(path.join(destination, 'source.zip'), 'utf8'), 'original archive')
   assert.equal(await fs.readFile(path.join(destination, 'logs/check.log'), 'utf8'), 'checks passed')
+})
+
+test('native release feed binds the installable ZIP to its public revision and fails reuse after tampering', async (t) => {
+  const directory = await tempRoot(t)
+  const version = '1.2.3'
+  const publicCommit = 'a'.repeat(40)
+  const sourceRevision = 'b'.repeat(40)
+  const sourceOnly = false
+  const platform = 'windows'
+  const sourceArchive = { file: 'CanAI-1.2.3-source.zip' }
+  const nativePackage = { file: 'CanAI-1.2.3-windows-x64.zip' }
+  for (const [archive, content] of [[sourceArchive, 'source'], [nativePackage, 'verified native ZIP fixture']]) {
+    archive.sha256 = createHash('sha256').update(content).digest('hex')
+    await write(directory, archive.file, content)
+    await write(directory, `${archive.file}.sha256`, `${archive.sha256}  ${archive.file}\n`)
+  }
+  const metadata = { version, publicCommit, sourceRevision, sourceOnly, platform }
+  await write(directory, 'provenance.json', JSON.stringify({ format: 'canai-public-release', ...metadata, sourceArchive, package: nativePackage }))
+  await write(directory, 'logs/smoke.log', 'passed')
+  const manifest = await writeDesktopUpdateManifest({ directory, version, commit: publicCommit, platform, packagePath: path.join(directory, nativePackage.file), sha256: nativePackage.sha256 })
+  assert.deepEqual(manifest.platforms, [{ platform: 'win32', arch: 'x64', ...nativePackage, size: Buffer.byteLength('verified native ZIP fixture') }])
+  assert.equal(manifest.commit, publicCommit)
+  assert.equal(manifest.edition, 'local')
+  await assertReusableArtifact(directory, metadata)
+  manifest.commit = sourceRevision
+  await write(directory, 'update-manifest.json', JSON.stringify(manifest))
+  await assert.rejects(assertReusableArtifact(directory, metadata), /does not match/u)
+  await fs.unlink(path.join(directory, 'update-manifest.json'))
+  await assert.rejects(assertReusableArtifact(directory, metadata), /ENOENT/u)
+  await assert.rejects(writeDesktopUpdateManifest({ directory, version, commit: publicCommit, platform: 'linux', packagePath: path.join(directory, nativePackage.file), sha256: nativePackage.sha256 }), /Invalid desktop/u)
 })
 
 // Keep finalization recovery tests in a separate module while preserving the

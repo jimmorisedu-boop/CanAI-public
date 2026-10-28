@@ -742,7 +742,7 @@ export function AssistantShelf({
           <IconChats size={18} />
         </button>
         <strong title={snapshot.active?.meta.title}>
-          {snapshot.active?.meta.title || "New chat"}
+          {snapshot.active?.meta.title || t('New chat')}
         </strong>
         <select
           aria-label={t('Chat model')}

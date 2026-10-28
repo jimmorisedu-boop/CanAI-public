@@ -78,3 +78,52 @@ for (const scenario of ['timeout', 'canvas-error', 'visible-frame'] as const) {
     }
   })
 }
+
+for (const initialReadyState of [1, 2]) {
+  test(`ненулевой кадр ждёт decode и поверхность, loadeddata не снимает старый кадр: readyState=${initialReadyState}`, async () => {
+    const globals = ['document', 'requestAnimationFrame', 'cancelAnimationFrame'] as const
+    const previous = globals.map(name => Object.getOwnPropertyDescriptor(globalThis, name))
+    const video = new Video()
+    video.duration = 30
+    video.readyState = initialReadyState
+    let paint: FrameRequestCallback | undefined
+    let drawnAt: number | undefined
+    let presentedTime = 0
+    Object.defineProperties(globalThis, {
+      requestAnimationFrame: { configurable: true, value: (callback: FrameRequestCallback) => { paint = callback; return 1 } },
+      cancelAnimationFrame: { configurable: true, value: () => { paint = undefined } },
+      document: { configurable: true, value: {
+        createElement: (tag: string) => tag === 'video' ? video : {
+          width: 0, height: 0,
+          getContext: () => ({ drawImage() { drawnAt = presentedTime } }),
+          toBlob: (done: (blob: Blob) => void) => done(new Blob([String(drawnAt)], { type: 'image/png' })),
+        },
+      } },
+    })
+    try {
+      const pending = frameBlob('/media/clip.mp4', 3.53, { timeoutMs: 100 })
+      void pending.catch(() => {}) // В красном прогоне отказ не оставляет unhandled rejection.
+      video.dispatchEvent(new Event('loadedmetadata'))
+      if (initialReadyState === 1) assert.equal(video.currentTime, 0, 'Метаданные не подтверждают готовность декодера')
+      video.readyState = 2
+      video.dispatchEvent(new Event('loadeddata'))
+      await Promise.resolve() // seeked пришёл, но поверхность пока показывает начало.
+      assert.equal(drawnAt, undefined, 'seeked ещё не означает, что drawImage прочитает новый кадр')
+      video.dispatchEvent(new Event('loadeddata')) // отложенное событие начальной загрузки
+      assert.equal(drawnAt, undefined, 'loadeddata не должно обходить ожидание поверхности после seek')
+      assert.ok(paint)
+      presentedTime = 3.53
+      paint(0)
+      const result = await pending
+      assert.equal(await result.blob.text(), '3.53')
+      assert.equal(video.pauses, 1)
+      assert.equal(paint, undefined, 'Освобождаем и callback отрисовки')
+    } finally {
+      globals.forEach((name, index) => {
+        const descriptor = previous[index]
+        if (descriptor) Object.defineProperty(globalThis, name, descriptor)
+        else Reflect.deleteProperty(globalThis, name)
+      })
+    }
+  })
+}

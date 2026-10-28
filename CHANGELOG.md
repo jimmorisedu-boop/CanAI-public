@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.3
+
+- Check for desktop updates in Settings → General → App updates.
+- Save board edits and settings before installing, with guarded restart and
+  rollback when an updated application cannot start.
+- Local desktop updates use verified official release packages and preserve
+  personal boards, media, keys, and portable tools.
+- Saved video frames use a compact panel below the preview and retain the
+  decoded image after seeking. Capturing frames alone no longer adds a video copy.
+- Timeline edits persist when applied, and leaving with unapplied edits prompts
+  for a decision.
+- Updated the server query parser to its compatible security patch.
+
 ## 0.1.2
 
 - Added Russian interface language alongside the default English interface.

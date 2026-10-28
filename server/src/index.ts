@@ -20,13 +20,14 @@ import { restoreMacroRuns } from './macroRuns.js'
 import { startRemoteServer, stopRemoteServer } from './remoteRuntime.js'
 import { boardMediaFiles, ensureProjects, listProjects } from './projects.js'
 import { onboarding } from './onboarding.js'
-import { apiRouter, attachLifecycle, mediaImportManager } from './routes.js'
+import { apiRouter, attachDesktopUpdates, attachLifecycle, mediaImportManager } from './routes.js'
 import { restoreJobs } from './runner.js'
 import { ensureMediaDir } from './storage.js'
 import { sortMediaByBoards } from './mediaLayout.js'
 import { catalogLibrary, applyCatalogLibrary } from './catalogLibrary.js'
 import { loadSettings } from './settings.js'
 import { agentHost, startAgentRuntime } from './agents/runtime.js'
+import { createDesktopUpdateService } from './desktopUpdate.js'
 
 // GC повторяется раз в 6 часов, но трогает только файлы старше суток:
 // свежий результат, ещё не легший на холст (заглушка крутится, доска закрыта),
@@ -40,6 +41,7 @@ const UI_NOTICE_MS = 30_000
 
 async function main(): Promise<void> {
   installCrashHandlers()
+  const desktopUpdates = createDesktopUpdateService()
   // ⚠️ Журнал молчал ровно там, где был нужен: приложение «вылетало», а
   // записи о падении не было ни одной. Отметка жизни показывает ТОЧНОЕ время
   // последнего вздоха и как росла память перед ним, строка «остановлен» —
@@ -207,6 +209,14 @@ async function main(): Promise<void> {
     process.exit(0)
   }
   attachLifecycle(lifecycle, shutdown)
+  desktopUpdates.attachRuntime({
+    port: config.port,
+    requestShutdown: () => {
+      generationGate.close()
+      lifecycle.beginShutdown(shutdown)
+    },
+  })
+  attachDesktopUpdates(desktopUpdates)
 
   await new Promise<void>((resolve, reject) => {
     const onStartupError = (error: Error) => reject(error)

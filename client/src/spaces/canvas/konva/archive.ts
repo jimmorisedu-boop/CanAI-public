@@ -2,11 +2,9 @@ import type { ArchivedItem, CanvasItem } from './types'
 import { isSafeCanvasLinkData } from './mediaLinkUrl'
 import { formatDuration } from './audioMeta'
 
-// Модель архива доски: чистые преобразования объект ↔ запись архива.
-// Хранение и мутации — в CanvasStore, показ — в spaces/canvas/archive/*.
-
-// Объект уезжает в архив ЦЕЛИКОМ (включая x/y/w/h) — чтобы «Вернуть на холст»
-// поставило его туда же, откуда забрали.
+// Local edition archive model. Text and link entries remain useful without a
+// network board; media entries are accepted only when they point at this
+// computer's /media store.
 export function toArchived(item: CanvasItem, at: number): ArchivedItem {
   return { ...item, archivedAt: at }
 }
@@ -17,7 +15,6 @@ export function toCanvasItem(entry: ArchivedItem): CanvasItem {
   return item
 }
 
-// Подпись записи: у медиа — имя файла, у текста — первая строка.
 export function archiveTitle(entry: ArchivedItem): string {
   if (entry.kind === 'link') return entry.link?.title || entry.name || 'link'
   if (entry.kind === 'text') {
@@ -36,8 +33,6 @@ export function archiveKindLabel(kind: ArchivedItem['kind']): string {
   return 'Image'
 }
 
-// Разрешение медиа — то, что реально полезно видеть в списке. У звука его нет,
-// зато есть длительность — она и занимает эту графу.
 export function archiveResolution(entry: ArchivedItem): string | null {
   if (entry.kind === 'audio') {
     return entry.duration && Number.isFinite(entry.duration) ? formatDuration(entry.duration) : null
@@ -55,8 +50,8 @@ export function formatArchiveDate(ms: number): string {
   return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
-// Чтение архива из project.json. Священный инвариант CanAI: в доске только
-// ссылки /media/… и текст — любая data:/base64-строка отбрасывается.
+// Local archives never contain Cloud asset URLs, data URLs, or arbitrary
+// external URLs. Text and link records carry no media src and remain allowed.
 export function sanitizeArchive(raw: unknown): ArchivedItem[] {
   if (!Array.isArray(raw)) return []
   const out: ArchivedItem[] = []

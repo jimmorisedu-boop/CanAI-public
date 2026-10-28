@@ -27,8 +27,8 @@ import { useT } from '../../../i18n/context.js'
 // Оверлей правки клипа. Вся арифметика — в timelineModel и useTimelineSession,
 // здесь только сборка: плеер (превью + транспорт), плёнка и ряд монтажа.
 // Раскладка сверху вниз — по утверждённому макету: видео занимает всё свободное
-// место, полка кадров лежит поверх него и видео не сжимает, а плёнка и монтаж
-// стоят одним столбцом под плеером.
+// место над полкой кадров; полка, транспорт, плёнка и монтаж стоят отдельными
+// строками и не перекрывают вписанное видео.
 
 export function TimelineOverlay({ session, store }: { session: TimelineSession; store: CanvasStore }) {
   const t = useT()
@@ -209,21 +209,20 @@ export function TimelineOverlay({ session, store }: { session: TimelineSession; 
           zoomed={zoom.zoomed}
           viewportProps={zoom.viewportProps}
           onFit={zoom.reset}
-        >
-          <TimelineFramesShelf
-            records={frames.records}
-            selectedId={frames.selectedId}
-            open={frames.open}
-            toggleRef={shelfToggleRef}
-            onToggle={toggleShelf}
-            onSelect={selectFrame}
-            onRetry={frames.retry}
-            onCancel={frames.cancel}
-            onRemove={frameActions.remove}
-            onShow={frameActions.show}
-            onDownload={frameActions.download}
-          />
-        </TimelinePreview>
+        />
+        <TimelineFramesShelf
+          records={frames.records}
+          selectedId={frames.selectedId}
+          open={frames.open}
+          toggleRef={shelfToggleRef}
+          onToggle={toggleShelf}
+          onSelect={selectFrame}
+          onRetry={frames.retry}
+          onCancel={frames.cancel}
+          onRemove={frameActions.remove}
+          onShow={frameActions.show}
+          onDownload={frameActions.download}
+        />
         <TimelineTransport
           playing={playback.playing}
           muted={playback.muted}

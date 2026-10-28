@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Keep your video edits</title>
+  <desc id="desc">Leaving a video with unapplied cuts, trimming or crop opens a warning. Continue editing preserves the open montage; Leave without applying discards the draft. Apply edits creates finished clips on the board.</desc>
+  <rect width="640" height="360" rx="12" fill="#202326"/>
+  <rect x="16" y="16" width="608" height="238" rx="8" fill="#101214"/>
+  <rect x="16" y="264" width="608" height="32" rx="6" fill="#30343a"/>
+  <path d="M32 268v24m112-24v24m120-24v24m144-24v24m172-24v24" stroke="#f19a55" stroke-width="2"/>
+  <rect x="56" y="65" width="528" height="176" rx="12" fill="#292c30" stroke="#62666a"/>
+  <g font-family="Arial,sans-serif">
+    <text x="80" y="99" font-size="19" font-weight="600" fill="#f1f1ed">Unapplied video edits</text>
+    <text x="80" y="129" font-size="13" fill="#b0b5bf">Apply edits before leaving to keep the finished clips.</text>
+    <text x="80" y="149" font-size="13" fill="#b0b5bf">Continue editing keeps your montage open.</text>
+    <rect x="80" y="180" width="182" height="36" rx="8" fill="#30343a" stroke="#62666a"/>
+    <text x="171" y="203" text-anchor="middle" font-size="13" fill="#f1f1ed">Continue editing</text>
+    <rect x="280" y="180" width="280" height="36" rx="8" fill="#c62a1c"/>
+    <text x="420" y="203" text-anchor="middle" font-size="13" fill="#ffffff">Leave without applying</text>
+    <text x="24" y="325" font-size="12" fill="#f1f1ed">Use Apply edits to save the finished clips to the board.</text>
+    <text x="24" y="346" font-size="11" fill="#b0b5bf">Closing or reloading the tab also warns about unapplied video edits.</text>
+  </g>
+</svg>

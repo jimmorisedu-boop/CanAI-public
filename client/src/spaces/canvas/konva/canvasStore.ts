@@ -2912,7 +2912,10 @@ export class CanvasStore implements CanvasMutationPort {
    * Один шаг истории на весь ряд — Ctrl+Z убирает нарезку целиком. */
   placeVideoPieces(
     source: CanvasItem,
-    pieces: ReadonlyArray<{ url: string; mime: string; duration: number; width?: number; height?: number }>,
+    pieces: ReadonlyArray<{
+      url: string; mime: string; duration: number; width?: number; height?: number
+      assetId?: string; assetRevision?: number; assetChecksum?: string
+    }>,
   ): string[] {
     if (pieces.length === 0) return []
     this.capture()
@@ -2932,6 +2935,11 @@ export class CanvasStore implements CanvasMutationPort {
           w,
           h,
           src: piece.url,
+          // adoptForBoard уже загрузил файл нарезки на сервер команды.
+          // Без его identity синхронизация оставит клип только у автора.
+          ...(piece.assetId ? { assetId: piece.assetId } : {}),
+          ...(piece.assetRevision !== undefined ? { assetRevision: piece.assetRevision } : {}),
+          ...(piece.assetChecksum ? { assetChecksum: piece.assetChecksum } : {}),
           mime: piece.mime,
           naturalWidth: piece.width,
           naturalHeight: piece.height,

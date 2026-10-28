@@ -29,7 +29,7 @@ export function ArchiveCard({
 }) {
   const t = useT()
   const facts = [
-    archiveKindLabel(entry.kind),
+    t(archiveKindLabel(entry.kind)),
     archiveResolution(entry),
     bytes != null ? formatBytes(bytes) : null,
     formatArchiveDate(entry.archivedAt),

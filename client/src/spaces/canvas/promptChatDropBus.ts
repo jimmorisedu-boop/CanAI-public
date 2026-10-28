@@ -2,6 +2,7 @@ import type { SelectionRef } from './konva/selection'
 
 export type PromptChatDropEvent =
   | { kind: 'reference'; ref: SelectionRef }
+  | { kind: 'references'; refs: SelectionRef[] }
   | { kind: 'error'; message: string }
 
 export interface PromptChatDropHandler {
@@ -25,7 +26,9 @@ export function requestPromptChatDrop(event: PromptChatDropEvent): boolean {
   activeHandler.drop(
     event.kind === 'reference'
       ? { kind: 'reference', ref: { ...event.ref } }
-      : { ...event },
+      : event.kind === 'references'
+        ? { kind: 'references', refs: event.refs.map((ref) => ({ ...ref })) }
+        : { ...event },
   )
   return true
 }

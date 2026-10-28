@@ -465,7 +465,7 @@ export function CompareViewer({
                 className={layout === value ? 'on' : ''}
                 onClick={() => setLayoutOverride(value)}
               >
-                {title}
+                {t(title)}
               </button>
             ))}
           </div>
@@ -486,7 +486,7 @@ export function CompareViewer({
                 className={mode === value ? 'on' : ''}
                 onClick={() => setMode(value)}
               >
-                {title}
+                {t(title)}
               </button>
             ))}
           </div>

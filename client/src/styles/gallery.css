@@ -25,6 +25,11 @@
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.08);
 }
 
+.gallery-topbar > .brand {
+  min-width: 0;
+  margin-right: auto;
+}
+
 /* Команда, настройки и тема — одинаковые компактные иконки в шапке. */
 .gallery-topbar .tab.icon-btn,
 .gallery-topbar .team-status {
@@ -649,7 +654,7 @@
 /* Цель под палец: карточка доски — крупный элемент, и «⋯» на ней не иконка
    плотного списка. Форма (скругление, прозрачный фон) общая, свой только
    размер — про поверхность, а не про вид. */
-.project-menu-btn {
+.gallery-view .project-menu-btn {
   width: 40px;
   height: 40px;
 }

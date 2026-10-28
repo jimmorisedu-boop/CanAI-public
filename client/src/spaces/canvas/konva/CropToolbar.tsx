@@ -44,7 +44,7 @@ export function CropToolbar({
           className={`crop-ratio ${ratio === p.value ? 'on' : ''}`}
           onClick={() => onRatio(p.value)}
         >
-          {p.label}
+          {t(p.label)}
         </button>
       ))}
       <button className="sketch-cancel" disabled={busy} onClick={onCancel}>

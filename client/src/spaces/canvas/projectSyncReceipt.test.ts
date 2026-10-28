@@ -94,6 +94,34 @@ test('flushAndWait ждёт сохранения снимка с целевой 
   await handle.dispose()
 })
 
+test('локальная нарезка сохраняет все клипы при немедленном выходе и повторном открытии доски', async () => {
+  const source = { id: 'original', kind: 'video' as const, src: '/media/source.mp4',
+    mime: 'video/mp4', name: 'source', x: 0, y: 0, w: 160, h: 90 }
+  let persisted: CanvasDoc = { version: 1, items: [source], camera: { x: 0, y: 0, scale: 1 }, assets: [], archive: [] }
+  let revision = 1
+  const open = async () => {
+    const f = fixture(async (_id, snapshot) => {
+      persisted = structuredClone(snapshot)
+      return { ok: true, revision: ++revision }
+    })
+    f.deps.loadProject = async () => ({ snapshot: structuredClone(persisted), revision })
+    const handle = await initProjectSync(f.store, 'local-video', undefined, undefined, f.deps)
+    return { store: f.store, handle }
+  }
+  const first = await open()
+  const ids = first.store.placeVideoPieces(source, [
+    { url: '/media/part-1.mp4', mime: 'video/mp4', duration: 2 },
+    { url: '/media/part-2.mp4', mime: 'video/mp4', duration: 3 },
+  ])
+  // Не ждём debounce автосохранения: выход обязан дописать оба новых клипа.
+  await first.handle.dispose()
+  const reopened = await open()
+  assert.deepEqual(reopened.store.getItems().map(item => item.id), ['original', ...ids])
+  assert.equal(reopened.store.getItem(ids[0]!)?.src, '/media/part-1.mp4')
+  assert.equal(reopened.store.getItem(ids[1]!)?.src, '/media/part-2.mp4')
+  await reopened.handle.dispose()
+})
+
 test('старый in-flight save не закрывает waiter более поздней мутации', async () => {
   const first = deferred<{ ok: boolean; revision: number }>()
   const second = deferred<{ ok: boolean; revision: number }>()
